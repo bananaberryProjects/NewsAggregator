@@ -1,0 +1,66 @@
+spring:
+  application:
+    name: news-aggregator
+  
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  
+  thymeleaf:
+    cache: false
+
+server:
+  port: 8080
+  forward-headers-strategy: framework
+
+logging:
+  level:
+    com.newsaggregator: DEBUG
+
+---
+# Dev-Profil: H2 In-Memory
+spring:
+  config:
+    activate:
+      on-profile: dev
+  
+  datasource:
+    url: jdbc:h2:mem:newsdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database-platform: org.hibernate.dialect.H2Dialect
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+---
+# Prod-Profil: PostgreSQL
+spring:
+  config:
+    activate:
+      on-profile: prod
+  
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:host.docker.internal}:${POSTGRES_PORT:5432}/${POSTGRES_DB:newsdb}
+    driver-class-name: org.postgresql.Driver
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.PostgreSQLDialect

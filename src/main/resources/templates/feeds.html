@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feeds - News Aggregator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href=".">📰 News Aggregator</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href=".">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="feeds">Feeds</a></li>
+                    <li class="nav-item"><a class="nav-link" href="articles">Artikel</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Alert für Erfolgsmeldungen -->
+        <div id="successAlert" class="alert alert-success alert-dismissible fade show d-none" role="alert">
+            <span id="successMessage"></span>
+            <button type="button" class="btn-close" onclick="hideAlert()"></button>
+        </div>
+
+        <!-- Alert für Fehlermeldungen -->
+        <div id="errorAlert" class="alert alert-danger alert-dismissible fade show d-none" role="alert">
+            <span id="errorMessage"></span>
+            <button type="button" class="btn-close" onclick="hideAlert()"></button>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>RSS Feeds</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addFeedModal">
+                + Feed hinzufügen
+            </button>
+        </div>
+
+        <div class="alert alert-info" th:if="${#lists.isEmpty(feeds)}">
+            Noch keine Feeds vorhanden. Füge deinen ersten RSS-Feed hinzu!
+        </div>
+
+        <div class="table-responsive" th:unless="${#lists.isEmpty(feeds)}">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>URL</th>
+                        <th>Letzter Abruf</th>
+                        <th>Artikel</th>
+                        <th>Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="feed : ${feeds}" th:id="'feed-' + ${feed.id}"
+                        th:data-feed-id="${feed.id}"
+                        th:data-feed-name="${feed.name}"
+                        th:data-article-count="${feed.articleCount}">
+                        <td th:text="${feed.name}">Name</td>
+                        <td><code th:text="${feed.url}">URL</code></td>
+                        <td th:text="${feed.lastFetched != null ? #temporals.format(feed.lastFetched, 'dd.MM.yyyy HH:mm') : 'Nie'}">Datum</td>
+                        <td th:text="${feed.articleCount}">0</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" th:data-feed-id="${feed.id}" onclick="fetchFeed(this)">Aktualisieren</button>
+                            <button class="btn btn-sm btn-outline-danger" th:data-feed-id="${feed.id}" th:data-feed-name="${feed.name}" th:data-article-count="${feed.articleCount}" onclick="deleteFeed(this)">Löschen</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add Feed Modal -->
+    <div class="modal fade" id="addFeedModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Neuen Feed hinzufügen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{api/feeds}" method="post">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" name="name" placeholder="z.B. Heise News" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">RSS URL</label>
+                            <input type="url" class="form-control" name="url" placeholder="https://..." required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Beschreibung (optional)</label>
+                            <textarea class="form-control" name="description" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                        <button type="submit" class="btn btn-primary">Hinzufügen</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteFeedModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Feed löschen</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bist du sicher, dass du den Feed <strong id="deleteFeedName"></strong> löschen möchtest?</p>
+                    <div class="alert alert-warning">
+                        <strong>⚠️ Achtung:</strong> Alle <span id="deleteFeedArticleCount"></span> Artikel dieses Feeds werden ebenfalls gelöscht!
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Löschen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let feedToDelete = null;
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteFeedModal'));
+
+        function showSuccess(message) {
+            document.getElementById('successMessage').textContent = message;
+            document.getElementById('successAlert').classList.remove('d-none');
+        }
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorAlert').classList.remove('d-none');
+        }
+
+        function hideAlert() {
+            document.getElementById('successAlert').classList.add('d-none');
+            document.getElementById('errorAlert').classList.add('d-none');
+        }
+
+        function deleteFeed(button) {
+            feedToDelete = button.getAttribute('data-feed-id');
+            document.getElementById('deleteFeedName').textContent = button.getAttribute('data-feed-name');
+            document.getElementById('deleteFeedArticleCount').textContent = button.getAttribute('data-article-count');
+            deleteModal.show();
+        }
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
+            if (!feedToDelete) return;
+
+            try {
+                const response = await fetch('api/feeds/' + feedToDelete, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    // Feed aus Tabelle entfernen
+                    const row = document.getElementById('feed-' + feedToDelete);
+                    if (row) {
+                        row.remove();
+                    }
+                    showSuccess('Feed erfolgreich gelöscht.');
+                } else if (response.status === 404) {
+                    showError('Feed wurde nicht gefunden.');
+                } else {
+                    showError('Fehler beim Löschen des Feeds.');
+                }
+            } catch (error) {
+                showError('Netzwerkfehler: ' + error.message);
+            }
+
+            deleteModal.hide();
+            feedToDelete = null;
+        });
+
+        async function fetchFeed(button) {
+            const id = button.getAttribute('data-feed-id');
+            try {
+                const response = await fetch('api/feeds/' + id + '/fetch', {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    showSuccess('Feed wurde aktualisiert. Seite wird neu geladen...');
+                    setTimeout(function() { location.reload() }, 1500);
+                } else if (response.status === 404) {
+                    showError('Feed wurde nicht gefunden.');
+                } else {
+                    showError('Fehler beim Aktualisieren des Feeds.');
+                }
+            } catch (error) {
+                showError('Netzwerkfehler: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
