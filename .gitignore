@@ -1,0 +1,98 @@
+# Compiled class files
+*.class
+
+# Log files
+*.log
+logs/
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Maven target directory
+target/
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Maven dependency reduced pom
+dependency-reduced-pom.xml
+
+# IDE - IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# IDE - Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# IDE - VS Code
+.vscode/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Application logs
+app.log
+*.log.*
+
+# H2 database files (if used in dev)
+*.db
+*.mv.db
+*.trace.db
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*~
+
+# Build output
+build/
+dist/
+out/
+
+# Test reports
+surefire-reports/
+failsafe-reports/
+jacoco.exec
+
+# Spring Boot specific
+.spring-boot-devtools.properties
+
+# Docker (if used)
+docker-compose.override.yml
+
+# Local configuration
+application-local.yml
+application-local.properties
