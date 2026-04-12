@@ -3,11 +3,6 @@ package com.newsaggregator.infrastructure.adapter.rss;
 import com.newsaggregator.domain.model.Article;
 import com.newsaggregator.domain.model.Feed;
 import com.newsaggregator.domain.port.out.RssFeedReader;
-import com.rometools.modules.mediarss.MediaEntryModule;
-import com.rometools.modules.mediarss.MediaModule;
-import com.rometools.modules.mediarss.types.Thumbnail;
-import com.rometools.modules.mediarss.types.UrlReference;
-import com.rometools.rome.feed.module.Module;
 import com.rometools.rome.feed.synd.SyndEnclosure;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
@@ -104,10 +99,9 @@ public class RssFeedReaderAdapter implements RssFeedReader {
      * Versucht verschiedene Quellen: Media RSS (media:content), Enclosures, img-Tags im Content.
      */
     private String extractImageUrl(SyndEntry entry, String description) {
-        // 1. Versuche Media RSS Module (rome-modules dependency muss vorhanden sein)
-        String mediaUrl = extractMediaRssUrl(entry);
+        // 1. Versuche Media RSS (media:content) - z.B. bei WELT
+        String mediaUrl = extractMediaContentUrl(entry);
         if (mediaUrl != null) {
-            logger.debug("Bild aus MediaRSS: {}", mediaUrl);
             return mediaUrl;
         }
 
@@ -121,7 +115,8 @@ public class RssFeedReaderAdapter implements RssFeedReader {
             }
             // Falls kein Bild-Typ, nimm das erste Enclosure (oft Bild)
             String url = entry.getEnclosures().get(0).getUrl();
-            if (url != null && isImageUrl(url)) {
+            if (url != null && (url.endsWith(".jpg") || url.endsWith(".jpeg") || 
+                url.endsWith(".png") || url.endsWith(".gif") || url.endsWith(".webp"))) {
                 return url;
             }
         }
@@ -142,72 +137,50 @@ public class RssFeedReaderAdapter implements RssFeedReader {
     }
 
     /**
-     * Extrahiert Bild-URL aus Media RSS (MRSS) über die Module API.
-     * Funktioniert für WELT, Bild.de, FAZ und andere MRSS-Feeds.
+     * Extrahiert Bild-URL aus Media RSS (MRSS) media:content/media:thumbnail Tags.
+     * Wird z.B. von WELT, Bild.de, FAZ verwendet.
+     * Nutzt ForeignMarkup für direkten Zugriff auf XML-Extensions.
      */
-    private String extractMediaRssUrl(SyndEntry entry) {
-        try {
-            // Alle Module durchsuchen
-            List<Module> modules = entry.getModules();
-            if (modules == null || modules.isEmpty()) {
-                logger.trace("Keine Module für Entry gefunden");
-                return null;
+    private String extractMediaContentUrl(SyndEntry entry) {
+        List<Element> foreignMarkup = entry.getForeignMarkup();
+        if (foreignMarkup == null || foreignMarkup.isEmpty()) {
+            return null;
+        }
+
+        for (Element element : foreignMarkup) {
+            // Prüfe Namespace (Yahoo Media RSS oder ähnlich)
+            String nsUri = element.getNamespace() != null ? element.getNamespace().getURI() : "";
+            boolean isMediaNs = nsUri.contains("yahoo.com/mrss") || nsUri.contains("search.yahoo");
+            
+            if (!isMediaNs) {
+                continue;
             }
             
-            for (Module module : modules) {
-                // Prüfe auf MediaEntryModule
-                if (module instanceof MediaEntryModule mediaModule) {
-                    logger.debug("MediaEntryModule gefunden");
-                    
-                    // 1. Versuche Thumbnails zuerst (oft bessere Qualität)
-                    Thumbnail[] thumbnails = mediaModule.getMetadata().getThumbnail();
-                    if (thumbnails != null && thumbnails.length > 0 && thumbnails[0] != null) {
-                        String url = thumbnails[0].getUrl().toString();
-                        logger.debug("Thumbnail gefunden: {}", url);
+            // Suche nach media:content
+            if ("content".equals(element.getName())) {
+                String url = element.getAttributeValue("url");
+                String type = element.getAttributeValue("type");
+                // Nur Bilder (image/*) oder URLs mit Bild-Extension
+                if (url != null && !url.isEmpty()) {
+                    if (type == null || type.startsWith("image/") || 
+                        url.matches(".*\.(jpg|jpeg|png|gif|webp|bmp)(\?.*)?$")) {
+                        logger.debug("Media RSS content Bild gefunden: {}", url);
                         return url;
-                    }
-
-                    // 2. Versuche MediaContents
-                    if (mediaModule.getMediaContents() != null && mediaModule.getMediaContents().length > 0) {
-                        for (int i = 0; i < mediaModule.getMediaContents().length; i++) {
-                            var content = mediaModule.getMediaContents()[i];
-                            if (content != null && content.getReference() instanceof UrlReference ref) {
-                                String url = ref.getUrl().toString();
-                                if (isImageUrl(url)) {
-                                    logger.debug("MediaContent gefunden: {}", url);
-                                    return url;
-                                }
-                            }
-                        }
-                    }
-                    
-                    // 3. Fallback: Erste verfügbare URL
-                    if (mediaModule.getMetadata() != null && 
-                        mediaModule.getMetadata().getThumbnail() != null &&
-                        mediaModule.getMetadata().getThumbnail().length > 0) {
-                        Thumbnail thumb = mediaModule.getMetadata().getThumbnail()[0];
-                        if (thumb != null && thumb.getUrl() != null) {
-                            return thumb.getUrl().toString();
-                        }
                     }
                 }
             }
-        } catch (Exception e) {
-            logger.debug("Fehler beim Extrahieren von MediaRSS: {}", e.getMessage());
+            
+            // Fallback: media:thumbnail
+            if ("thumbnail".equals(element.getName())) {
+                String url = element.getAttributeValue("url");
+                if (url != null && !url.isEmpty()) {
+                    logger.debug("Media RSS thumbnail gefunden: {}", url);
+                    return url;
+                }
+            }
         }
+        
         return null;
-    }
-
-    /**
-     * Prüft ob eine URL ein Bild ist.
-     */
-    private boolean isImageUrl(String url) {
-        if (url == null) return false;
-        String lower = url.toLowerCase();
-        return lower.contains(".jpg") || lower.contains(".jpeg") || 
-               lower.contains(".png") || lower.contains(".gif") || 
-               lower.contains(".webp") || lower.contains("/image") ||
-               lower.contains("images.");
     }
 
     /**

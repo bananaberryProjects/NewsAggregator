@@ -78,6 +78,20 @@
             <version>2.1.0</version>
         </dependency>
         
+        <!-- Rome Media Module (für media:content Tags) -->
+        <dependency>
+            <groupId>com.rometools</groupId>
+            <artifactId>rome-modules</artifactId>
+            <version>2.1.0</version>
+        </dependency>
+        
+        <!-- JDOM2 für XML-Elemente -->
+        <dependency>
+            <groupId>org.jdom</groupId>
+            <artifactId>jdom2</artifactId>
+            <version>2.0.6.1</version>
+        </dependency>
+        
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
