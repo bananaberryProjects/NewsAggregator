@@ -20,6 +20,21 @@ export interface Article {
   feedName: string;
 }
 
+export interface ArticleReadStatus {
+  id: number;
+  articleId: string;
+  userId: string;
+  isRead: boolean;
+  isFavorite: boolean;
+  readAt: string | null;
+  favoritedAt: string | null;
+}
+
+export interface ArticleStatus {
+  isRead: boolean;
+  isFavorite: boolean;
+}
+
 async function fetchApi<T>(path: string, options?: RequestInit): Promise<T> {
   const headers: HeadersInit = {}
   
@@ -64,4 +79,10 @@ export const feedsApi = {
 export const articlesApi = {
   getAll: () => fetchApi<Article[]>('/articles'),
   search: (query: string) => fetchApi<Article[]>(`/articles?query=${encodeURIComponent(query)}`),
+  markAsRead: (id: string) => fetchApi<ArticleReadStatus>(`/articles/${id}/read`, { method: 'POST' }),
+  markAsUnread: (id: string) => fetchApi<ArticleReadStatus>(`/articles/${id}/unread`, { method: 'POST' }),
+  toggleFavorite: (id: string) => fetchApi<ArticleReadStatus>(`/articles/${id}/favorite`, { method: 'POST' }),
+  getStatus: (id: string) => fetchApi<ArticleStatus>(`/articles/${id}/status`),
+  getReadArticles: () => fetchApi<ArticleReadStatus[]>('/articles/read'),
+  getFavoriteArticles: () => fetchApi<ArticleReadStatus[]>('/articles/favorites'),
 };

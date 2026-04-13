@@ -34,6 +34,8 @@ import {
   DialogActions,
   Paper,
   Avatar,
+  ToggleButton,
+  ToggleButtonGroup,
 } from '@mui/material'
 import {
   Menu as MenuIcon,
@@ -49,6 +51,12 @@ import {
   Newspaper as NewspaperIcon,
   Computer as ComputerIcon,
   TrendingUp as TrendingUpIcon,
+  CalendarToday as CalendarTodayIcon,
+  Bookmark as BookmarkIcon,
+  BookmarkBorder as BookmarkBorderIcon,
+  Visibility as VisibilityIcon,
+  VisibilityOff as VisibilityOffIcon,
+  CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material'
 import { feedsApi, articlesApi, type Feed, type Article } from './api/client'
 
@@ -74,7 +82,13 @@ function App() {
   const [adding, setAdding] = useState(false)
   const [refreshingFeedId, setRefreshingFeedId] = useState<string | null>(null)
   const [refreshError, setRefreshError] = useState<string | null>(null)
-  const [activeView, setActiveView] = useState<'dashboard' | 'feeds' | 'articles'>('dashboard')
+  const [activeView, setActiveView] = useState<'dashboard' | 'feeds' | 'articles' | 'favorites'>('dashboard')
+
+  // Zusätzliche States für Artikel-Status
+  const [articleStatuses, setArticleStatuses] = useState<Record<string, { isRead: boolean; isFavorite: boolean }>>({})
+  const [updatingArticleId, setUpdatingArticleId] = useState<string | null>(null)
+  const [dashboardFilter, setDashboardFilter] = useState<'all' | 'unread' | 'favorites'>('all')
+  const [articlesFilter, setArticlesFilter] = useState<'all' | 'unread' | 'favorites'>('all')
 
   const theme = createTheme({
     palette: {
@@ -99,12 +113,24 @@ function App() {
     try {
       setLoading(true)
       setError(null)
-      const [feedsData, articlesData] = await Promise.all([
+      const [feedsData, articlesData, readStatuses, favoriteStatuses] = await Promise.all([
         feedsApi.getAll(),
         articlesApi.getAll(),
+        articlesApi.getReadArticles().catch(() => []),
+        articlesApi.getFavoriteArticles().catch(() => []),
       ])
       setFeeds(feedsData)
       setArticles(articlesData)
+      
+      // Status-Map aus API-Antworten aufbauen
+      const statusMap = {}
+      readStatuses.forEach((status) => {
+        statusMap[status.articleId] = { ...statusMap[status.articleId], isRead: true }
+      })
+      favoriteStatuses.forEach((status) => {
+        statusMap[status.articleId] = { ...statusMap[status.articleId], isFavorite: true }
+      })
+      setArticleStatuses(statusMap)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unbekannter Fehler')
     } finally {
@@ -139,11 +165,10 @@ function App() {
         url: newFeedUrl.trim() 
       })
       
-      // Erfolg - Dialog schließen und Daten neu laden
       setAddDialogOpen(false)
       setNewFeedUrl('')
       setNewFeedName('')
-      loadData() // Feed-Liste aktualisieren
+      loadData()
     } catch (err) {
       setAddError(err instanceof Error ? err.message : 'Fehler beim Hinzufügen des Feeds')
     } finally {
@@ -166,7 +191,6 @@ function App() {
       
       await feedsApi.delete(feedToDelete.id)
       
-      // Erfolg - Dialog schließen und Daten neu laden
       setDeleteDialogOpen(false)
       setFeedToDelete(null)
       loadData()
@@ -198,17 +222,179 @@ function App() {
       console.log('Refreshing feed:', feed.id, feed.name)
       await feedsApi.fetchArticles(feed.id)
       
-      // Erfolg - Daten neu laden
       console.log('Refresh successful, reloading data...')
       await loadData()
     } catch (err) {
       console.error('Refresh error:', err)
       setRefreshError(err instanceof Error ? err.message : 'Fehler beim Aktualisieren des Feeds')
-      // Zeige Alert mit Fehler
       alert('Fehler beim Aktualisieren: ' + (err instanceof Error ? err.message : 'Unbekannter Fehler'))
     } finally {
       setRefreshingFeedId(null)
     }
+  }
+
+  // Handler-Funktionen für Lesen/Gelesen und Favoriten
+  const handleToggleRead = async (articleId: string) => {
+    setUpdatingArticleId(articleId)
+    try {
+      const isCurrentlyRead = articleStatuses[articleId]?.isRead
+      if (isCurrentlyRead) {
+        await articlesApi.markAsUnread(articleId)
+      } else {
+        await articlesApi.markAsRead(articleId)
+      }
+      setArticleStatuses(prev => ({
+        ...prev,
+        [articleId]: {
+          ...prev[articleId],
+          isRead: !prev[articleId]?.isRead
+        }
+      }))
+    } catch (err) {
+      console.error('Error toggling read status:', err)
+    } finally {
+      setUpdatingArticleId(null)
+    }
+  }
+
+  const handleToggleFavorite = async (articleId: string) => {
+    setUpdatingArticleId(articleId)
+    try {
+      await articlesApi.toggleFavorite(articleId)
+      setArticleStatuses(prev => ({
+        ...prev,
+        [articleId]: {
+          ...prev[articleId],
+          isFavorite: !prev[articleId]?.isFavorite
+        }
+      }))
+    } catch (err) {
+      console.error('Error toggling favorite:', err)
+    } finally {
+      setUpdatingArticleId(null)
+    }
+  }
+
+  // Hilfsfunktion zum Filtern von Artikeln
+  const getFilteredArticles = (filter: 'all' | 'unread' | 'favorites', articleList: Article[]) => {
+    switch (filter) {
+      case 'unread':
+        return articleList.filter(a => !articleStatuses[a.id]?.isRead)
+      case 'favorites':
+        return articleList.filter(a => articleStatuses[a.id]?.isFavorite)
+      default:
+        return articleList
+    }
+  }
+
+  // Hilfsfunktion zum Rendern einer Artikelkarte
+  const renderArticleCard = (article: Article) => {
+    const isRead = articleStatuses[article.id]?.isRead
+    const isFavorite = articleStatuses[article.id]?.isFavorite
+
+    return (
+      <Card
+        key={article.id}
+        sx={{
+          width: 480,
+          height: 420,
+          display: 'flex',
+          flexDirection: 'column',
+          transition: 'transform 0.2s, box-shadow 0.2s',
+          opacity: isRead ? 0.85 : 1,
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: 6,
+          },
+        }}
+      >
+        <CardMedia
+          component="img"
+          height="200"
+          image={article.imageUrl || PLACEHOLDER_IMAGE}
+          alt={article.title}
+          sx={{ objectFit: 'cover' }}
+        />
+        <CardContent sx={{ flexGrow: 1, overflow: 'hidden' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+            <Chip size="small" label={article.feedName || 'News'} color="primary" />
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <CalendarTodayIcon fontSize="inherit" />
+              {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('de-DE', {
+                day: 'numeric', month: 'short', year: 'numeric',
+              }) : 'Kein Datum'}
+            </Typography>
+          </Box>
+          <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 600, mb: 1, lineHeight: 1.3 }}>
+            {isRead && (
+              <CheckCircleIcon 
+                fontSize="small" 
+                color="success" 
+                sx={{ mr: 0.5, verticalAlign: 'middle' }} 
+              />
+            )}
+            {article.title}
+          </Typography>
+          <Typography 
+            variant="body2" 
+            color="text.secondary" 
+            sx={{ 
+              mb: 1, 
+              maxHeight: 60, 
+              overflow: 'hidden', 
+              textOverflow: 'ellipsis', 
+              display: '-webkit-box', 
+              WebkitLineClamp: 3, 
+              WebkitBoxOrient: 'vertical',
+              lineHeight: 1.4
+            }}
+            title={article.description || ''}
+          >
+            {article.description || 'Keine Beschreibung verfügbar'}
+          </Typography>
+        </CardContent>
+        <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
+          <Button 
+            size="small" 
+            startIcon={<LaunchIcon />} 
+            onClick={() => window.open(article.link, '_blank')}
+          >
+            Lesen
+          </Button>
+          <Box>
+            <IconButton
+              size="small"
+              onClick={() => handleToggleRead(article.id)}
+              disabled={updatingArticleId === article.id}
+              sx={{ mr: 0.5 }}
+              title={isRead ? 'Als ungelesen markieren' : 'Als gelesen markieren'}
+            >
+              {updatingArticleId === article.id ? (
+                <CircularProgress size={20} />
+              ) : isRead ? (
+                <VisibilityOffIcon color="action" />
+              ) : (
+                <VisibilityIcon color="primary" />
+              )}
+            </IconButton>
+            <IconButton
+              size="small"
+              onClick={() => handleToggleFavorite(article.id)}
+              disabled={updatingArticleId === article.id}
+              title={isFavorite ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen'}
+            >
+              {updatingArticleId === article.id ? (
+                <CircularProgress size={20} />
+              ) : isFavorite ? (
+                <BookmarkIcon color="secondary" />
+              ) : (
+                <BookmarkBorderIcon color="action" />
+              )}
+            </IconButton>
+          </Box>
+        </CardActions>
+      </Card>
+    )
   }
 
   const drawer = (
@@ -247,6 +433,19 @@ function App() {
             </ListItemIcon>
             <ListItemText primary="Artikel" />
             <Chip size="small" label={articles.length} />
+          </ListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton selected={activeView === 'favorites'} onClick={() => setActiveView('favorites')}>
+            <ListItemIcon>
+              <BookmarkIcon />
+            </ListItemIcon>
+            <ListItemText primary="Favoriten" />
+            <Chip 
+              size="small" 
+              label={Object.values(articleStatuses).filter(s => s.isFavorite).length} 
+              color="secondary"
+            />
           </ListItemButton>
         </ListItem>
       </List>
@@ -303,149 +502,121 @@ function App() {
   )
 
   // Render Dashboard View
-  const renderDashboard = () => (
-    <Box>
-      {/* Stats Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Paper elevation={2} sx={{ p: 2, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <FeedIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8 }} />
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                  {loading ? <Skeleton width={60} /> : feeds.length}
-                </Typography>
-                <Typography variant="body2">Feeds</Typography>
-              </Box>
-            </Box>
-          </Paper>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Paper elevation={2} sx={{ p: 2, background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <ArticleIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8 }} />
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                  {loading ? <Skeleton width={60} /> : articles.length}
-                </Typography>
-                <Typography variant="body2">Artikel</Typography>
-              </Box>
-            </Box>
-          </Paper>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Paper elevation={2} sx={{ p: 2, background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', color: 'white' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <ComputerIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8 }} />
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                  {loading ? <Skeleton width={60} /> : articles.filter(a => a.feedName?.toLowerCase().includes('tech') || a.feedName?.toLowerCase().includes('heise') || a.feedName?.toLowerCase().includes('golem')).length}
-                </Typography>
-                <Typography variant="body2">Tech News</Typography>
-              </Box>
-            </Box>
-          </Paper>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Paper elevation={2} sx={{ p: 2, background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', color: 'white' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <TrendingUpIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8 }} />
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                  {loading ? <Skeleton width={60} /> : articles.filter(a => a.feedName?.toLowerCase().includes('crypto') || a.feedName?.toLowerCase().includes('coin')).length}
-                </Typography>
-                <Typography variant="body2">Crypto</Typography>
-              </Box>
-            </Box>
-          </Paper>
-        </Grid>
-      </Grid>
+  const renderDashboard = () => {
+    const dashboardArticles = getFilteredArticles(dashboardFilter, filteredArticles)
+      .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+      .slice(0, 10)
 
-      {/* Error Alert */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
-      {/* Articles Grid */}
-      <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
-        Neueste Artikel
-      </Typography>
-
-      {loading ? (
-        <Grid container spacing={3}>
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Grid item xs={12} sm={6} key={i}>
-              <Card sx={{ height: 400 }}>
-                <Skeleton variant="rectangular" height={200} />
-                <CardContent>
-                  <Skeleton variant="text" height={32} />
-                  <Skeleton variant="text" height={60} />
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
+    return (
+      <Box>
+        {/* Stats Cards */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} sm={6} md={3}>
+            <Paper elevation={2} sx={{ p: 2, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <FeedIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8 }} />
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                    {loading ? <Skeleton width={60} /> : feeds.length}
+                  </Typography>
+                  <Typography variant="body2">Feeds</Typography>
+                </Box>
+              </Box>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Paper elevation={2} sx={{ p: 2, background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <ArticleIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8 }} />
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                    {loading ? <Skeleton width={60} /> : articles.length}
+                  </Typography>
+                  <Typography variant="body2">Artikel</Typography>
+                </Box>
+              </Box>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Paper elevation={2} sx={{ p: 2, background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', color: 'white' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <ComputerIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8 }} />
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                    {loading ? <Skeleton width={60} /> : articles.filter(a => a.feedName?.toLowerCase().includes('tech') || a.feedName?.toLowerCase().includes('heise') || a.feedName?.toLowerCase().includes('golem')).length}
+                  </Typography>
+                  <Typography variant="body2">Tech News</Typography>
+                </Box>
+              </Box>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Paper elevation={2} sx={{ p: 2, background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', color: 'white' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <TrendingUpIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8 }} />
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                    {loading ? <Skeleton width={60} /> : articles.filter(a => a.feedName?.toLowerCase().includes('crypto') || a.feedName?.toLowerCase().includes('coin')).length}
+                  </Typography>
+                  <Typography variant="body2">Crypto</Typography>
+                </Box>
+              </Box>
+            </Paper>
+          </Grid>
         </Grid>
-      ) : (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
-          {[...filteredArticles]
-            .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
-            .slice(0, 10)
-            .map((article) => (
-              <Card
-                key={article.id}
-                sx={{
-                  width: 480,
-                  height: 400,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: 6,
-                  },
-                }}
-              >
-                <CardMedia
-                  component="img"
-                  height="200"
-                  image={article.imageUrl || PLACEHOLDER_IMAGE}
-                  alt={article.title}
-                  sx={{ objectFit: 'cover' }}
-                />
-                <CardContent sx={{ flexGrow: 1, overflow: 'hidden' }}>
-                  <Chip
-                    size="small"
-                    label={article.feedName || 'News'}
-                    color="primary"
-                    sx={{ mb: 1 }}
-                  />
-                  <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 600, mb: 1, lineHeight: 1.3 }}>
-                    {article.title}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1, height: 60, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
-                    {article.description?.substring(0, 100) || 'Keine Beschreibung verfügbar'}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {new Date(article.publishedAt).toLocaleDateString('de-DE', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })}
-                  </Typography>
-                </CardContent>
-                <CardActions>
-                  <Button size="small" startIcon={<LaunchIcon />} onClick={() => window.open(article.url, '_blank')}>
-                    Lesen
-                  </Button>
-                </CardActions>
-              </Card>
-            ))}
+
+        {/* Error Alert */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
+
+        {/* Articles Grid */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h5" sx={{ fontWeight: 600 }}>
+            Neueste Artikel
+          </Typography>
+          <ToggleButtonGroup
+            value={dashboardFilter}
+            exclusive
+            onChange={(_, value) => value && setDashboardFilter(value)}
+            size="small"
+          >
+            <ToggleButton value="all">Alle</ToggleButton>
+            <ToggleButton value="unread">Ungelesen</ToggleButton>
+            <ToggleButton value="favorites">Favoriten</ToggleButton>
+          </ToggleButtonGroup>
         </Box>
-      )}
-    </Box>
-  )
+
+        {loading ? (
+          <Grid container spacing={3}>
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Grid item xs={12} sm={6} key={i}>
+                <Card sx={{ height: 420 }}>
+                  <Skeleton variant="rectangular" height={200} />
+                  <CardContent>
+                    <Skeleton variant="text" height={32} />
+                    <Skeleton variant="text" height={60} />
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        ) : dashboardArticles.length === 0 ? (
+          <Alert severity="info">
+            Keine Artikel gefunden für den aktuellen Filter.
+          </Alert>
+        ) : (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
+            {[...dashboardArticles]
+              .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+              .map((article) => renderArticleCard(article))}
+          </Box>
+        )}
+      </Box>
+    )
+  }
 
   // Render Feeds View
   const renderFeeds = () => (
@@ -508,84 +679,94 @@ function App() {
   )
 
   // Render Articles View
-  const renderArticles = () => (
-    <Box>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: 600 }}>
-        Alle Artikel ({articles.length})
-      </Typography>
+  const renderArticles = () => {
+    const articlesList = getFilteredArticles(articlesFilter, filteredArticles)
 
-      {loading ? (
-        <Grid container spacing={3}>
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Grid item xs={12} sm={6} key={i}>
-              <Card sx={{ height: 400 }}>
-                <Skeleton variant="rectangular" height={200} />
-                <CardContent>
-                  <Skeleton variant="text" height={32} />
-                  <Skeleton variant="text" height={60} />
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      ) : (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
-          {[...filteredArticles]
-            .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
-            .map((article) => (
-              <Card
-                key={article.id}
-                sx={{
-                  width: 480,
-                  height: 400,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: 6,
-                  },
-                }}
-              >
-                <CardMedia
-                  component="img"
-                  height="200"
-                  image={article.imageUrl || PLACEHOLDER_IMAGE}
-                  alt={article.title}
-                  sx={{ objectFit: 'cover' }}
-                />
-                <CardContent sx={{ flexGrow: 1, overflow: 'hidden' }}>
-                  <Chip
-                    size="small"
-                    label={article.feedName || 'News'}
-                    color="primary"
-                    sx={{ mb: 1 }}
-                  />
-                  <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 600, mb: 1, lineHeight: 1.3 }}>
-                    {article.title}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1, height: 60, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
-                    {article.description?.substring(0, 100) || 'Keine Beschreibung verfügbar'}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {new Date(article.publishedAt).toLocaleDateString('de-DE', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })}
-                  </Typography>
-                </CardContent>
-                <CardActions>
-                  <Button size="small" startIcon={<LaunchIcon />} onClick={() => window.open(article.url, '_blank')}>
-                    Lesen
-                  </Button>
-                </CardActions>
-              </Card>
-            ))}
+    return (
+      <Box>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h4" sx={{ fontWeight: 600 }}>
+            Alle Artikel ({articlesList.length})
+          </Typography>
+          <ToggleButtonGroup
+            value={articlesFilter}
+            exclusive
+            onChange={(_, value) => value && setArticlesFilter(value)}
+            size="small"
+          >
+            <ToggleButton value="all">Alle</ToggleButton>
+            <ToggleButton value="unread">Ungelesen</ToggleButton>
+            <ToggleButton value="favorites">Favoriten</ToggleButton>
+          </ToggleButtonGroup>
         </Box>
-      )}
-    </Box>
-  )
+
+        {loading ? (
+          <Grid container spacing={3}>
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Grid item xs={12} sm={6} key={i}>
+                <Card sx={{ height: 420 }}>
+                  <Skeleton variant="rectangular" height={200} />
+                  <CardContent>
+                    <Skeleton variant="text" height={32} />
+                    <Skeleton variant="text" height={60} />
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        ) : articlesList.length === 0 ? (
+          <Alert severity="info">
+            Keine Artikel gefunden für den aktuellen Filter.
+          </Alert>
+        ) : (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
+            {[...articlesList]
+              .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+              .map((article) => renderArticleCard(article))}
+          </Box>
+        )}
+      </Box>
+    )
+  }
+
+  // Render Favorites View
+  const renderFavorites = () => {
+    const favoriteArticles = filteredArticles.filter(a => articleStatuses[a.id]?.isFavorite)
+
+    return (
+      <Box>
+        <Typography variant="h4" sx={{ mb: 3, fontWeight: 600 }}>
+          Favoriten ({favoriteArticles.length})
+        </Typography>
+
+        {loading ? (
+          <Grid container spacing={3}>
+            {[1, 2, 3, 4].map((i) => (
+              <Grid item xs={12} sm={6} key={i}>
+                <Card sx={{ height: 420 }}>
+                  <Skeleton variant="rectangular" height={200} />
+                  <CardContent>
+                    <Skeleton variant="text" height={32} />
+                    <Skeleton variant="text" height={60} />
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        ) : favoriteArticles.length === 0 ? (
+          <Alert severity="info">
+            Noch keine Favoriten. Klicke auf das Bookmark-Symbol bei einem Artikel, um ihn zu den Favoriten hinzuzufügen.
+          </Alert>
+        ) : (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
+            {[...favoriteArticles]
+              .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+              .map((article) => renderArticleCard(article))}
+          </Box>
+        )}
+      </Box>
+    )
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -691,6 +872,7 @@ function App() {
             {activeView === 'dashboard' && renderDashboard()}
             {activeView === 'feeds' && renderFeeds()}
             {activeView === 'articles' && renderArticles()}
+            {activeView === 'favorites' && renderFavorites()}
           </Container>
         </Box>
 
