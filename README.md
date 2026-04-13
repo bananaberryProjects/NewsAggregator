@@ -1,6 +1,6 @@
 # 📰 News Aggregator
 
-Ein Spring Boot basiertes News-Aggregationssystem mit hexagonaler Architektur, PostgreSQL-Datenbank und **React Frontend**.
+Ein Spring Boot basiertes News-Aggregationssystem mit hexagonaler Architektur, PostgreSQL-Datenbank und **React + Material UI Frontend**.
 
 ## 🏗️ Architektur
 
@@ -18,12 +18,10 @@ news-aggregator/
 │   └── src/main/resources/
 │       └── application.yml    # Database config
 │
-└── frontend/                   # React + TypeScript
+└── frontend/                   # React + TypeScript + Material UI
     ├── src/
-    │   ├── components/        # React Components (FeedCard, ArticleCard)
-    │   ├── pages/             # Page Components (FeedsPage, ArticlesPage)
-    │   ├── api/               # API Client (Axios)
-    │   └── types/             # TypeScript Interfaces
+    │   ├── api/               # API Client
+    │   └── App.tsx            # Main App Component
     └── package.json
 ```
 
@@ -49,38 +47,43 @@ java -jar target/news-aggregator-1.0.0.jar --spring.profiles.active=prod
 
 **API läuft auf:** `http://localhost:8080`
 
-### Frontend (React)
+### Frontend (React + Material UI)
 
 ```bash
 cd /config/workspace/projects/java/news-aggregator/frontend
 
-# Dependencies installieren (nur erstmalig)
-npm install
-
 # Entwicklungsserver starten
-npm run dev
+npx vite --host 0.0.0.0
 ```
 
 **Frontend läuft auf:** `http://localhost:5173`
 
-## 📚 Features
+**Zugriff via Code-Server:** `http://mac-mini.local:5173/`
+
+## ✨ Features
 
 ### Backend
 - ✅ **REST API** - Vollständige CRUD-API für Feeds & Artikel
 - ✅ **PostgreSQL Datenbank** - Persistent, produktionsbereit
-- ✅ **CORS Support** - Für React Frontend-Zugriff
+- ✅ **CORS Support** - Für Frontend-Zugriff (localhost:5173, mac-mini.local:5173)
 - ✅ **RSS/Atom Feed Aggregation** - Automatisches Abrufen
 - ✅ **Media RSS Support** - Thumbnails aus `media:content`
 - ✅ **Lombok** - Boilerplate-Reduktion
 - ✅ **Hexagonale Architektur** - Clean Architecture
+- ✅ **Cascade Delete** - Löschen eines Feeds löscht alle Artikel
 
 ### Frontend
 - ✅ **React 19** mit TypeScript
 - ✅ **Vite** - Schnelles Build-Tool
-- ✅ **Tailwind CSS** - Modernes Styling
-- ✅ **React Router** - Client-Side Navigation
-- ✅ **Axios** - API-Client
-- ✅ **Responsive Design** - Mobile-freundlich
+- ✅ **Material UI (MUI)** - Modernes, responsives Design
+- ✅ **Sidebar Navigation** - Dashboard / Feeds / Artikel Views
+- ✅ **Feed Management** - Hinzufügen, Löschen, Aktualisieren
+- ✅ **Artikel-Übersicht** - Einheitliche Karten (480x400px)
+- ✅ **Suche** - Artikel durchsuchen
+- ✅ **Alphabetische Sortierung** - Feeds automatisch sortiert
+- ✅ **Scrollbar Feed-Liste** - Alle Feeds in Sidebar sichtbar
+- ✅ **Lokale Placeholder** - Keine externen Bild-Abhängigkeiten
+- ✅ **Dark/Light Mode** - Theme-Umschaltung
 
 ## 🔌 API Endpoints
 
@@ -96,10 +99,11 @@ npm run dev
 | GET | `/api/articles/search?query=...` | Artikel suchen |
 | GET | `/api/articles/feed/{feedId}` | Artikel eines Feeds |
 
-## 🖥️ Frontend Pages
+## 🖥️ Frontend Views
 
-- **`/`** - Artikel-Übersicht mit Suche
-- **`/feeds`** - Feed-Verwaltung (hinzufügen, löschen, aktualisieren)
+- **🏠 Dashboard** - Statistik-Karten + Neueste 10 Artikel
+- **📰 Feeds** - Alle Feeds mit Refresh/Delete-Buttons
+- **📄 Artikel** - Alle Artikel (unbegrenzt)
 
 ## 📖 Technologien
 
@@ -119,10 +123,8 @@ npm run dev
 | **Framework** | React 19 |
 | **Language** | TypeScript |
 | **Build Tool** | Vite |
-| **Styling** | Tailwind CSS |
-| **Routing** | React Router |
-| **HTTP Client** | Axios |
-| **Icons** | Lucide React |
+| **UI Library** | Material UI (MUI) |
+| **Icons** | Material Icons |
 
 ## 🗄️ Datenbank-Konfiguration
 
@@ -151,7 +153,7 @@ spring:
 
 ## 🔀 CORS Konfiguration
 
-Das Backend erlaubt Zugriff vom React Dev-Server:
+Das Backend erlaubt Zugriff vom Frontend:
 
 ```java
 @Configuration
@@ -159,8 +161,12 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:5173")
-                .allowedMethods("GET", "POST", "PUT", "DELETE")
+                .allowedOrigins(
+                    "http://localhost:5173",
+                    "http://mac-mini.local:5173"
+                )
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
                 .allowCredentials(true);
     }
 }
@@ -190,12 +196,27 @@ POSTGRES_PASSWORD=postgres
 
 ### Frontend (.env)
 ```
-VITE_API_URL=http://localhost:8080/api
+VITE_API_URL=/api
+```
+
+**Proxy-Konfiguration** (vite.config.ts):
+```typescript
+proxy: {
+  '/api': {
+    target: 'http://host.docker.internal:7443/proxy/8080',
+    changeOrigin: true,
+    secure: false
+  }
+}
 ```
 
 ## 🗺️ Roadmap
 
-Siehe [ROADMAP.md](ROADMAP.md) für geplante Features.
+- [ ] 🔖 Artikel als "gelesen" markieren
+- [ ] ⭐ Artikel favorisieren
+- [ ] 📱 PWA Support
+- [ ] 🔔 Push-Benachrichtigungen
+- [ ] 📊 Statistiken über Lesegewohnheiten
 
 ## 📄 Lizenz
 
