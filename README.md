@@ -71,19 +71,25 @@ npx vite --host 0.0.0.0
 - ✅ **Lombok** - Boilerplate-Reduktion
 - ✅ **Hexagonale Architektur** - Clean Architecture
 - ✅ **Cascade Delete** - Löschen eines Feeds löscht alle Artikel
+- ✅ **Artikel Status** - Lesen/Favoriten verwalten (PostgreSQL)
 
 ### Frontend
 - ✅ **React 19** mit TypeScript
 - ✅ **Vite** - Schnelles Build-Tool
 - ✅ **Material UI (MUI)** - Modernes, responsives Design
-- ✅ **Sidebar Navigation** - Dashboard / Feeds / Artikel Views
+- ✅ **Sidebar Navigation** - Dashboard / Feeds / Artikel / Favoriten
 - ✅ **Feed Management** - Hinzufügen, Löschen, Aktualisieren
 - ✅ **Artikel-Übersicht** - Einheitliche Karten (480x400px)
 - ✅ **Suche** - Artikel durchsuchen
+- ✅ **Filter** - Alle / Ungelesen / Favoriten
 - ✅ **Alphabetische Sortierung** - Feeds automatisch sortiert
 - ✅ **Scrollbar Feed-Liste** - Alle Feeds in Sidebar sichtbar
 - ✅ **Lokale Placeholder** - Keine externen Bild-Abhängigkeiten
 - ✅ **Dark/Light Mode** - Theme-Umschaltung
+- ✅ **Interaktive Icons** - Lesen/Gelesen markieren, Favoriten verwalten
+- ✅ **Datum-Anzeige** - In Artikel-Kacheln mit Kalender-Icon
+- ✅ **Dashboard-Limit** - Maximal 10 neueste Artikel, nach Datum sortiert
+- ✅ **Verbesserte Textdarstellung** - Natürliche Beschreibungs-Umbrüche
 
 ## 🔌 API Endpoints
 
@@ -98,12 +104,19 @@ npx vite --host 0.0.0.0
 | GET | `/api/articles/{id}` | Einzelnen Artikel anzeigen |
 | GET | `/api/articles/search?query=...` | Artikel suchen |
 | GET | `/api/articles/feed/{feedId}` | Artikel eines Feeds |
+| POST | `/api/articles/{id}/read` | Als gelesen markieren |
+| POST | `/api/articles/{id}/unread` | Als ungelesen markieren |
+| POST | `/api/articles/{id}/favorite` | Favorit toggeln |
+| GET | `/api/articles/{id}/status` | Status abrufen |
+| GET | `/api/articles/read` | Alle gelesenen Artikel |
+| GET | `/api/articles/favorites` | Alle Favoriten |
 
 ## 🖥️ Frontend Views
 
-- **🏠 Dashboard** - Statistik-Karten + Neueste 10 Artikel
+- **🏠 Dashboard** - Statistik-Karten + Neueste 10 Artikel mit Filter (Alle/Ungelesen/Favoriten)
 - **📰 Feeds** - Alle Feeds mit Refresh/Delete-Buttons
-- **📄 Artikel** - Alle Artikel (unbegrenzt)
+- **📄 Artikel** - Alle Artikel mit Filter (Alle/Ungelesen/Favoriten) + Interaktions-Icons
+- **⭐ Favoriten** - Alle als Favorit markierte Artikel
 
 ## 📖 Technologien
 
@@ -125,6 +138,42 @@ npx vite --host 0.0.0.0
 | **Build Tool** | Vite |
 | **UI Library** | Material UI (MUI) |
 | **Icons** | Material Icons |
+
+## 🗄️ Datenbank-Struktur
+
+### Tabellen
+
+**feeds** - RSS/Atom Feeds
+| Feld | Typ | Beschreibung |
+|------|-----|--------------|
+| id | BIGINT PK | Eindeutige ID |
+| name | VARCHAR | Feed-Name |
+| url | VARCHAR | Feed-URL |
+| description | VARCHAR | Beschreibung |
+| image_url | VARCHAR | Feed-Logo |
+| created_at | TIMESTAMP | Erstellungsdatum |
+
+**articles** - Artikel aus Feeds
+| Feld | Typ | Beschreibung |
+|------|-----|--------------|
+| id | BIGINT PK | Eindeutige ID |
+| title | VARCHAR | Artikel-Titel |
+| description | TEXT | Artikel-Text |
+| link | VARCHAR | Original-URL |
+| image_url | VARCHAR | Thumbnail |
+| published_at | TIMESTAMP | Veröffentlichung |
+| feed_id | BIGINT FK | Referenz zu Feed |
+
+**article_read_status** - Lesen/Favoriten Status
+| Feld | Typ | Beschreibung |
+|------|-----|--------------|
+| id | BIGINT PK | Eindeutige ID |
+| article_id | BIGINT FK | Referenz zu Artikel |
+| user_id | VARCHAR | User-ID (für Multi-User) |
+| is_read | BOOLEAN | Gelesen? |
+| is_favorite | BOOLEAN | Favorit? |
+| read_at | TIMESTAMP | Wann gelesen |
+| favorited_at | TIMESTAMP | Wann favorisiert |
 
 ## 🗄️ Datenbank-Konfiguration
 
@@ -212,11 +261,14 @@ proxy: {
 
 ## 🗺️ Roadmap
 
-- [ ] 🔖 Artikel als "gelesen" markieren
-- [ ] ⭐ Artikel favorisieren
+- [x] 🔖 Artikel als "gelesen" markieren
+- [x] ⭐ Artikel favorisieren
+- [x] 🔍 Filter (Alle / Ungelesen / Favoriten)
 - [ ] 📱 PWA Support
 - [ ] 🔔 Push-Benachrichtigungen
 - [ ] 📊 Statistiken über Lesegewohnheiten
+- [ ] 🏷️ Tags / Kategorien für Feeds
+- [ ] 📤 OPML Import/Export
 
 ## 📄 Lizenz
 

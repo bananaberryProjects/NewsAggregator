@@ -14,7 +14,8 @@ server:
 
 logging:
   level:
-    com.newsaggregator: DEBUG
+    com:
+      newsaggregator: DEBUG
 
 ---
 # Dev-Profil: H2 In-Memory
