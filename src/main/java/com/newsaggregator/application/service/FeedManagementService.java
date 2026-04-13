@@ -85,7 +85,6 @@ public class FeedManagementService implements AddFeedUseCase, GetAllFeedsUseCase
     @Transactional(readOnly = true)
     public List<Feed> getActiveFeeds() {
         logger.debug("Rufe aktive Feeds ab");
-        // TODO: Filter nach Status in Repository implementieren
         return feedRepository.findAll().stream()
                 .filter(feed -> feed.getStatus() == com.newsaggregator.domain.model.FeedStatus.ACTIVE)
                 .collect(Collectors.toList());
