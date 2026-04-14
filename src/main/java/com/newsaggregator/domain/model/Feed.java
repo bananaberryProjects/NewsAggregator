@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Domain Entity für Feed.
@@ -28,6 +30,7 @@ public class Feed {
     private LocalDateTime lastFetched;
     private FeedStatus status;
     private final Set<Article> articles;
+    private final List<CategoryId> categoryIds;
 
     /**
      * Factory-Methode für neue Feeds (ohne ID - wird von Repository vergeben).
@@ -54,6 +57,7 @@ public class Feed {
         this.lastFetched = lastFetched;
         this.status = Objects.requireNonNull(status, "status darf nicht null sein");
         this.articles = new HashSet<>();
+        this.categoryIds = new ArrayList<>();
     }
 
     // ==================== Validierung ====================
@@ -166,6 +170,29 @@ public class Feed {
 
     public Set<Article> getArticles() {
         return Collections.unmodifiableSet(articles);
+    }
+
+    public List<CategoryId> getCategoryIds() {
+        return Collections.unmodifiableList(categoryIds);
+    }
+
+    public void addCategory(CategoryId categoryId) {
+        Objects.requireNonNull(categoryId, "categoryId darf nicht null sein");
+        if (!this.categoryIds.contains(categoryId)) {
+            this.categoryIds.add(categoryId);
+        }
+    }
+
+    public void removeCategory(CategoryId categoryId) {
+        Objects.requireNonNull(categoryId, "categoryId darf nicht null sein");
+        this.categoryIds.remove(categoryId);
+    }
+
+    public void setCategories(List<CategoryId> categoryIds) {
+        this.categoryIds.clear();
+        if (categoryIds != null) {
+            this.categoryIds.addAll(categoryIds);
+        }
     }
 
     // ==================== Objekt-Methoden ====================

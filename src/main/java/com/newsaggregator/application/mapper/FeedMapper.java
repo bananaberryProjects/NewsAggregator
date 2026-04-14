@@ -5,6 +5,9 @@ import com.newsaggregator.domain.model.Feed;
 import com.newsaggregator.infrastructure.adapter.persistence.repository.ArticleJpaRepository;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * Mapper für die Konvertierung zwischen Feed (Domain) und FeedDto.
  */
@@ -31,6 +34,13 @@ public class FeedMapper {
             articleCount = (int) articleJpaRepository.countByFeedId(feed.getId().getValue());
         }
 
+        // Kategorien als Strings
+        List<String> categoryIds = feed.getCategoryIds() != null
+                ? feed.getCategoryIds().stream()
+                    .map(catId -> catId.getValue().toString())
+                    .collect(Collectors.toList())
+                : List.of();
+
         return FeedDto.builder()
                 .id(feed.getId() != null ? feed.getId().getValue() : null)
                 .name(feed.getName())
@@ -40,6 +50,7 @@ public class FeedMapper {
                 .createdAt(feed.getCreatedAt())
                 .status(feed.getStatus() != null ? feed.getStatus().name() : null)
                 .articleCount(articleCount)
+                .categoryIds(categoryIds)
                 .build();
     }
 }

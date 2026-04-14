@@ -4,8 +4,10 @@ import com.newsaggregator.domain.model.Feed;
 import com.newsaggregator.domain.model.FeedId;
 import com.newsaggregator.domain.port.out.FeedRepository;
 import com.newsaggregator.infrastructure.adapter.persistence.entity.FeedJpaEntity;
+import com.newsaggregator.infrastructure.adapter.persistence.entity.CategoryEntity;
 import com.newsaggregator.infrastructure.adapter.persistence.mapper.FeedPersistenceMapper;
 import com.newsaggregator.infrastructure.adapter.persistence.repository.FeedJpaRepository;
+import com.newsaggregator.infrastructure.adapter.persistence.repository.CategoryJpaRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,11 +26,14 @@ import java.util.stream.Collectors;
 public class FeedRepositoryAdapter implements FeedRepository {
 
     private final FeedJpaRepository jpaRepository;
+    private final CategoryJpaRepository categoryJpaRepository;
     private final FeedPersistenceMapper mapper;
 
     public FeedRepositoryAdapter(FeedJpaRepository jpaRepository,
+                                  CategoryJpaRepository categoryJpaRepository,
                                   FeedPersistenceMapper mapper) {
         this.jpaRepository = jpaRepository;
+        this.categoryJpaRepository = categoryJpaRepository;
         this.mapper = mapper;
     }
 
@@ -52,6 +57,17 @@ public class FeedRepositoryAdapter implements FeedRepository {
             entity = mapper.toJpaEntity(feed);
         }
 
+        // Kategorien aktualisieren
+        if (feed.getCategoryIds() != null && !feed.getCategoryIds().isEmpty()) {
+            List<CategoryEntity> categories = feed.getCategoryIds().stream()
+                    .map(catId -> categoryJpaRepository.findById(catId.getValue()).orElse(null))
+                    .filter(cat -> cat != null)
+                    .collect(Collectors.toList());
+            entity.setCategories(categories);
+        } else {
+            entity.getCategories().clear();
+        }
+
         FeedJpaEntity saved = jpaRepository.save(entity);
         return mapper.toDomain(saved);
     }
@@ -67,7 +83,7 @@ public class FeedRepositoryAdapter implements FeedRepository {
     @Override
     @Transactional(readOnly = true)
     public List<Feed> findAll() {
-        return jpaRepository.findAll().stream()
+        return jpaRepository.findAllWithCategories().stream()
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
     }

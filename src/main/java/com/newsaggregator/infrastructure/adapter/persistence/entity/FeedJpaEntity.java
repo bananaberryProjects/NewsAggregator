@@ -51,6 +51,14 @@ public class FeedJpaEntity {
     @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ArticleJpaEntity> articles = new ArrayList<>();
 
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "feed_categories",
+        joinColumns = @JoinColumn(name = "feed_id"),
+        inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private List<CategoryEntity> categories = new ArrayList<>();
+
     public enum FeedStatus {
         ACTIVE, ERROR, DISABLED
     }

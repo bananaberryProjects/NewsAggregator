@@ -8,6 +8,7 @@ import com.newsaggregator.infrastructure.adapter.persistence.adapter.FeedReposit
 import com.newsaggregator.infrastructure.adapter.persistence.mapper.ArticlePersistenceMapper;
 import com.newsaggregator.infrastructure.adapter.persistence.mapper.FeedPersistenceMapper;
 import com.newsaggregator.infrastructure.adapter.persistence.repository.ArticleJpaRepository;
+import com.newsaggregator.infrastructure.adapter.persistence.repository.CategoryJpaRepository;
 import com.newsaggregator.infrastructure.adapter.persistence.repository.FeedJpaRepository;
 import com.newsaggregator.infrastructure.adapter.rss.RssFeedReaderAdapter;
 import org.springframework.context.annotation.Bean;
@@ -29,8 +30,9 @@ public class BeanConfig {
     @Bean
     public FeedRepository feedRepository(
             FeedJpaRepository jpaRepository,
+            CategoryJpaRepository categoryJpaRepository,
             FeedPersistenceMapper mapper) {
-        return new FeedRepositoryAdapter(jpaRepository, mapper);
+        return new FeedRepositoryAdapter(jpaRepository, categoryJpaRepository, mapper);
     }
 
     @Bean

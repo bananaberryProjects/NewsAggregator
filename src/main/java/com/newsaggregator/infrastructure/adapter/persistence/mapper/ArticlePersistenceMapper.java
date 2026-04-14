@@ -94,7 +94,7 @@ public class ArticlePersistenceMapper {
 
         // Minimaler Feed mit nur ID und URL (keine Articles, um Rekursion zu vermeiden)
         java.time.LocalDateTime now = java.time.LocalDateTime.now();
-        return com.newsaggregator.domain.model.Feed.of(
+        var feed = com.newsaggregator.domain.model.Feed.of(
                 com.newsaggregator.domain.model.FeedId.of(feedEntity.getId()),
                 feedEntity.getName(),
                 feedEntity.getUrl(),
@@ -103,6 +103,16 @@ public class ArticlePersistenceMapper {
                 feedEntity.getLastFetched(),
                 mapStatus(feedEntity.getStatus())
         );
+
+        // Kategorien hinzufügen
+        if (feedEntity.getCategories() != null) {
+            var categoryIds = feedEntity.getCategories().stream()
+                    .map(cat -> com.newsaggregator.domain.model.CategoryId.of(cat.getId().toString()))
+                    .toList();
+            feed.setCategories(categoryIds);
+        }
+
+        return feed;
     }
 
     private com.newsaggregator.domain.model.FeedStatus mapStatus(FeedJpaEntity.FeedStatus status) {

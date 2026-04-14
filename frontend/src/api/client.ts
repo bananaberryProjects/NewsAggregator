@@ -8,6 +8,7 @@ export interface Feed {
   imageUrl: string | null;
   articleCount: number;
   lastFetchedAt: string | null;
+  categoryIds?: string[];
 }
 
 export interface Article {
@@ -18,6 +19,7 @@ export interface Article {
   imageUrl: string | null;
   publishedAt: string;
   feedName: string;
+  categoryIds?: string[];
 }
 
 export interface ArticleReadStatus {
@@ -33,6 +35,13 @@ export interface ArticleReadStatus {
 export interface ArticleStatus {
   isRead: boolean;
   isFavorite: boolean;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  color: string;
+  icon: string;
 }
 
 async function fetchApi<T>(path: string, options?: RequestInit): Promise<T> {
@@ -85,4 +94,19 @@ export const articlesApi = {
   getStatus: (id: string) => fetchApi<ArticleStatus>(`/articles/${id}/status`),
   getReadArticles: () => fetchApi<ArticleReadStatus[]>('/articles/read'),
   getFavoriteArticles: () => fetchApi<ArticleReadStatus[]>('/articles/favorites'),
+};
+
+export const categoriesApi = {
+  getAll: () => fetchApi<Category[]>('/categories'),
+  create: (category: { name: string; color?: string; icon?: string }) => 
+    fetchApi<Category>('/categories', { method: 'POST', body: JSON.stringify(category) }),
+  delete: (id: string) => fetchApi<void>(`/categories/${id}`, { method: 'DELETE' }),
+};
+
+export const feedCategoriesApi = {
+  assign: (feedId: string, categoryIds: string[]) =>
+    fetchApi<void>(`/feeds/${feedId}/categories`, { 
+      method: 'PUT', 
+      body: JSON.stringify({ categoryIds }) 
+    }),
 };
