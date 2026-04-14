@@ -31,7 +31,7 @@ news-aggregator/
 
 ```bash
 # Verbinden
-sshpass -p "password" ssh -p 2222 abc@host.docker.internal
+sshpass -p "password" ssh -p 2222 coder@host.docker.internal
 cd /config/workspace/projects/java/news-aggregator
 
 # Bauen
