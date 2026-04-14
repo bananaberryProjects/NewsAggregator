@@ -81,11 +81,10 @@ function App() {
   const [addError, setAddError] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
   const [refreshingFeedId, setRefreshingFeedId] = useState<string | null>(null)
-  const [refreshError, setRefreshError] = useState<string | null>(null)
   const [activeView, setActiveView] = useState<'dashboard' | 'feeds' | 'articles' | 'favorites'>('dashboard')
 
   // Zusätzliche States für Artikel-Status
-  const [articleStatuses, setArticleStatuses] = useState<Record<string, { isRead: boolean; isFavorite: boolean }>>({})
+  const [articleStatuses, setArticleStatuses] = useState<Record<string, { isRead?: boolean; isFavorite?: boolean }>>({})
   const [updatingArticleId, setUpdatingArticleId] = useState<string | null>(null)
   const [dashboardFilter, setDashboardFilter] = useState<'all' | 'unread' | 'favorites'>('all')
   const [articlesFilter, setArticlesFilter] = useState<'all' | 'unread' | 'favorites'>('all')
@@ -123,7 +122,7 @@ function App() {
       setArticles(articlesData)
       
       // Status-Map aus API-Antworten aufbauen
-      const statusMap = {}
+      const statusMap: Record<string, { isRead?: boolean; isFavorite?: boolean }> = {}
       readStatuses.forEach((status) => {
         statusMap[status.articleId] = { ...statusMap[status.articleId], isRead: true }
       })
@@ -217,7 +216,6 @@ function App() {
   const handleRefreshFeed = async (feed: Feed) => {
     try {
       setRefreshingFeedId(feed.id)
-      setRefreshError(null)
       
       console.log('Refreshing feed:', feed.id, feed.name)
       await feedsApi.fetchArticles(feed.id)
@@ -226,7 +224,6 @@ function App() {
       await loadData()
     } catch (err) {
       console.error('Refresh error:', err)
-      setRefreshError(err instanceof Error ? err.message : 'Fehler beim Aktualisieren des Feeds')
       alert('Fehler beim Aktualisieren: ' + (err instanceof Error ? err.message : 'Unbekannter Fehler'))
     } finally {
       setRefreshingFeedId(null)
@@ -511,7 +508,7 @@ function App() {
       <Box>
         {/* Stats Cards */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Paper elevation={2} sx={{ p: 2, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <FeedIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8 }} />
@@ -524,7 +521,7 @@ function App() {
               </Box>
             </Paper>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Paper elevation={2} sx={{ p: 2, background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white' }}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <ArticleIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8 }} />
@@ -537,7 +534,7 @@ function App() {
               </Box>
             </Paper>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Paper elevation={2} sx={{ p: 2, background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', color: 'white' }}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <ComputerIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8 }} />
@@ -550,7 +547,7 @@ function App() {
               </Box>
             </Paper>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Paper elevation={2} sx={{ p: 2, background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', color: 'white' }}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <TrendingUpIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8 }} />
@@ -592,7 +589,7 @@ function App() {
         {loading ? (
           <Grid container spacing={3}>
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Grid item xs={12} sm={6} key={i}>
+              <Grid size={{ xs: 12, sm: 6 }} key={i}>
                 <Card sx={{ height: 420 }}>
                   <Skeleton variant="rectangular" height={200} />
                   <CardContent>
@@ -628,7 +625,7 @@ function App() {
       {loading ? (
         <Grid container spacing={3}>
           {[1, 2, 3, 4].map((i) => (
-            <Grid item xs={12} sm={6} key={i}>
+            <Grid size={{ xs: 12, sm: 6 }} key={i}>
               <Card sx={{ height: 150 }}>
                 <Skeleton variant="rectangular" height={150} />
               </Card>
@@ -638,7 +635,7 @@ function App() {
       ) : (
         <Grid container spacing={3}>
           {feeds.sort((a, b) => a.name.localeCompare(b.name)).map((feed) => (
-            <Grid item xs={12} sm={6} key={feed.id}>
+            <Grid size={{ xs: 12, sm: 6 }} key={feed.id}>
               <Card sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
                 <Avatar sx={{ width: 56, height: 56, mr: 2, bgcolor: 'primary.main' }}>
                   {feed.name.charAt(0)}
@@ -703,7 +700,7 @@ function App() {
         {loading ? (
           <Grid container spacing={3}>
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Grid item xs={12} sm={6} key={i}>
+              <Grid size={{ xs: 12, sm: 6 }} key={i}>
                 <Card sx={{ height: 420 }}>
                   <Skeleton variant="rectangular" height={200} />
                   <CardContent>
@@ -742,7 +739,7 @@ function App() {
         {loading ? (
           <Grid container spacing={3}>
             {[1, 2, 3, 4].map((i) => (
-              <Grid item xs={12} sm={6} key={i}>
+              <Grid size={{ xs: 12, sm: 6 }} key={i}>
                 <Card sx={{ height: 420 }}>
                   <Skeleton variant="rectangular" height={200} />
                   <CardContent>
@@ -809,12 +806,14 @@ function App() {
                   '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
                 },
               }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon sx={{ color: 'rgba(255,255,255,0.7)' }} />
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: 'rgba(255,255,255,0.7)' }} />
+                    </InputAdornment>
+                  ),
+                },
               }}
             />
 
