@@ -72,12 +72,15 @@ npx vite --host 0.0.0.0
 - ✅ **Hexagonale Architektur** - Clean Architecture
 - ✅ **Cascade Delete** - Löschen eines Feeds löscht alle Artikel
 - ✅ **Artikel Status** - Lesen/Favoriten verwalten (PostgreSQL)
+- ✅ **Statistiken API** - Lesegewohnheiten mit /api/stats
 
 ### Frontend
 - ✅ **React 19** mit TypeScript
 - ✅ **Vite** - Schnelles Build-Tool
 - ✅ **Material UI (MUI)** - Modernes, responsives Design
-- ✅ **Sidebar Navigation** - Dashboard / Feeds / Artikel / Favoriten
+- ✅ **Recharts** - Interaktive Charts für Statistiken
+- ✅ **Einheitliche Icons** - Herz-Icon für Favoriten überall
+- ✅ **Sidebar Navigation** - Dashboard / Feeds / Artikel / Favoriten / Statistiken
 - ✅ **Feed Management** - Hinzufügen, Löschen, Aktualisieren
 - ✅ **Artikel-Übersicht** - Einheitliche Karten (480x400px)
 - ✅ **Suche** - Artikel durchsuchen
@@ -110,6 +113,7 @@ npx vite --host 0.0.0.0
 | GET | `/api/articles/{id}/status` | Status abrufen |
 | GET | `/api/articles/read` | Alle gelesenen Artikel |
 | GET | `/api/articles/favorites` | Alle Favoriten |
+| GET | `/api/stats` | Lesestatistiken (Gesamt, pro Tag, pro Feed) |
 
 ## 🖥️ Frontend Views
 
@@ -117,6 +121,7 @@ npx vite --host 0.0.0.0
 - **📰 Feeds** - Alle Feeds mit Refresh/Delete-Buttons
 - **📄 Artikel** - Alle Artikel mit Filter (Alle/Ungelesen/Favoriten) + Interaktions-Icons
 - **⭐ Favoriten** - Alle als Favorit markierte Artikel
+- **📊 Statistiken** - Lesegewohnheiten mit Charts (Artikel/Tag, pro Feed, Gelesen/Ungelesen)
 
 ## 📖 Technologien
 
@@ -137,6 +142,7 @@ npx vite --host 0.0.0.0
 | **Language** | TypeScript |
 | **Build Tool** | Vite |
 | **UI Library** | Material UI (MUI) |
+| **Charts** | Recharts |
 | **Icons** | Material Icons |
 
 ## 🗄️ Datenbank-Struktur
@@ -264,9 +270,9 @@ proxy: {
 - [x] 🔖 Artikel als "gelesen" markieren
 - [x] ⭐ Artikel favorisieren
 - [x] 🔍 Filter (Alle / Ungelesen / Favoriten)
+- [x] 📊 Statistiken über Lesegewohnheiten
 - [ ] 📱 PWA Support
 - [ ] 🔔 Push-Benachrichtigungen
-- [ ] 📊 Statistiken über Lesegewohnheiten
 - [ ] 🏷️ Tags / Kategorien für Feeds
 - [ ] 📤 OPML Import/Export
 
