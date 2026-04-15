@@ -13,8 +13,8 @@ import {
 import {
   Launch as LaunchIcon,
   CalendarToday as CalendarTodayIcon,
-  Bookmark as BookmarkIcon,
-  BookmarkBorder as BookmarkBorderIcon,
+  Favorite as FavoriteIcon,
+  FavoriteBorder as FavoriteBorderIcon,
   Visibility as VisibilityIcon,
   VisibilityOff as VisibilityOffIcon,
   CheckCircle as CheckCircleIcon,
@@ -138,9 +138,9 @@ export function ArticleCard({
             {updating ? (
               <CircularProgress size={20} />
             ) : isFavorite ? (
-              <BookmarkIcon color="secondary" />
+              <FavoriteIcon color="error" />
             ) : (
-              <BookmarkBorderIcon color="action" />
+              <FavoriteBorderIcon color="action" />
             )}
           </IconButton>
         </Box>

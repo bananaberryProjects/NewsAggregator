@@ -16,7 +16,7 @@ import {
   RssFeed as FeedIcon,
   Article as ArticleIcon,
   Newspaper as NewspaperIcon,
-  Bookmark as BookmarkIcon,
+  Favorite as FavoriteIcon,
   Label as LabelIcon,
   Refresh as RefreshIcon,
   Delete as DeleteIcon,
@@ -99,7 +99,7 @@ export function Sidebar({
         <ListItem disablePadding>
           <ListItemButton selected={activeView === 'favorites'} onClick={() => setActiveView('favorites')}>
             <ListItemIcon>
-              <BookmarkIcon />
+              <FavoriteIcon />
             </ListItemIcon>
             <ListItemText primary="Favoriten" />
             <Chip size="small" label={favoriteCount} color="secondary" />
