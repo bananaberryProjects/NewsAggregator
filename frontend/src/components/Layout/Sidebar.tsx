@@ -20,6 +20,7 @@ import {
   Label as LabelIcon,
   Refresh as RefreshIcon,
   Delete as DeleteIcon,
+  Assessment as AssessmentIcon,
 } from '@mui/icons-material'
 import type { Feed, Category } from '../../api/client'
 
@@ -29,7 +30,7 @@ interface SidebarProps {
   mobileOpen: boolean
   setMobileOpen: (open: boolean) => void
   activeView: string
-  setActiveView: (view: 'dashboard' | 'feeds' | 'articles' | 'favorites' | 'categories') => void
+  setActiveView: (view: 'dashboard' | 'feeds' | 'articles' | 'favorites' | 'categories' | 'statistics') => void
   feeds: Feed[]
   categories: Category[]
   articleCount: number
@@ -112,6 +113,15 @@ export function Sidebar({
             </ListItemIcon>
             <ListItemText primary="Kategorien" />
             <Chip size="small" label={categories.length} />
+          </ListItemButton>
+        </ListItem>
+        
+        <ListItem disablePadding>
+          <ListItemButton selected={activeView === 'statistics'} onClick={() => setActiveView('statistics')}>
+            <ListItemIcon>
+              <AssessmentIcon />
+            </ListItemIcon>
+            <ListItemText primary="Statistiken" />
           </ListItemButton>
         </ListItem>
       </List>

@@ -110,3 +110,30 @@ export const feedCategoriesApi = {
       body: JSON.stringify({ categoryIds }) 
     }),
 };
+
+// Statistiken
+export interface DailyStats {
+  date: string;
+  articleCount: number;
+  readCount: number;
+}
+
+export interface FeedStats {
+  feedName: string;
+  totalArticles: number;
+  readArticles: number;
+}
+
+export interface ReadingStatistics {
+  totalArticles: number;
+  readArticles: number;
+  unreadArticles: number;
+  favoriteArticles: number;
+  readPercentage: number;
+  articlesPerDay: DailyStats[];
+  articlesPerFeed: FeedStats[];
+}
+
+export const statisticsApi = {
+  getStatistics: () => fetchApi<ReadingStatistics>('/stats'),
+};
