@@ -100,7 +100,7 @@ export function DashboardView({
               <FavoriteIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8 }} />
               <Box>
                 <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                  {loading ? <Skeleton width={60} /> : articles.filter(a => articleStatuses[a.id]?.isFavorite).length}
+                  {loading ? <Skeleton width={60} /> : Object.values(articleStatuses).filter(s => s.isFavorite).length}
                 </Typography>
                 <Typography variant="body2">Favoriten</Typography>
               </Box>
