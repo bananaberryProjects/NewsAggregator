@@ -113,4 +113,29 @@ public class FeedManagementService implements AddFeedUseCase, GetAllFeedsUseCase
     public FeedDto getFeedByIdAsDto(Long id) {
         return feedMapper.toDto(getFeedById(id));
     }
+
+    // ==================== Kategorie-Management ====================
+
+    /**
+     * Weist einem Feed Kategorien zu.
+     */
+    public void assignCategoriesToFeed(Long feedId, List<String> categoryIds) {
+        logger.info("Weise Feed {} {} Kategorien zu", feedId, categoryIds.size());
+
+        Feed feed = feedRepository.findById(com.newsaggregator.domain.model.FeedId.of(feedId))
+                .orElseThrow(() -> new IllegalArgumentException("Feed nicht gefunden: " + feedId));
+
+        // Kategorien setzen (setCategories löscht bestehende und setzt neue)
+        if (categoryIds != null) {
+            List<com.newsaggregator.domain.model.CategoryId> cats = categoryIds.stream()
+                    .map(com.newsaggregator.domain.model.CategoryId::of)
+                    .collect(Collectors.toList());
+            feed.setCategories(cats);
+        } else {
+            feed.setCategories(List.of());
+        }
+
+        feedRepository.save(feed);
+        logger.info("Kategorien erfolgreich zugewiesen zu Feed: {}", feedId);
+    }
 }

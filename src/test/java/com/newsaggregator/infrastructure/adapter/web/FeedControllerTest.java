@@ -1,6 +1,7 @@
 package com.newsaggregator.infrastructure.adapter.web;
 
 import com.newsaggregator.application.mapper.FeedMapper;
+import com.newsaggregator.application.service.FeedManagementService;
 import com.newsaggregator.domain.model.Feed;
 import com.newsaggregator.domain.model.FeedId;
 import com.newsaggregator.domain.model.FeedStatus;
@@ -22,6 +23,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -55,6 +57,9 @@ class FeedControllerTest {
     @Mock
     private ArticleJpaRepository articleJpaRepository;
 
+@Mock
+    private FeedManagementService feedManagementService;
+
     private FeedMapper feedMapper;
 
     @BeforeEach
@@ -65,6 +70,7 @@ class FeedControllerTest {
                 getFeedByIdUseCase,
                 addFeedUseCase,
                 deleteFeedUseCase,
+                feedManagementService, 
                 fetchFeedUseCase,
                 feedMapper
         );

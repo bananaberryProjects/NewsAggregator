@@ -47,4 +47,12 @@ public interface ArticleJpaRepository extends JpaRepository<ArticleJpaEntity, Lo
      * @return Anzahl der Artikel
      */
     long countByFeedId(Long feedId);
+
+    /**
+     * Lädt alle Artikel mit Feed und Kategorien (Eager Loading).
+     *
+     * @return Liste aller Artikel mit Feed und Kategorien
+     */
+    @Query("SELECT DISTINCT a FROM ArticleJpaEntity a LEFT JOIN FETCH a.feed f LEFT JOIN FETCH f.categories")
+    List<ArticleJpaEntity> findAllWithFeedAndCategories();
 }

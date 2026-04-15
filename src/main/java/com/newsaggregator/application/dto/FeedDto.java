@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * DTO für Feed-Informationen.
@@ -27,5 +28,6 @@ public class FeedDto {
     private LocalDateTime createdAt;
     private String status;
     private int articleCount;
+    private List<String> categoryIds;
 
 }

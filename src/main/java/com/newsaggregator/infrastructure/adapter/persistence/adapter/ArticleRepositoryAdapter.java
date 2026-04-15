@@ -84,7 +84,7 @@ public class ArticleRepositoryAdapter implements ArticleRepository {
     @Override
     @Transactional(readOnly = true)
     public List<Article> findAll() {
-        return jpaRepository.findAll().stream()
+        return jpaRepository.findAllWithFeedAndCategories().stream()
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
     }

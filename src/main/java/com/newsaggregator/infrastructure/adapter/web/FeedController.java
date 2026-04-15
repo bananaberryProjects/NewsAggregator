@@ -1,6 +1,8 @@
 package com.newsaggregator.infrastructure.adapter.web;
 
 import com.newsaggregator.application.dto.AddFeedCommand;
+import com.newsaggregator.application.dto.AssignCategoriesCommand;
+import com.newsaggregator.application.service.FeedManagementService;
 import com.newsaggregator.application.dto.FeedDto;
 import com.newsaggregator.application.mapper.FeedMapper;
 import com.newsaggregator.domain.model.FeedId;
@@ -33,6 +35,7 @@ public class FeedController {
     private final GetFeedByIdUseCase getFeedByIdUseCase;
     private final AddFeedUseCase addFeedUseCase;
     private final DeleteFeedUseCase deleteFeedUseCase;
+    private final FeedManagementService feedManagementService;
     private final FetchFeedUseCase fetchFeedUseCase;
     private final FeedMapper feedMapper;
 
@@ -40,12 +43,14 @@ public class FeedController {
                           GetFeedByIdUseCase getFeedByIdUseCase,
                           AddFeedUseCase addFeedUseCase,
                           DeleteFeedUseCase deleteFeedUseCase,
+                          FeedManagementService feedManagementService,
                           FetchFeedUseCase fetchFeedUseCase,
                           FeedMapper feedMapper) {
         this.getAllFeedsUseCase = getAllFeedsUseCase;
         this.getFeedByIdUseCase = getFeedByIdUseCase;
         this.addFeedUseCase = addFeedUseCase;
         this.deleteFeedUseCase = deleteFeedUseCase;
+        this.feedManagementService = feedManagementService;
         this.fetchFeedUseCase = fetchFeedUseCase;
         this.feedMapper = feedMapper;
     }
@@ -108,6 +113,24 @@ public class FeedController {
         } catch (RuntimeException e) {
             logger.error("Fehler beim Abrufen des Feeds: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * Weist Kategorien zu.
+     */
+    @PutMapping("/{id}/categories")
+    public ResponseEntity<Void> assignCategories(
+            @PathVariable Long id,
+            @RequestBody AssignCategoriesCommand command) {
+        logger.info("PUT /api/feeds/{}/categories aufgerufen", id);
+        
+        try {
+            feedManagementService.assignCategoriesToFeed(id, command.categoryIds());
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            logger.warn("Feed nicht gefunden: {}", id);
+            return ResponseEntity.notFound().build();
         }
     }
 

@@ -1,22 +1,32 @@
 package com.newsaggregator.infrastructure.adapter.web;
 
-import com.newsaggregator.application.service.ArticleReadStatusService;
-import com.newsaggregator.infrastructure.adapter.persistence.entity.ArticleReadStatus;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.newsaggregator.application.service.ArticleReadStatusService;
+import com.newsaggregator.infrastructure.adapter.persistence.entity.ArticleReadStatus;
 
 @RestController
 @RequestMapping("/api/articles")
 @CrossOrigin(origins = {"http://localhost:5173", "http://mac-mini.local:5173"})
 public class ArticleReadStatusController {
 
-    @Autowired
     private ArticleReadStatusService service;
+
+    @Autowired
+    public void setService(ArticleReadStatusService service) {
+        this.service = service;
+    }
 
     @PostMapping("/{articleId}/read")
     public ResponseEntity<ArticleReadStatus> markAsRead(@PathVariable String articleId) {
