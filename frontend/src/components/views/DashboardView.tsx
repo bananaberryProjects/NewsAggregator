@@ -97,7 +97,7 @@ export function DashboardView({
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Paper elevation={2} sx={{ p: 2, background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', color: 'white' }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <FavoriteIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8, color: 'error.main' }} />
+              <FavoriteIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8 }} />
               <Box>
                 <Typography variant="h4" sx={{ fontWeight: 700 }}>
                   {loading ? <Skeleton width={60} /> : articles.filter(a => articleStatuses[a.id]?.isFavorite).length}
