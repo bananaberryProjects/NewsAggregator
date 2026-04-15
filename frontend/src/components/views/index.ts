@@ -1,0 +1,5 @@
+export { DashboardView } from './DashboardView'
+export { FeedsView } from './FeedsView'
+export { ArticlesView } from './ArticlesView'
+export { FavoritesView } from './FavoritesView'
+export { CategoriesView } from './CategoriesView'
