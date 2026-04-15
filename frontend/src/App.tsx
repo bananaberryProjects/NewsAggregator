@@ -9,7 +9,7 @@ import {
 import { Add as AddIcon } from '@mui/icons-material'
 import { useTheme, useFeeds, useArticles, useCategories } from './hooks'
 import { Sidebar } from './components'
-import { DashboardView, FeedsView, ArticlesView, FavoritesView, CategoriesView } from './components/views'
+import { DashboardView, FeedsView, ArticlesView, FavoritesView, CategoriesView, StatisticsView } from './components/views'
 import { AddFeedDialog, DeleteFeedDialog } from './components/dialogs'
 import type { Feed } from './api/client'
 
@@ -22,7 +22,7 @@ function App() {
   const { categories, loadCategories, deleteCategory } = useCategories()
 
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [activeView, setActiveView] = useState<'dashboard' | 'feeds' | 'articles' | 'favorites' | 'categories'>('dashboard')
+  const [activeView, setActiveView] = useState<'dashboard' | 'feeds' | 'articles' | 'favorites' | 'categories' | 'statistics'>('dashboard')
 
   // Filter states
   const [dashboardFilter, setDashboardFilter] = useState<'all' | 'unread' | 'favorites'>('all')
@@ -139,6 +139,8 @@ function App() {
             onDelete={deleteCategory}
           />
         )
+      case 'statistics':
+        return <StatisticsView />
       default:
         return null
     }

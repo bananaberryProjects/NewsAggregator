@@ -68,7 +68,7 @@ public class ArticleReadStatus {
 
     public void setRead(boolean read) {
         isRead = read;
-        if (read && this.readAt == null) {
+        if (read) {
             this.readAt = LocalDateTime.now();
         }
     }
