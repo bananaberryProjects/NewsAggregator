@@ -1,8 +1,31 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createTheme } from '@mui/material'
 
+const STORAGE_KEY = 'theme-preference'
+
+function getInitialTheme(): boolean {
+  if (typeof window === 'undefined') {
+    return true
+  }
+
+  const stored = localStorage.getItem(STORAGE_KEY)
+  if (stored !== null) {
+    return stored === 'dark'
+  }
+
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+}
+
 export function useTheme() {
-  const [isDark, setIsDark] = useState(true)
+  const [isDark, setIsDarkState] = useState(() => getInitialTheme())
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, isDark ? 'dark' : 'light')
+  }, [isDark])
+
+  const setIsDark = (value: boolean | ((prev: boolean) => boolean)) => {
+    setIsDarkState(value)
+  }
 
   const theme = createTheme({
     palette: {

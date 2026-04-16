@@ -16,7 +16,7 @@ import type { Feed } from './api/client'
 const drawerWidth = 280
 
 function App() {
-  const { theme } = useTheme()
+  const { theme, isDark, toggleTheme } = useTheme()
   const { feeds, loading: feedsLoading, error: feedsError, loadFeeds, addFeed, deleteFeed, refreshFeed } = useFeeds()
   const { articles, articleStatuses, loadArticles, toggleRead, toggleFavorite, updatingArticleId } = useArticles()
   const { categories, loadCategories, deleteCategory } = useCategories()
@@ -167,6 +167,8 @@ function App() {
             setDeleteDialogOpen(true)
           }}
           onAssignCategories={() => {}}
+          isDark={isDark}
+          onToggleTheme={toggleTheme}
         />
 
         <Box
