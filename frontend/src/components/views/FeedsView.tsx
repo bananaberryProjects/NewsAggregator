@@ -1,6 +1,9 @@
-import { Avatar, Box, Card, Grid, IconButton, Skeleton, Typography } from '@mui/material'
-import { Refresh as RefreshIcon, Delete as DeleteIcon } from '@mui/icons-material'
+import { Avatar, Box, Button, Card, Grid, IconButton, Skeleton, Typography } from '@mui/material'
+import { Refresh as RefreshIcon, Delete as DeleteIcon, UploadFile, Download } from '@mui/icons-material'
+import { useRef, useState } from 'react'
 import type { Feed } from '../../api/client'
+import { importOpml, exportOpml, downloadBlob } from '../../api/client'
+import { OpmlImportDialog } from '../OpmlImportDialog'
 
 interface FeedsViewProps {
   feeds: Feed[]
@@ -8,14 +11,80 @@ interface FeedsViewProps {
   refreshingFeedId: string | null
   onRefresh: (feed: Feed) => void
   onDelete: (feed: Feed) => void
+  onImportSuccess?: () => void
 }
 
-export function FeedsView({ feeds, loading, refreshingFeedId, onRefresh, onDelete }: FeedsViewProps) {
+export function FeedsView({ feeds, loading, refreshingFeedId, onRefresh, onDelete, onImportSuccess }: FeedsViewProps) {
+  const [importDialogOpen, setImportDialogOpen] = useState(false)
+  const [importing, setImporting] = useState(false)
+  const [exporting, setExporting] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      setImporting(true)
+      try {
+        await importOpml(file)
+        onImportSuccess?.()
+      } catch (error) {
+        console.error('Import failed:', error)
+      } finally {
+        setImporting(false)
+      }
+    }
+    event.target.value = ''
+  }
+
+  const handleExport = async () => {
+    setExporting(true)
+    try {
+      const blob = await exportOpml()
+      downloadBlob(blob, 'feeds.opml')
+    } catch (error) {
+      console.error('Export failed:', error)
+    } finally {
+      setExporting(false)
+    }
+  }
+
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: 600 }}>
-        Alle Feeds
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+        <Typography variant="h4" sx={{ fontWeight: 600 }}>
+          Alle Feeds
+        </Typography>
+        
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <input
+            type="file"
+            accept=".opml,.xml"
+            hidden
+            ref={fileInputRef}
+            onChange={handleFileChange}
+          />
+          <Button
+            variant="outlined"
+            startIcon={importing ? <Skeleton variant="circular" width={20} height={20} /> : <UploadFile />}
+            onClick={handleImportClick}
+            disabled={importing}
+          >
+            {importing ? 'Importiere...' : 'OPML Import'}
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={exporting ? <Skeleton variant="circular" width={20} height={20} /> : <Download />}
+            onClick={handleExport}
+            disabled={exporting}
+          >
+            {exporting ? 'Exportiere...' : 'OPML Export'}
+          </Button>
+        </Box>
+      </Box>
       
       {loading ? (
         <Grid container spacing={3}>
@@ -60,6 +129,15 @@ export function FeedsView({ feeds, loading, refreshingFeedId, onRefresh, onDelet
           ))}
         </Grid>
       )}
+
+      <OpmlImportDialog 
+        open={importDialogOpen} 
+        onClose={() => setImportDialogOpen(false)}
+        onImport={() => {
+          setImportDialogOpen(false)
+          onImportSuccess?.()
+        }}
+      />
     </Box>
   )
 }
