@@ -19,7 +19,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +57,7 @@ public class OpmlService {
             head.appendChild(title);
 
             Element dateCreated = doc.createElement("dateCreated");
-            dateCreated.setTextContent(LocalDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME));
+            dateCreated.setTextContent(ZonedDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME));
             head.appendChild(dateCreated);
 
             // Body element
