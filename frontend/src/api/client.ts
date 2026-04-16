@@ -97,7 +97,6 @@ export async function importOpml(file: File): Promise<OpmlImportResult> {
 export async function exportOpml(): Promise<Blob> {
   const response = await fetch(`${API_BASE_URL}/opml/export`, {
     method: 'GET',
-  });
     credentials: 'include',
   });
   
