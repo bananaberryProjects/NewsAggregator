@@ -7,8 +7,7 @@ import {
   Grid,
   Paper,
   CircularProgress,
-  Alert,
-  useTheme
+  Alert
 } from '@mui/material';
 import {
   BarChart,
@@ -34,6 +33,7 @@ import {
 import { statisticsApi, ReadingStatistics } from '../../api/client';
 
 const COLORS = ['#4CAF50', '#FF9800', '#F44336', '#2196F3', '#9C27B0'];
+// COLORS wird in Zukunft für Charts verwendet
 
 export default function StatisticsView() {
   const [stats, setStats] = useState<ReadingStatistics | null>(null);
