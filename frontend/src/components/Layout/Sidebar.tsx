@@ -23,6 +23,7 @@ import {
   Assessment as AssessmentIcon,
 } from '@mui/icons-material'
 import type { Feed, Category } from '../../api/client'
+import { ThemeToggleButton } from '../ThemeToggleButton'
 
 const drawerWidth = 280
 
@@ -39,6 +40,8 @@ interface SidebarProps {
   onRefreshFeed: (feed: Feed) => void
   onDeleteFeed: (feed: Feed) => void
   onAssignCategories: (feed: Feed) => void
+  isDark?: boolean
+  onToggleTheme?: () => void
 }
 
 export function Sidebar({
@@ -54,16 +57,23 @@ export function Sidebar({
   onRefreshFeed,
   onDeleteFeed,
   onAssignCategories,
+  isDark,
+  onToggleTheme,
 }: SidebarProps) {
   const drawer = (
     <Box sx={{ mt: 2 }}>
-      <Box sx={{ px: 2, mb: 3 }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
-          News Aggregator
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
-          Deine personalisierte News
-        </Typography>
+      <Box sx={{ px: 2, mb: 3, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <Box>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
+            News Aggregator
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Deine personalisierte News
+          </Typography>
+        </Box>
+        {isDark !== undefined && onToggleTheme && (
+          <ThemeToggleButton isDark={isDark} onToggle={onToggleTheme} />
+        )}
       </Box>
 
       <List>

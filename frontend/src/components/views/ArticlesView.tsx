@@ -1,4 +1,5 @@
 import { Box, Card, Chip, Skeleton, Typography, Alert } from '@mui/material'
+import { useEffect } from 'react'
 import { ArticleCard } from '../ArticleCard'
 import type { Article, Category } from '../../api/client'
 
@@ -29,6 +30,31 @@ export function ArticlesView({
   onToggleRead,
   onToggleFavorite,
 }: ArticlesViewProps) {
+  // Persist filter to localStorage on changes
+  useEffect(() => {
+    localStorage.setItem('articles-filter', articlesFilter)
+  }, [articlesFilter])
+
+  // Load category filter from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('articles-categories')
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved) as string[]
+        if (parsed.length > 0) {
+          onCategoryFilterChange(parsed)
+        }
+      } catch {
+        // Invalid JSON, ignore
+      }
+    }
+  }, [])
+
+  // Persist category filter to localStorage on changes
+  useEffect(() => {
+    localStorage.setItem('articles-categories', JSON.stringify(articlesCategoryFilter))
+  }, [articlesCategoryFilter])
+
   const getFilteredArticles = () => {
     let result = [...articles]
 

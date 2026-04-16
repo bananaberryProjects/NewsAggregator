@@ -1,4 +1,19 @@
 import { useState, useEffect, useMemo } from 'react'
+
+function getInitialFilterState(storageKey: string): 'all' | 'unread' | 'favorites' {
+  try {
+    const saved = localStorage.getItem(storageKey)
+    if (saved) {
+      const validFilters: Array<'all' | 'unread' | 'favorites'> = ['all', 'unread', 'favorites']
+      if (validFilters.includes(saved as 'all' | 'unread' | 'favorites')) {
+        return saved as 'all' | 'unread' | 'favorites'
+      }
+    }
+  } catch {
+    // localStorage nicht verfügbar, Fallback auf 'all'
+  }
+  return 'all'
+}
 import {
   ThemeProvider,
   CssBaseline,
@@ -16,7 +31,7 @@ import type { Feed } from './api/client'
 const drawerWidth = 280
 
 function App() {
-  const { theme } = useTheme()
+  const { theme, isDark, toggleTheme } = useTheme()
   const { feeds, loading: feedsLoading, error: feedsError, loadFeeds, addFeed, deleteFeed, refreshFeed } = useFeeds()
   const { articles, articleStatuses, loadArticles, toggleRead, toggleFavorite, updatingArticleId } = useArticles()
   const { categories, loadCategories, deleteCategory } = useCategories()
@@ -24,10 +39,10 @@ function App() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [activeView, setActiveView] = useState<'dashboard' | 'feeds' | 'articles' | 'favorites' | 'categories' | 'statistics'>('dashboard')
 
-  // Filter states
-  const [dashboardFilter, setDashboardFilter] = useState<'all' | 'unread' | 'favorites'>('all')
+  // Filter states - initial values from localStorage
+  const [dashboardFilter, setDashboardFilter] = useState<'all' | 'unread' | 'favorites'>(() => getInitialFilterState('dashboard-filter'))
   const [dashboardCategoryFilter, setDashboardCategoryFilter] = useState<string[]>([])
-  const [articlesFilter, setArticlesFilter] = useState<'all' | 'unread' | 'favorites'>('all')
+  const [articlesFilter, setArticlesFilter] = useState<'all' | 'unread' | 'favorites'>(() => getInitialFilterState('articles-filter'))
   const [articlesCategoryFilter, setArticlesCategoryFilter] = useState<string[]>([])
 
   // Dialog states
@@ -167,6 +182,8 @@ function App() {
             setDeleteDialogOpen(true)
           }}
           onAssignCategories={() => {}}
+          isDark={isDark}
+          onToggleTheme={toggleTheme}
         />
 
         <Box
