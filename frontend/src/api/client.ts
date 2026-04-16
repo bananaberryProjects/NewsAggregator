@@ -80,7 +80,7 @@ export async function importOpml(file: File): Promise<OpmlImportResult> {
   const formData = new FormData();
   formData.append('file', file);
   
-  const response = await fetch(`${API_BASE_URL}/feeds/import`, {
+  const response = await fetch(`${API_BASE_URL}/opml/import`, {
     method: 'POST',
     body: formData,
     credentials: 'include',
@@ -95,7 +95,7 @@ export async function importOpml(file: File): Promise<OpmlImportResult> {
 }
 
 export async function exportOpml(): Promise<Blob> {
-  const response = await fetch(`${API_BASE_URL}/feeds/export`, {
+  const response = await fetch(`${API_BASE_URL}/opml/export`, {
     credentials: 'include',
   });
   

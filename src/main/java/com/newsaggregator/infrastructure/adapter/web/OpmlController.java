@@ -29,7 +29,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/feeds/opml")
+@RequestMapping("/api/opml")
 public class OpmlController {
 
     private final FeedRepository feedRepository;
