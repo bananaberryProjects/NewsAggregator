@@ -22,8 +22,6 @@ import {
   PieChart,
   Pie,
   Cell,
-  LineChart,
-  Line,
   Area,
   AreaChart
 } from 'recharts';
@@ -38,7 +36,6 @@ import { statisticsApi, ReadingStatistics } from '../../api/client';
 const COLORS = ['#4CAF50', '#FF9800', '#F44336', '#2196F3', '#9C27B0'];
 
 export default function StatisticsView() {
-  const theme = useTheme();
   const [stats, setStats] = useState<ReadingStatistics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
