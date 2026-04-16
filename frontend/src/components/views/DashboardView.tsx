@@ -5,6 +5,7 @@ import {
   Favorite as FavoriteIcon,
   Label as LabelIcon,
 } from '@mui/icons-material'
+import { useEffect } from 'react'
 import { ArticleCard } from '../ArticleCard'
 import type { Article, Feed, Category } from '../../api/client'
 
@@ -39,6 +40,26 @@ export function DashboardView({
   onToggleRead,
   onToggleFavorite,
 }: DashboardViewProps) {
+  // Load category filter from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('dashboard-categories')
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved) as string[]
+        if (parsed.length > 0) {
+          onCategoryFilterChange(parsed)
+        }
+      } catch {
+        // Invalid JSON, ignore
+      }
+    }
+  }, [])
+
+  // Persist category filter to localStorage on changes
+  useEffect(() => {
+    localStorage.setItem('dashboard-categories', JSON.stringify(dashboardCategoryFilter))
+  }, [dashboardCategoryFilter])
+
   const getFilteredArticles = () => {
     let result = [...articles]
 
