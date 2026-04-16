@@ -44,10 +44,15 @@ export interface Category {
   icon: string;
 }
 
+export interface OpmlImportResult {
+  importedCount: number;
+  failedUrls: string[];
+  message?: string;
+}
+
 async function fetchApi<T>(path: string, options?: RequestInit): Promise<T> {
   const headers: HeadersInit = {}
   
-  // Nur Content-Type setzen wenn Body vorhanden
   if (options?.body) {
     headers['Content-Type'] = 'application/json'
   }
@@ -64,12 +69,52 @@ async function fetchApi<T>(path: string, options?: RequestInit): Promise<T> {
     throw new Error(`HTTP error! status: ${response.status}${text ? ': ' + text : ''}`);
   }
 
-  // Bei 204 No Content oder leerem Body nicht parsen
   if (response.status === 204 || !response.headers.get('content-type')?.includes('json')) {
     return undefined as T;
   }
 
   return response.json();
+}
+
+export async function importOpml(file: File): Promise<OpmlImportResult> {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const response = await fetch(`${API_BASE_URL}/feeds/import`, {
+    method: 'POST',
+    body: formData,
+    credentials: 'include',
+  });
+  
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(error || 'OPML Import fehlgeschlagen');
+  }
+  
+  return response.json();
+}
+
+export async function exportOpml(): Promise<Blob> {
+  const response = await fetch(`${API_BASE_URL}/feeds/export`, {
+    credentials: 'include',
+  });
+  
+  if (!response.ok) {
+    throw new Error('OPML Export fehlgeschlagen');
+  }
+  
+  return response.blob();
+}
+
+export function downloadBlob(blob: Blob, filename: string) {
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
 }
 
 export const feedsApi = {
@@ -81,7 +126,7 @@ export const feedsApi = {
   fetchArticles: (id: string) => 
     fetchApi<void>(`/feeds/${id}/fetch`, { 
       method: 'POST',
-      headers: {} // Kein Content-Type, da kein Body
+      headers: {} 
     }),
 };
 
@@ -111,7 +156,6 @@ export const feedCategoriesApi = {
     }),
 };
 
-// Statistiken
 export interface DailyStats {
   date: string;
   articleCount: number;
