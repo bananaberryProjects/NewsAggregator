@@ -102,6 +102,7 @@ function App() {
               setFeedToDelete(feed)
               setDeleteDialogOpen(true)
             }}
+            onImportSuccess={loadFeeds}
           />
         )
       case 'articles':
