@@ -30,17 +30,6 @@ export function ArticlesView({
   onToggleRead,
   onToggleFavorite,
 }: ArticlesViewProps) {
-  // Load filter from localStorage on mount
-  useEffect(() => {
-    const savedFilter = localStorage.getItem('articles-filter')
-    if (savedFilter) {
-      const validFilters: Array<'all' | 'unread' | 'favorites'> = ['all', 'unread', 'favorites']
-      if (validFilters.includes(savedFilter as 'all' | 'unread' | 'favorites')) {
-        onFilterChange(savedFilter as 'all' | 'unread' | 'favorites')
-      }
-    }
-  }, [])
-
   // Persist filter to localStorage on changes
   useEffect(() => {
     localStorage.setItem('articles-filter', articlesFilter)

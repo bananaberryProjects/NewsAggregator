@@ -40,17 +40,6 @@ export function DashboardView({
   onToggleRead,
   onToggleFavorite,
 }: DashboardViewProps) {
-  // Load filter from localStorage on mount
-  useEffect(() => {
-    const savedFilter = localStorage.getItem('dashboard-filter')
-    if (savedFilter) {
-      const validFilters: Array<'all' | 'unread' | 'favorites'> = ['all', 'unread', 'favorites']
-      if (validFilters.includes(savedFilter as 'all' | 'unread' | 'favorites')) {
-        onFilterChange(savedFilter as 'all' | 'unread' | 'favorites')
-      }
-    }
-  }, [])
-
   // Persist filter to localStorage on changes
   useEffect(() => {
     localStorage.setItem('dashboard-filter', dashboardFilter)
