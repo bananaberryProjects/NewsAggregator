@@ -1,6 +1,6 @@
 package com.newsaggregator.application.service;
 
-import com.newsaggregator.application.port.out.CategoryRepository;
+import com.newsaggregator.domain.port.out.CategoryRepository;
 import com.newsaggregator.domain.model.Category;
 import com.newsaggregator.domain.model.CategoryId;
 import org.junit.jupiter.api.BeforeEach;
