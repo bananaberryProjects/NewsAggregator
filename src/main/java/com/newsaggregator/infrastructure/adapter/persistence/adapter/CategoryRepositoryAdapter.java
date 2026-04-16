@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.newsaggregator.application.port.out.CategoryRepository;
+import com.newsaggregator.domain.port.out.CategoryRepository;
 import com.newsaggregator.domain.model.Category;
 import com.newsaggregator.domain.model.CategoryId;
 import com.newsaggregator.infrastructure.adapter.persistence.entity.CategoryEntity;
