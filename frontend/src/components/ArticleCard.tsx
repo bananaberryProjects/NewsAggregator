@@ -20,6 +20,7 @@ import {
   CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material'
 import type { Article } from '../api/client'
+import { stripHtml } from '../utils'
 
 const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDgwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzNzVkYiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE4IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5ld3M8L3RleHQ+PC9zdmc+'
 
@@ -97,9 +98,9 @@ export function ArticleCard({
             WebkitBoxOrient: 'vertical',
             lineHeight: 1.4
           }}
-          title={article.description || ''}
+          title={stripHtml(article.description)}
         >
-          {article.description || 'Keine Beschreibung verfügbar'}
+          {stripHtml(article.description, 300) || 'Keine Beschreibung verfügbar'}
         </Typography>
       </CardContent>
       
