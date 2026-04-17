@@ -25,14 +25,14 @@ import { Add as AddIcon } from '@mui/icons-material'
 import { useTheme, useFeeds, useArticles, useCategories } from './hooks'
 import { Sidebar } from './components'
 import { DashboardView, FeedsView, ArticlesView, FavoritesView, CategoriesView, StatisticsView } from './components/views'
-import { AddFeedDialog, DeleteFeedDialog } from './components/dialogs'
+import { AddFeedDialog, DeleteFeedDialog, EditFeedCategoriesDialog } from './components/dialogs'
 import type { Feed } from './api/client'
 
 const drawerWidth = 280
 
 function App() {
   const { theme, isDark, toggleTheme } = useTheme()
-  const { feeds, loading: feedsLoading, error: feedsError, loadFeeds, addFeed, deleteFeed, refreshFeed } = useFeeds()
+  const { feeds, loading: feedsLoading, error: feedsError, loadFeeds, addFeed, deleteFeed, refreshFeed, assignCategories } = useFeeds()
   const { articles, articleStatuses, loadArticles, toggleRead, toggleFavorite, updatingArticleId } = useArticles()
   const { categories, loadCategories, deleteCategory } = useCategories()
 
@@ -49,6 +49,11 @@ function App() {
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [feedToDelete, setFeedToDelete] = useState<Feed | null>(null)
+
+  // Edit categories dialog state
+  const [editCategoriesDialogOpen, setEditCategoriesDialogOpen] = useState(false)
+  const [feedToEditCategories, setFeedToEditCategories] = useState<Feed | null>(null)
+  const [editSelectedCategories, setEditSelectedCategories] = useState<string[]>([])
 
   // Add feed form
   const [newFeedUrl, setNewFeedUrl] = useState('')
@@ -81,6 +86,26 @@ function App() {
     await deleteFeed(feedToDelete.id)
     setDeleteDialogOpen(false)
     setFeedToDelete(null)
+  }
+
+  const handleOpenEditCategories = (feed: Feed) => {
+    setFeedToEditCategories(feed)
+    setEditSelectedCategories(feed.categoryIds || [])
+    setEditCategoriesDialogOpen(true)
+  }
+
+  const handleCloseEditCategories = () => {
+    setEditCategoriesDialogOpen(false)
+    setFeedToEditCategories(null)
+    setEditSelectedCategories([])
+  }
+
+  const handleSaveCategories = async () => {
+    if (!feedToEditCategories) return
+    await assignCategories(feedToEditCategories.id, editSelectedCategories)
+    setEditCategoriesDialogOpen(false)
+    setFeedToEditCategories(null)
+    setEditSelectedCategories([])
   }
 
   const renderContent = () => {
@@ -181,9 +206,19 @@ function App() {
             setFeedToDelete(feed)
             setDeleteDialogOpen(true)
           }}
-          onAssignCategories={() => {}}
+          onAssignCategories={handleOpenEditCategories}
           isDark={isDark}
           onToggleTheme={toggleTheme}
+          // Category filter - use appropriate filter based on active view
+          activeCategoryFilter={activeView === 'articles' ? articlesCategoryFilter : dashboardCategoryFilter}
+          onCategoryFilterChange={(categoryIds) => {
+            if (activeView === 'articles') {
+              setArticlesCategoryFilter(categoryIds)
+            } else {
+              // Apply to dashboard for dashboard, feeds, favorites, categories, statistics views
+              setDashboardCategoryFilter(categoryIds)
+            }
+          }}
         />
 
         <Box
@@ -243,6 +278,21 @@ function App() {
           feed={feedToDelete}
           loading={feedsLoading}
           error={feedsError}
+        />
+
+        <EditFeedCategoriesDialog
+          open={editCategoriesDialogOpen}
+          onClose={handleCloseEditCategories}
+          onSubmit={handleSaveCategories}
+          feed={feedToEditCategories}
+          selectedCategories={editSelectedCategories}
+          toggleCategory={(id) => {
+            setEditSelectedCategories(prev =>
+              prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+            )
+          }}
+          categories={categories}
+          loading={feedsLoading}
         />
       </Box>
     </ThemeProvider>
