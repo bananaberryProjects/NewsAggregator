@@ -53,6 +53,7 @@ class ArticleRepositoryAdapterTest {
     private ArticleRepositoryAdapter adapter;
 
     @BeforeEach
+    @SuppressWarnings("unused")
     void setUp() {
         adapter = new ArticleRepositoryAdapter(jpaRepository, feedJpaRepository, mapper);
     }
@@ -126,6 +127,7 @@ class ArticleRepositoryAdapterTest {
         assertTrue(result.isEmpty());
     }
 
+    @SuppressWarnings("null")
     @Test
     void save_ShouldUpdateExistingArticle_WhenExists() {
         // Given
@@ -169,6 +171,7 @@ class ArticleRepositoryAdapterTest {
         verify(feedJpaRepository).findById(999L);
     }
 
+    @SuppressWarnings("null")
     @Test
     void saveAll_ShouldSaveMultipleArticles() {
         // Given

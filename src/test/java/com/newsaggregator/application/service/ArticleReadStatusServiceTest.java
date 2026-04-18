@@ -1,19 +1,24 @@
 package com.newsaggregator.application.service;
 
-import com.newsaggregator.infrastructure.adapter.persistence.entity.ArticleReadStatus;
-import com.newsaggregator.infrastructure.adapter.persistence.repository.ArticleReadStatusRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import org.mockito.Mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.newsaggregator.infrastructure.adapter.persistence.entity.ArticleReadStatus;
+import com.newsaggregator.infrastructure.adapter.persistence.repository.ArticleReadStatusRepository;
 
 /**
  * Unit-Test für ArticleReadStatusService.
@@ -29,6 +34,7 @@ class ArticleReadStatusServiceTest {
     private ArticleReadStatusService service;
 
     @BeforeEach
+    @SuppressWarnings("unused")
     void setUp() {
         service = new ArticleReadStatusService();
         // Repository via Reflection setzen (da @Autowired)
@@ -36,11 +42,12 @@ class ArticleReadStatusServiceTest {
             var field = ArticleReadStatusService.class.getDeclaredField("repository");
             field.setAccessible(true);
             field.set(service, repository);
-        } catch (Exception e) {
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
 
+    @SuppressWarnings("null")
     @Test
     void markAsRead_WhenStatusExists_ShouldUpdateAndSave() {
         // Given
@@ -60,6 +67,7 @@ class ArticleReadStatusServiceTest {
         verify(repository).save(existing);
     }
 
+    @SuppressWarnings("null")
     @Test
     void markAsRead_WhenStatusNotExists_ShouldCreateNew() {
         // Given
@@ -78,6 +86,7 @@ class ArticleReadStatusServiceTest {
         verify(repository).save(any(ArticleReadStatus.class));
     }
 
+    @SuppressWarnings("null")
     @Test
     void markAsUnread_WhenStatusExists_ShouldUpdateAndSave() {
         // Given
@@ -97,6 +106,7 @@ class ArticleReadStatusServiceTest {
         verify(repository).save(existing);
     }
 
+    @SuppressWarnings("null")
     @Test
     void markAsUnread_WhenStatusNotExists_ShouldReturnNull() {
         // Given
@@ -112,6 +122,7 @@ class ArticleReadStatusServiceTest {
         verify(repository, never()).save(any());
     }
 
+    @SuppressWarnings("null")
     @Test
     void toggleFavorite_WhenStatusExists_ShouldToggleAndSave() {
         // Given
@@ -131,6 +142,7 @@ class ArticleReadStatusServiceTest {
         verify(repository).save(existing);
     }
 
+    @SuppressWarnings("null")
     @Test
     void toggleFavorite_WhenStatusNotExists_ShouldCreateNewFavorite() {
         // Given

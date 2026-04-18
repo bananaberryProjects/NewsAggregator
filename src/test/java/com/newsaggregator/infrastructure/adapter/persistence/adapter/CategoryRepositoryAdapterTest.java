@@ -37,10 +37,12 @@ class CategoryRepositoryAdapterTest {
     private CategoryRepositoryAdapter adapter;
 
     @BeforeEach
+    @SuppressWarnings("unused")
     void setUp() {
         adapter = new CategoryRepositoryAdapter(jpaRepository);
     }
 
+    @SuppressWarnings("null")
     @Test
     void findById_ShouldReturnCategory_WhenExists() {
         // Given
@@ -60,6 +62,7 @@ class CategoryRepositoryAdapterTest {
         verify(jpaRepository).findById(categoryId);
     }
 
+    @SuppressWarnings("null")
     @Test
     void findById_ShouldReturnEmpty_WhenNotExists() {
         // Given
@@ -107,6 +110,7 @@ class CategoryRepositoryAdapterTest {
         assertTrue(result.isEmpty());
     }
 
+    @SuppressWarnings("null")
     @Test
     void save_ShouldPersistNewCategory() {
         // Given
@@ -126,6 +130,7 @@ class CategoryRepositoryAdapterTest {
         verify(jpaRepository).save(any(CategoryEntity.class));
     }
 
+    @SuppressWarnings("null")
     @Test
     void save_ShouldUpdateExistingCategory() {
         // Given
@@ -145,6 +150,7 @@ class CategoryRepositoryAdapterTest {
         verify(jpaRepository).save(any(CategoryEntity.class));
     }
 
+    @SuppressWarnings("null")
     @Test
     void deleteById_ShouldDeleteCategory() {
         // Given
@@ -163,15 +169,6 @@ class CategoryRepositoryAdapterTest {
     private CategoryEntity createCategoryEntity(UUID id, String name) {
         CategoryEntity entity = new CategoryEntity();
         entity.setId(id);
-        entity.setName(name);
-        entity.setColor("#667eea");
-        entity.setIcon("icon");
-        entity.setCreatedAt(LocalDateTime.now());
-        return entity;
-    }
-
-    private CategoryEntity createCategoryEntityWithoutId(String name) {
-        CategoryEntity entity = new CategoryEntity();
         entity.setName(name);
         entity.setColor("#667eea");
         entity.setIcon("icon");
