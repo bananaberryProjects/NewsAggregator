@@ -1,11 +1,10 @@
 package com.newsaggregator.infrastructure.adapter.persistence.mapper;
 
+import java.time.LocalDateTime;
+
 import com.newsaggregator.domain.model.Category;
 import com.newsaggregator.domain.model.CategoryId;
 import com.newsaggregator.infrastructure.adapter.persistence.entity.CategoryEntity;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 public class CategoryPersistenceMapper {
 

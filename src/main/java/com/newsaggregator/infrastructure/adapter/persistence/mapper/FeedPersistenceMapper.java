@@ -1,15 +1,15 @@
 package com.newsaggregator.infrastructure.adapter.persistence.mapper;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Component;
+
+import com.newsaggregator.domain.model.CategoryId;
 import com.newsaggregator.domain.model.Feed;
 import com.newsaggregator.domain.model.FeedId;
 import com.newsaggregator.domain.model.FeedStatus;
-import com.newsaggregator.domain.model.CategoryId;
 import com.newsaggregator.infrastructure.adapter.persistence.entity.FeedJpaEntity;
-import com.newsaggregator.infrastructure.adapter.persistence.entity.CategoryEntity;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Mapper für die Konvertierung zwischen Feed (Domain) und FeedJpaEntity.

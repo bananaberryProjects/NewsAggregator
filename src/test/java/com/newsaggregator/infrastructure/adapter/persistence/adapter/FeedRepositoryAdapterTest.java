@@ -44,6 +44,7 @@ class FeedRepositoryAdapterTest {
     private FeedRepositoryAdapter adapter;
 
     @BeforeEach
+    @SuppressWarnings("unused")
     void setUp() {
         adapter = new FeedRepositoryAdapter(feedJpaRepository, categoryJpaRepository, mapper);
     }
@@ -116,6 +117,7 @@ class FeedRepositoryAdapterTest {
         assertTrue(result.isEmpty());
     }
 
+    @SuppressWarnings("null")
     @Test
     void save_ShouldCreateNewFeed_WhenFeedHasNoId() {
         // Given
@@ -137,6 +139,7 @@ class FeedRepositoryAdapterTest {
         assertEquals(feedId, result.getId().getValue());
     }
 
+    @SuppressWarnings("null")
     @Test
     void save_ShouldUpdateExistingFeed_WhenFeedHasId() {
         // Given

@@ -6,9 +6,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.newsaggregator.domain.port.out.CategoryRepository;
 import com.newsaggregator.domain.model.Category;
 import com.newsaggregator.domain.model.CategoryId;
+import com.newsaggregator.domain.port.out.CategoryRepository;
 import com.newsaggregator.infrastructure.adapter.persistence.entity.CategoryEntity;
 import com.newsaggregator.infrastructure.adapter.persistence.mapper.CategoryPersistenceMapper;
 import com.newsaggregator.infrastructure.adapter.persistence.repository.CategoryJpaRepository;
@@ -28,6 +28,7 @@ public class CategoryRepositoryAdapter implements CategoryRepository {
                 .collect(Collectors.toList());
     }
 
+    @SuppressWarnings("null")
     @Override
     public Optional<Category> findById(CategoryId id) {
         return jpaRepository.findById(id.getValue())
@@ -37,10 +38,12 @@ public class CategoryRepositoryAdapter implements CategoryRepository {
     @Override
     public Category save(Category category) {
         CategoryEntity entity = CategoryPersistenceMapper.toEntity(category);
+        @SuppressWarnings("null")
         CategoryEntity saved = jpaRepository.save(entity);
         return CategoryPersistenceMapper.toDomain(saved);
     }
 
+    @SuppressWarnings("null")
     @Override
     public void deleteById(CategoryId id) {
         jpaRepository.deleteById(id.getValue());

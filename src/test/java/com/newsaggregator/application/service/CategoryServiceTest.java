@@ -1,20 +1,22 @@
 package com.newsaggregator.application.service;
 
-import com.newsaggregator.domain.port.out.CategoryRepository;
-import com.newsaggregator.domain.model.Category;
-import com.newsaggregator.domain.model.CategoryId;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import com.newsaggregator.domain.model.Category;
+import com.newsaggregator.domain.model.CategoryId;
+import com.newsaggregator.domain.port.out.CategoryRepository;
 
 /**
  * Unit-Test für CategoryService.
@@ -32,6 +34,7 @@ class CategoryServiceTest {
     private static final String VALID_UUID = "550e8400-e29b-41d4-a716-446655440000";
 
     @BeforeEach
+    @SuppressWarnings("unused")
     void setUp() {
         service = new CategoryService(categoryRepository);
     }

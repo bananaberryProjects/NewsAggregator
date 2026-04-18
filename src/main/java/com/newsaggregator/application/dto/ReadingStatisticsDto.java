@@ -2,7 +2,6 @@ package com.newsaggregator.application.dto;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 /**
  * DTO für Lesestatistiken.
