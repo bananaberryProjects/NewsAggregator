@@ -104,10 +104,11 @@ public class ArticlePersistenceMapper {
                 mapStatus(feedEntity.getStatus())
         );
 
-        // Kategorien hinzufügen
+        // Kategorien hinzufügen (Duplikate vermeiden durch Set)
         if (feedEntity.getCategories() != null) {
             var categoryIds = feedEntity.getCategories().stream()
                     .map(cat -> com.newsaggregator.domain.model.CategoryId.of(cat.getId().toString()))
+                    .distinct()
                     .toList();
             feed.setCategories(categoryIds);
         }
