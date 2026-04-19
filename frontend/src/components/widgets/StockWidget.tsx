@@ -77,7 +77,7 @@ interface StockListApiDto {
   stocks: StockApiDto[]
 }
 
-const API_BASE_URL = import.meta.env./api'
+const API_BASE_URL = '/api'
 
 const fetchStockData = async (): Promise<StockIndex[]> => {
   const response = await fetch(`${API_BASE_URL}/api/stocks`)
