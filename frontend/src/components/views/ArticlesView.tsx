@@ -149,8 +149,8 @@ export function ArticlesView({
         <Grid container spacing={3}>
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} sx={{ mx: 'auto',  }} key={i}>
-              <Card sx={{ height: 600 }}>
-                <Skeleton variant="rectangular" height={250} />
+              <Card sx={{ height: 430 }}>
+                <Skeleton variant="rectangular" height={200} />
               </Card>
             </Grid>
           ))}
