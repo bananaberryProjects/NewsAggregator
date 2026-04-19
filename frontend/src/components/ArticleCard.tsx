@@ -44,7 +44,7 @@ export function ArticleCard({
   return (
     <Card
       sx={{
-        width: 480,
+        width: '100%',
         height: 420,
         display: 'flex',
         flexDirection: 'column',
