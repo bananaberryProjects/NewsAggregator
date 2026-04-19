@@ -1,11 +1,18 @@
 import { useEffect, useState } from 'react'
-import { Card, CardContent, Typography, Box, Skeleton, Alert, IconButton, TextField, CardMedia } from '@mui/material'
+import { Card, CardContent, Typography, Box, Skeleton, Alert, IconButton, TextField, CardMedia, Divider } from '@mui/material'
 import { LocationOn, Refresh, WbSunny, Cloud, CloudOff, Opacity, AcUnit, Thunderstorm } from '@mui/icons-material'
 
 interface WeatherData {
   temperature: number
   weatherCode: number
   description: string
+}
+
+interface ForecastDay {
+  day: string
+  maxTemp: number
+  minTemp: number
+  weatherCode: number
 }
 
 interface WeatherTheme {
@@ -110,12 +117,19 @@ const getWeatherDescription = (code: number): string => {
   return 'Unbekannt'
 }
 
+const getWeekdayAbbreviation = (dateStr: string): string => {
+  const days = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']
+  const date = new Date(dateStr)
+  return days[date.getDay()]
+}
+
 export function WeatherWidget({
   defaultLatitude = 52.52,
   defaultLongitude = 13.41,
   defaultCity = 'Berlin'
 }: WeatherWidgetProps) {
   const [weather, setWeather] = useState<WeatherData | null>(null)
+  const [forecast, setForecast] = useState<ForecastDay[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [latitude, setLatitude] = useState(defaultLatitude)
@@ -129,7 +143,7 @@ export function WeatherWidget({
 
     try {
       const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code`
+        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&forecast_days=3`
       )
 
       if (!response.ok) {
@@ -143,6 +157,20 @@ export function WeatherWidget({
         weatherCode: data.current.weather_code,
         description: getWeatherDescription(data.current.weather_code)
       })
+
+      // Parse forecast data
+      if (data.daily) {
+        const forecastData: ForecastDay[] = []
+        for (let i = 0; i < data.daily.time.length; i++) {
+          forecastData.push({
+            day: getWeekdayAbbreviation(data.daily.time[i]),
+            maxTemp: Math.round(data.daily.temperature_2m_max[i]),
+            minTemp: Math.round(data.daily.temperature_2m_min[i]),
+            weatherCode: data.daily.weather_code[i]
+          })
+        }
+        setForecast(forecastData)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unbekannter Fehler')
     } finally {
@@ -239,36 +267,82 @@ export function WeatherWidget({
             </Box>
           </Box>
         ) : weather ? (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-            {/* Grosses Icon mit Hintergrund */}
-            <Box
-              sx={{
-                width: 80,
-                height: 80,
-                borderRadius: '50%',
-                backgroundColor: theme.iconBg,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                flexShrink: 0
-              }}
-            >
-              {getWeatherIcon(weather.weatherCode)}
+          <Box>
+            {/* Aktuelles Wetter */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 2 }}>
+              {/* Grosses Icon mit Hintergrund */}
+              <Box
+                sx={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: '50%',
+                  backgroundColor: theme.iconBg,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  flexShrink: 0
+                }}
+              >
+                {getWeatherIcon(weather.weatherCode)}
+              </Box>
+
+              {/* Temperatur und Details */}
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="h3" component="div" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+                  {Math.round(weather.temperature)}°C
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500, color: 'text.primary', mt: 0.5 }}>
+                  {weather.description}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                  {city}
+                </Typography>
+              </Box>
             </Box>
 
-            {/* Temperatur und Details */}
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="h3" component="div" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
-                {Math.round(weather.temperature)}°C
-              </Typography>
-              <Typography variant="body1" sx={{ fontWeight: 500, color: 'text.primary', mt: 0.5 }}>
-                {weather.description}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                {city}
-              </Typography>
-            </Box>
+            {/* 3-Tage Vorhersage */}
+            {forecast.length > 0 && (
+              <>
+                <Divider sx={{ my: 1.5 }} />
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                  3-Tage Vorhersage
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  {forecast.map((day, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        py: 1,
+                        px: 0.5,
+                        borderRadius: 2,
+                        bgcolor: 'background.paper',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        minWidth: 0
+                      }}
+                    >
+                      <Typography variant="caption" sx={{ fontWeight: 600, mb: 0.5 }}>
+                        {day.day}
+                      </Typography>
+                      {getWeatherIcon(day.weatherCode, { fontSize: 24 })}
+                      <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, alignItems: 'center' }}>
+                        <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                          {day.maxTemp}°
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {day.minTemp}°
+                        </Typography>
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              </>
+            )}
           </Box>
         ) : null}
       </CardContent>
