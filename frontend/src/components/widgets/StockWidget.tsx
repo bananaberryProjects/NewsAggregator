@@ -65,72 +65,39 @@ interface StockWidgetProps {
   refreshIntervalSeconds?: number // in seconds, default 60
 }
 
-interface YahooChartResult {
-  meta: {
-    regularMarketPrice: number
-    previousClose: number
-    shortName?: string
-    symbol: string
-  }
+interface StockApiDto {
+  symbol: string
+  name: string
+  value: number
+  change: number
+  changePercent: number
 }
 
-interface YahooResponse {
-  chart: {
-    result?: YahooChartResult[]
-    error?: { description: string }
-  }
+interface StockListApiDto {
+  stocks: StockApiDto[]
 }
 
-const SYMBOLS = [
-  { symbol: '^GDAXI', displayName: 'DAX', shortName: 'DAX' },
-  { symbol: '^GSPC', displayName: 'S&P 500', shortName: 'S&P500' },
-  { symbol: 'BTC-USD', displayName: 'Bitcoin', shortName: 'BTC' }
-]
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
-const fetchYahooData = async (): Promise<StockIndex[]> => {
-  const results: StockIndex[] = []
+const fetchStockData = async (): Promise<StockIndex[]> => {
+  const response = await fetch(`${API_BASE_URL}/api/stocks`)
 
-  await Promise.all(
-    SYMBOLS.map(async ({ symbol, displayName, shortName }) => {
-      try {
-        const response = await fetch(
-          `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=2d`
-        )
+  if (!response.ok) {
+    if (response.status === 204) {
+      throw new Error('Keine Kursdaten verfügbar')
+    }
+    throw new Error(`HTTP ${response.status}`)
+  }
 
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status} for ${symbol}`)
-        }
+  const data: StockListApiDto = await response.json()
 
-        const data: YahooResponse = await response.json()
-
-        if (data.chart.error || !data.chart.result || data.chart.result.length === 0) {
-          throw new Error(`Keine Daten für ${symbol}`)
-        }
-
-        const result = data.chart.result[0]
-        const meta = result.meta
-        const currentPrice = meta.regularMarketPrice
-        const previousClose = meta.previousClose
-
-        const change = currentPrice - previousClose
-        const changePercent = previousClose !== 0 ? (change / previousClose) * 100 : 0
-
-        results.push({
-          symbol: shortName,
-          name: displayName,
-          value: currentPrice,
-          change,
-          changePercent
-        })
-      } catch (err) {
-        console.error(`Fehler beim Laden von ${symbol}:`, err)
-      }
-    })
-  )
-
-  return results.sort(
-    (a, b) => SYMBOLS.findIndex(s => s.shortName === a.symbol) - SYMBOLS.findIndex(s => s.shortName === b.symbol)
-  )
+  return data.stocks.map(stock => ({
+    symbol: stock.symbol,
+    name: stock.name,
+    value: stock.value,
+    change: stock.change,
+    changePercent: stock.changePercent
+  }))
 }
 
 export function StockWidget({ refreshIntervalSeconds = 60 }: StockWidgetProps) {
@@ -144,7 +111,7 @@ export function StockWidget({ refreshIntervalSeconds = 60 }: StockWidgetProps) {
     setError(null)
 
     try {
-      const data = await fetchYahooData()
+      const data = await fetchStockData()
 
       if (data.length === 0) {
         throw new Error('Keine Kursdaten verfügbar')
