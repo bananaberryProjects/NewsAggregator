@@ -232,13 +232,6 @@ function App() {
           categories={categories}
           articleCount={articles.length}
           favoriteCount={favoriteCount}
-          refreshingFeedId={null}
-          onRefreshFeed={refreshFeed}
-          onDeleteFeed={(feed) => {
-            setFeedToDelete(feed)
-            setDeleteDialogOpen(true)
-          }}
-          onAssignCategories={handleOpenEditCategories}
           isDark={isDark}
           onToggleTheme={toggleTheme}
           // Category filter - use appropriate filter based on active view

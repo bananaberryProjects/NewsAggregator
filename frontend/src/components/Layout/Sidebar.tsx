@@ -10,7 +10,6 @@ import {
   Typography,
   Avatar,
   IconButton,
-  CircularProgress,
   Divider,
 } from '@mui/material'
 import {
@@ -18,10 +17,7 @@ import {
   Article as ArticleIcon,
   Newspaper as NewspaperIcon,
   Favorite as FavoriteIcon,
-  Label as LabelIcon,
-  Refresh as RefreshIcon,
-  Delete as DeleteIcon,
-  Assessment as AssessmentIcon,
+  Assessment as StatisticsIcon,
   Close as CloseIcon,
 } from '@mui/icons-material'
 import type { Feed, Category } from '../../api/client'
@@ -38,10 +34,6 @@ interface SidebarProps {
   categories: Category[]
   articleCount: number
   favoriteCount: number
-  refreshingFeedId: string | null
-  onRefreshFeed: (feed: Feed) => void
-  onDeleteFeed: (feed: Feed) => void
-  onAssignCategories: (feed: Feed) => void
   isDark?: boolean
   onToggleTheme?: () => void
   activeCategoryFilter?: string[]
@@ -57,10 +49,6 @@ export function Sidebar({
   categories,
   articleCount,
   favoriteCount,
-  refreshingFeedId,
-  onRefreshFeed,
-  onDeleteFeed,
-  onAssignCategories,
   isDark,
   onToggleTheme,
 }: SidebarProps) {
