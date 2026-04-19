@@ -1,20 +1,22 @@
 package com.newsaggregator.application.service;
 
-import com.newsaggregator.application.dto.StockDto;
-import com.newsaggregator.application.dto.StockListDto;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
-import java.time.Duration;
+import com.newsaggregator.application.dto.StockDto;
+import com.newsaggregator.application.dto.StockListDto;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Application Service für Börsenkursdaten.
@@ -23,6 +25,7 @@ import java.util.Map;
  * die Daten an das Frontend. Vermeidet CORS-Probleme.</p>
  */
 @Service
+@RequiredArgsConstructor
 public class StockService {
 
     private static final Logger logger = LoggerFactory.getLogger(StockService.class);
@@ -36,10 +39,10 @@ public class StockService {
     );
 
     public StockService() {
-        this.restClient = RestClient.builder()
+        this(RestClient.builder()
                 .baseUrl("https://query1.finance.yahoo.com")
                 .defaultHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-                .build();
+                .build());
     }
 
     /**

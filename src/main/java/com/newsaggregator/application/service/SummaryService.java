@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -30,6 +31,7 @@ public class SummaryService {
     @Value("${ollama.model:kimi-k2.5:cloud}")
     private String ollamaModel;
 
+    @Autowired
     public SummaryService(ArticleRepository articleRepository) {
         this.articleRepository = articleRepository;
         this.restTemplate = new RestTemplate();
