@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Card, CardContent, Typography, Box, Skeleton, Alert, IconButton, CardMedia, Divider, FormControl, InputLabel, Select, MenuItem } from '@mui/material'
+import { Card, CardContent, Typography, Box, Skeleton, Alert, IconButton, CardMedia, Divider, FormControl, InputLabel, Select, MenuItem, TextField, Button } from '@mui/material'
 import { Refresh, WbSunny, Cloud, CloudOff, Opacity, AcUnit, Thunderstorm } from '@mui/icons-material'
 
 interface WeatherData {
@@ -44,7 +44,13 @@ const CITIES: City[] = [
   { name: 'Düsseldorf', lat: 51.23, lon: 6.78 },
   { name: 'Leipzig', lat: 51.34, lon: 12.37 },
   { name: 'Dresden', lat: 51.05, lon: 13.74 },
-  { name: 'Nürnberg', lat: 49.45, lon: 11.08 }
+  { name: 'Nürnberg', lat: 49.45, lon: 11.08 },
+  // Additional cities
+  { name: 'Kiel', lat: 54.32, lon: 10.13 },
+  { name: 'Bremen', lat: 53.08, lon: 8.80 },
+  { name: 'Mannheim', lat: 49.48, lon: 8.46 },
+  { name: 'Freiburg', lat: 47.99, lon: 7.85 },
+  { name: 'Bonn', lat: 50.73, lon: 7.10 }
 ]
 
 // WMO Weather interpretation codes - https://open-meteo.com/en/docs
@@ -170,12 +176,13 @@ export function WeatherWidget({
     if (saved) {
       try {
         return JSON.parse(saved) as City
-      } catch {
-        // Invalid saved data, fall through to default
-      }
+      } catch {}
     }
     return { name: defaultCity, lat: defaultLatitude, lon: defaultLongitude }
   })
+
+  // State for custom city input
+  const [customCity, setCustomCity] = useState('')
 
   const fetchWeather = async () => {
     setLoading(true)
@@ -234,6 +241,25 @@ export function WeatherWidget({
     fetchWeather()
   }
 
+  // Custom city handling
+  const handleCustomCity = async () => {
+    if (!customCity.trim()) return
+    try {
+      const resp = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(customCity)}&count=1`)
+      const data = await resp.json()
+      if (data.results && data.results.length > 0) {
+        const loc = data.results[0]
+        setSelectedLocation({ name: loc.name, lat: loc.latitude, lon: loc.longitude })
+        setCustomCity('')
+        setError(null)
+      } else {
+        setError('Stadt nicht gefunden')
+      }
+    } catch (e) {
+      setError('Fehler beim Suchen der Stadt')
+    }
+  }
+
   const handleLocationChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     const cityName = event.target.value as string
     const city = CITIES.find(c => c.name === cityName)
@@ -284,7 +310,32 @@ export function WeatherWidget({
             <Refresh />
           </IconButton>
         </Box>
-      </CardMedia>
+      <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}>
+            <TextField
+              size="small"
+              placeholder="Stadt"
+              value={customCity}
+              onChange={(e) => setCustomCity(e.target.value)}
+              sx={{
+                backgroundColor: 'rgba(255,255,255,0.15)',
+                borderRadius: 1,
+                mr: 0.5,
+                '& .MuiInputBase-input': { color: 'white' },
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.5)' },
+                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'white' }
+              }}
+            />
+            <Button
+              variant="contained"
+              size="small"
+              onClick={handleCustomCity}
+              disabled={!customCity.trim()}
+              sx={{ textTransform: 'none' }}
+            >
+              Add
+            </Button>
+          </Box>
+        </CardMedia>
 
       <CardContent sx={{ pt: 2 }}>
 
