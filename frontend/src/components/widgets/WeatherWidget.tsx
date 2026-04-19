@@ -198,7 +198,7 @@ export function WeatherWidget({
       {/* Dynamischer Header mit Hintergrund-Farbverlauf */}
       <CardMedia
         sx={{
-          height: 80,
+          height: 60,
           background: theme.gradient,
           position: 'relative',
           display: 'flex',
