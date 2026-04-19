@@ -222,7 +222,7 @@ export function DashboardView({
         {loading ? (
           <Grid container spacing={3}>
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Grid size={{ xs: 11, sm: 6, md: 4 }} mx="auto" key={i}>
+              <Grid size={{ xs: 10, sm: 6, md: 4 }} sx={{ mx: 'auto', px: 2 }} key={i}>
                 <Card sx={{ height: 420 }}>
                   <Skeleton variant="rectangular" height={200} />
                 </Card>
@@ -236,7 +236,7 @@ export function DashboardView({
         ) : (
           <Grid container spacing={3}>
             {dashboardArticles.map((article) => (
-              <Grid size={{ xs: 11, sm: 6, md: 4 }} mx="auto" key={article.id}>
+              <Grid size={{ xs: 10, sm: 6, md: 4 }} sx={{ mx: 'auto', px: 2 }} key={article.id}>
                 <ArticleCard
                   article={article}
                   isRead={isRead(article.id)}
