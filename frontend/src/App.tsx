@@ -270,13 +270,15 @@ function App() {
           </Container>
         </Box>
 
-        <Fab
-          color="primary"
-          sx={{ position: 'fixed', bottom: 24, right: 24 }}
-          onClick={() => setAddDialogOpen(true)}
-        >
-          <AddIcon />
-        </Fab>
+        {activeView !== 'dashboard' && (
+          <Fab
+            color="primary"
+            sx={{ position: 'fixed', bottom: 24, right: 24 }}
+            onClick={() => setAddDialogOpen(true)}
+          >
+            <AddIcon />
+          </Fab>
+        )}
 
         <AddFeedDialog
           open={addDialogOpen}
