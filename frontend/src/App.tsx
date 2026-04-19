@@ -270,7 +270,7 @@ function App() {
           </Container>
         </Box>
 
-        {activeView !== 'dashboard' && (
+        {activeView === 'feeds' && (
           <Fab
             color="primary"
             sx={{ position: 'fixed', bottom: 24, right: 24 }}

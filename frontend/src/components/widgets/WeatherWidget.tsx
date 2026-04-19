@@ -173,7 +173,7 @@ export function WeatherWidget({
     setError(null)
     try {
       const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${selectedLocation.lat}&longitude=${selectedLocation.lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&forecast_days=3`
+        `https://api.open-meteo.com/v1/forecast?latitude=${selectedLocation.lat}&longitude=${selectedLocation.lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&forecast_days=5`
       )
       if (!response.ok) throw new Error('Wetterdaten konnten nicht geladen werden')
       const data = await response.json()
@@ -219,7 +219,7 @@ export function WeatherWidget({
       {/* Header */}
       <CardMedia
         sx={{
-          height: 60,
+          height: 50,
           background: theme.gradient,
           position: 'relative',
           display: 'flex',
@@ -299,9 +299,6 @@ export function WeatherWidget({
             {forecast.length > 0 && (
               <>
                 <Divider sx={{ my: 1.5 }} />
-                <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-                  3‑Tage Vorhersage
-                </Typography>
                 <Box sx={{ display: 'flex', gap: 1 }}>
                   {forecast.map((day, index) => (
                     <Box
@@ -311,12 +308,8 @@ export function WeatherWidget({
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
-                        py: 1,
-                        px: 0.5,
-                        borderRadius: 2,
-                        bgcolor: 'background.paper',
-                        border: '1px solid',
-                        borderColor: 'divider',
+                        py: 0,
+                        px: 0,
                         minWidth: 0
                       }}
                     >
