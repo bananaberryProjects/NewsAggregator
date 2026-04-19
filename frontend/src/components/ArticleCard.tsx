@@ -45,7 +45,7 @@ export function ArticleCard({
     <Card
       sx={{
         width: '100%',
-        height: 480,
+        height: 430,
         display: 'flex',
         flexDirection: 'column',
         transition: 'transform 0.2s, box-shadow 0.2s',
