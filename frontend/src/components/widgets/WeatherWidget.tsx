@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent, Typography, Box, Skeleton, Alert, IconButton, TextField, CardMedia, Divider } from '@mui/material'
-import { LocationOn, Refresh, WbSunny, Cloud, CloudOff, Opacity, AcUnit, Thunderstorm } from '@mui/icons-material'
+import { LocationOn, Refresh } from '@mui/icons-material'
 
 interface WeatherData {
   temperature: number
@@ -91,16 +91,48 @@ const getWeatherTheme = (code: number): WeatherTheme => {
   }
 }
 
-const getWeatherIcon = (code: number, sx?: object) => {
-  const iconProps = { sx: { fontSize: 64, ...sx } }
-  if (code === 0) return <WbSunny {...iconProps} sx={{ ...iconProps.sx, color: '#FF8F00' }} />
-  if (code >= 1 && code <= 3) return <Cloud {...iconProps} sx={{ ...iconProps.sx, color: '#546E7A' }} />
-  if (code >= 45 && code <= 48) return <CloudOff {...iconProps} sx={{ ...iconProps.sx, color: '#78909C' }} />
-  if (code >= 51 && code <= 67) return <Opacity {...iconProps} sx={{ ...iconProps.sx, color: '#1976D2' }} />
-  if (code >= 71 && code <= 77) return <AcUnit {...iconProps} sx={{ ...iconProps.sx, color: '#0288D1' }} />
-  if (code >= 80 && code <= 82) return <Opacity {...iconProps} sx={{ ...iconProps.sx, color: '#0D47A1' }} />
-  if (code >= 95) return <Thunderstorm {...iconProps} sx={{ ...iconProps.sx, color: '#303F9F' }} />
-  return <WbSunny {...iconProps} sx={{ ...iconProps.sx, color: '#FF8F00' }} />
+// WMO Code zu OpenWeatherMap Icon Mapping
+// OpenWeatherMap Icons: https://openweathermap.org/img/wn/{icon}@2x.png
+const getOpenWeatherIcon = (code: number): string => {
+  // Klarer Himmel
+  if (code === 0) return '01d'
+  // Leicht bewölkt
+  if (code === 1) return '02d'
+  // Teilweise bewölkt
+  if (code === 2) return '03d'
+  // Bedeckt
+  if (code === 3) return '04d'
+  // Nebelig
+  if (code >= 45 && code <= 48) return '50d'
+  // Nieselregen
+  if (code >= 51 && code <= 57) return '09d'
+  // Regen
+  if (code >= 61 && code <= 67) return '10d'
+  // Schnee
+  if (code >= 71 && code <= 77) return '13d'
+  // Regenschauer
+  if (code >= 80 && code <= 82) return '09d'
+  // Gewitter
+  if (code >= 95) return '11d'
+  // Default: Klarer Himmel
+  return '01d'
+}
+
+const WeatherIcon = ({ code, size = 64 }: { code: number; size?: number }) => {
+  const iconCode = getOpenWeatherIcon(code)
+  const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@2x.png`
+
+  return (
+    <img
+      src={iconUrl}
+      alt={getWeatherDescription(code)}
+      style={{
+        width: size,
+        height: size,
+        objectFit: 'contain'
+      }}
+    />
+  )
 }
 
 const getWeatherDescription = (code: number): string => {
@@ -260,7 +292,7 @@ export function WeatherWidget({
 
         {loading ? (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Skeleton variant="circular" width={64} height={64} />
+            <Skeleton variant="rounded" width={64} height={64} sx={{ borderRadius: 1 }} />
             <Box>
               <Skeleton width={80} height={32} />
               <Skeleton width={120} height={20} />
@@ -284,7 +316,7 @@ export function WeatherWidget({
                   flexShrink: 0
                 }}
               >
-                {getWeatherIcon(weather.weatherCode)}
+                <WeatherIcon code={weather.weatherCode} size={64} />
               </Box>
 
               {/* Temperatur und Details */}
@@ -329,7 +361,7 @@ export function WeatherWidget({
                       <Typography variant="caption" sx={{ fontWeight: 600, mb: 0.5 }}>
                         {day.day}
                       </Typography>
-                      {getWeatherIcon(day.weatherCode, { fontSize: 24 })}
+                      <WeatherIcon code={day.weatherCode} size={32} />
                       <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, alignItems: 'center' }}>
                         <Typography variant="caption" sx={{ fontWeight: 600 }}>
                           {day.maxTemp}°
