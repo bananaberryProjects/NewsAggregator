@@ -35,12 +35,22 @@ public class SummaryService {
     }
 
     public String generateSummary() {
-        // Get articles from last 24 hours
-        LocalDateTime yesterday = LocalDateTime.now().minusHours(24);
-        List<Article> recentArticles = articleRepository.findByPublishedAtAfter(yesterday);
+        // Get articles from last 72 hours (more lenient for testing)
+        LocalDateTime cutoff = LocalDateTime.now().minusHours(72);
+        List<Article> recentArticles = articleRepository.findByPublishedAtAfter(cutoff);
+
+        System.out.println("[SummaryService] Found " + recentArticles.size() + " articles in last 72h");
 
         if (recentArticles.isEmpty()) {
-            return "Keine neuen Artikel in den letzten 24 Stunden.";
+            // Fallback: get last 10 articles regardless of date
+            recentArticles = articleRepository.findAll().stream()
+                .sorted((a, b) -> b.getPublishedAt().compareTo(a.getPublishedAt()))
+                .limit(10)
+                .collect(java.util.stream.Collectors.toList());
+            
+            if (recentArticles.isEmpty()) {
+                return "Keine Artikel verfügbar. Bitte fügen Sie Feeds hinzu.";
+            }
         }
 
         // Build prompt
@@ -62,18 +72,25 @@ public class SummaryService {
 
         // Call Ollama
         try {
+            System.out.println("[SummaryService] Calling Ollama with prompt length: " + prompt.length());
             String summary = callOllama(prompt.toString());
-            return summary != null ? summary : "Zusammenfassung konnte nicht erstellt werden.";
+            System.out.println("[SummaryService] Ollama response: " + summary);
+            return summary != null && !summary.isEmpty() ? summary : generateFallbackSummary(recentArticles);
         } catch (Exception e) {
-            // Fallback: return simple summary
-            return String.format("Heute gibt es %d neue Artikel. Die wichtigsten Themen: %s",
-                recentArticles.size(),
-                recentArticles.stream()
-                    .limit(3)
-                    .map(Article::getTitle)
-                    .reduce((a, b) -> a + ", " + b)
-                    .orElse("Keine Artikel"));
+            System.err.println("[SummaryService] Error calling Ollama: " + e.getMessage());
+            return generateFallbackSummary(recentArticles);
         }
+    }
+
+    private String generateFallbackSummary(List<Article> articles) {
+        return String.format("Heute gibt es %d neue Artikel. Die wichtigsten Themen: %s",
+            articles.size(),
+            articles.stream()
+                .limit(3)
+                .map(Article::getTitle)
+                .reduce((a, b) -> a + ", " + b)
+                .orElse("Keine Artikel"));
+    }
     }
 
     private String callOllama(String prompt) throws Exception {
