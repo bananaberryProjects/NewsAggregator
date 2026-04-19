@@ -14,7 +14,7 @@ export function DashboardView() {
           <StockWidget />
         </Grid>
 
-        {/* AI Summary Placeholder */}
+        {/* AI Summary Placeholder – will be replaced with summary widget */}
         <Grid size={{ xs: 12 }}>
           <Card sx={{ minHeight: 200, display: 'flex', flexDirection: 'column' }}>
             <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
