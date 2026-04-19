@@ -236,7 +236,7 @@ export function DashboardView({
         ) : (
           <Grid container spacing={3}>
             {dashboardArticles.map((article) => (
-              <Grid size={{ xs: 11, sm: 6, md: 4 }} sx={{ mx: 'auto', px: 1 }} key={article.id}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} sx={{ mx: 'auto', px: 1 }} key={article.id}>
                 <ArticleCard
                   article={article}
                   isRead={isRead(article.id)}
