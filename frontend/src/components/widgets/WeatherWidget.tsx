@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent, Typography, Box, Skeleton, Alert, IconButton, TextField, CardMedia, Divider } from '@mui/material'
-import { LocationOn, Refresh } from '@mui/icons-material'
+import { LocationOn, Refresh, WbSunny, Cloud, CloudOff, Opacity, AcUnit, Thunderstorm } from '@mui/icons-material'
 
 interface WeatherData {
   temperature: number
@@ -93,48 +93,26 @@ const getWeatherTheme = (code: number): WeatherTheme => {
   }
 }
 
-// WMO Code zu OpenWeatherMap Icon Mapping
-// OpenWeatherMap Icons: https://openweathermap.org/img/wn/{icon}@2x.png
-const getOpenWeatherIcon = (code: number): string => {
+const getMuiWeatherIcon = (code: number) => {
   // Klarer Himmel
-  if (code === 0) return '01d'
-  // Leicht bewölkt
-  if (code === 1) return '02d'
-  // Teilweise bewölkt
-  if (code === 2) return '03d'
-  // Bedeckt
-  if (code === 3) return '04d'
+  if (code === 0) return WbSunny
+  // Leicht bewölkt bis bedeckt
+  if (code >= 1 && code <= 3) return Cloud
   // Nebelig
-  if (code >= 45 && code <= 48) return '50d'
-  // Nieselregen
-  if (code >= 51 && code <= 57) return '09d'
-  // Regen
-  if (code >= 61 && code <= 67) return '10d'
+  if (code >= 45 && code <= 48) return CloudOff
+  // Nieselregen / Regen
+  if (code >= 51 && code <= 67) return Opacity
   // Schnee
-  if (code >= 71 && code <= 77) return '13d'
-  // Regenschauer
-  if (code >= 80 && code <= 82) return '09d'
+  if (code >= 71 && code <= 77) return AcUnit
   // Gewitter
-  if (code >= 95) return '11d'
-  // Default: Klarer Himmel
-  return '01d'
+  if (code >= 95) return Thunderstorm
+  // Default
+  return Cloud
 }
 
-const WeatherIcon = ({ code, size = 64 }: { code: number; size?: number }) => {
-  const iconCode = getOpenWeatherIcon(code)
-  const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@2x.png`
-
-  return (
-    <img
-      src={iconUrl}
-      alt={getWeatherDescription(code)}
-      style={{
-        width: size,
-        height: size,
-        objectFit: 'contain'
-      }}
-    />
-  )
+const WeatherIcon = ({ code, size = 64, sx }: { code: number; size?: number; sx?: object }) => {
+  const IconComponent = getMuiWeatherIcon(code)
+  return <IconComponent sx={{ fontSize: size, ...sx }} />
 }
 
 const getWeatherDescription = (code: number): string => {
@@ -373,7 +351,7 @@ export function WeatherWidget({
                       <Typography variant="caption" sx={{ fontWeight: 600, mb: 0.5 }}>
                         {day.day}
                       </Typography>
-                      <WeatherIcon code={day.weatherCode} size={54} />
+                      <WeatherIcon code={day.weatherCode} size={48} />
                       <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, alignItems: 'center' }}>
                         <Typography variant="caption" sx={{ fontWeight: 600 }}>
                           {day.maxTemp}°
