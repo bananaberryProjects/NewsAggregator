@@ -257,7 +257,7 @@ function App() {
           component="main"
           sx={{
             flexGrow: 1,
-            p: { xs: 0, sm: 3 },
+            p: { xs: 1, sm: 3 },
             width: { md: `calc(100% - ${drawerWidth}px)` },
             minHeight: '100vh',
             bgcolor: 'background.default',

@@ -148,7 +148,7 @@ export function ArticlesView({
       {loading ? (
         <Grid container spacing={3}>
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Grid size={{ xs: 11, sm: 6, md: 4 }} sx={{ mx: 'auto',  }} key={i}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} sx={{ mx: 'auto',  }} key={i}>
               <Card sx={{ height: 420 }}>
                 <Skeleton variant="rectangular" height={200} />
               </Card>
@@ -164,7 +164,7 @@ export function ArticlesView({
           {[...articlesList]
             .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
             .map((article) => (
-              <Grid size={{ xs: 11, sm: 6, md: 4 }} sx={{ mx: 'auto',  }} key={article.id}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} sx={{ mx: 'auto',  }} key={article.id}>
                 <ArticleCard
                   article={article}
                   isRead={isRead(article.id)}
