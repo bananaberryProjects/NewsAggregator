@@ -74,7 +74,21 @@ export function ArticleCard({
           </Typography>
         </Box>
         
-        <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 600, mb: 1, lineHeight: 1.3 }}>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            fontSize: '1rem', 
+            fontWeight: 600, 
+            mb: 1, 
+            lineHeight: 1.3,
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            maxHeight: '3.9em'
+          }}
+        >
           {isRead && (
             <CheckCircleIcon 
               fontSize="small" 

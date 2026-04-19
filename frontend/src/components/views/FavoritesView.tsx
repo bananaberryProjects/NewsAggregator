@@ -26,7 +26,7 @@ export function FavoritesView({
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: 600 }}>
+      <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
         Favoriten ({favoriteArticles.length})
       </Typography>
 
@@ -34,8 +34,8 @@ export function FavoritesView({
         <Grid container spacing={3}>
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} sx={{ mx: 'auto' }} key={i}>
-              <Card sx={{ height: 420 }}>
-                <Skeleton variant="rectangular" height={200} />
+              <Card sx={{ height: 500 }}>
+                <Skeleton variant="rectangular" height={250} />
               </Card>
             </Grid>
           ))}
@@ -45,7 +45,7 @@ export function FavoritesView({
           Noch keine Favoriten. Klicke auf das Bookmark-Symbol bei einem Artikel, um ihn zu den Favoriten hinzuzufuegen.
         </Alert>
       ) : (
-        <Grid container spacing={3}>
+        <Grid container spacing={2}>
           {[...favoriteArticles]
             .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
             .map((article) => (
