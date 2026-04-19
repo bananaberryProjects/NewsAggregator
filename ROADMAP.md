@@ -10,16 +10,17 @@ Feature-Ideen und zukünftige Entwicklungen für das News Aggregator Projekt.
 - [ ] **Digest-Modus** - Tägliche Zusammenfassung per Email
 
 ### 🎨 UI/UX Verbesserungen
-- [ ] **Dark Mode** - Für die Web-UI (automatisch/optional)
-- [ ] **Auto-Refresh** - Artikel automatisch alle X Minuten aktualisieren
-- [ ] **Ungelesen-Markierung** - Visueller Indikator für neue Artikel
-- [ ] **Bookmarking** - Artikel als "gelesen" oder "favorit" markieren
+- [x] **Dark Mode** - Für die Web-UI (automatisch/optional)
+- [x] **Dashboard Widgets** - Wetter, Börsenkurse, KI-Zusammenfassung
+- [x] **Auto-Refresh** - Artikel automatisch alle X Minuten aktualisieren
+- [x] **Ungelesen-Markierung** - Visueller Indikator für neue Artikel
+- [x] **Bookmarking** - Artikel als "gelesen" oder "favorit" markieren
 - [ ] **Infinite Scroll** - Statt Paginierung
 
 ### 🏷️ Organisation
-- [ ] **Kategorien/Tags** - Feeds und Artikel kategorisieren
+- [x] **Kategorien/Tags** - Feeds und Artikel kategorisieren
 - [ ] **Ordner/Collections** - Feeds in Ordner gruppieren
-- [ ] **Filter** - Nach Kategorie, Feed, Datum filtern
+- [x] **Filter** - Nach Kategorie, Feed, Datum filtern
 - [ ] **Priorisierung** - Wichtige Feeds hervorheben
 
 ### 🔍 Suche & Filter
@@ -28,11 +29,16 @@ Feature-Ideen und zukünftige Entwicklungen für das News Aggregator Projekt.
 - [ ] **Gespeicherte Suchanfragen** - "Smarte Ordner"
 
 ### 📊 Statistiken & Analytics
-- [ ] **Dashboard mit Charts** - Artikel pro Feed, Zeitverlauf
-- [ ] **Lesestatistiken** - Meistgelesene Artikel, aktive Feeds
+- [x] **Dashboard mit Charts** - Artikel pro Feed, Zeitverlauf
+- [x] **Lesestatistiken** - Meistgelesene Artikel, aktive Feeds
 - [ ] **Export-Funktion** - Artikel als PDF/CSV exportieren
 
-### 🔄 Automatisierung
+### 📤 Import/Export
+- [x] **OPML Import/Export** - Feed-Abonnements sichern und wiederherstellen
+- [ ] **Artikel-Export** - Artikel als PDF/CSV exportieren
+
+### 🤖 KI & Automatisierung
+- [x] **KI-Zusammenfassung** - Tägliche Zusammenfassung mit Ollama
 - [ ] **Smart Fetch** - Häufigkeit pro Feed konfigurierbar
 - [ ] **Auto-Cleanup** - Alte Artikel automatisch löschen (X Tage)
 - [ ] **Duplicate Detection** - Doppelte Artikel erkennen und zusammenführen
@@ -71,6 +77,8 @@ Feature-Ideen und zukünftige Entwicklungen für das News Aggregator Projekt.
 - [x] **Volltextsuche**
 - [x] **Reverse-Proxy Support**
 - [x] **Comprehensive Tests**
+- [x] **Dashboard Widgets** (Wetter, Börsenkurse, KI-Zusammenfassung)
+- [x] **OPML Import/Export**
 
 ## 📝 Notizen
 
@@ -88,4 +96,4 @@ Für neue Feature-Vorschläge:
 
 ---
 
-*Letzte Aktualisierung: 2026-04-12*
+*Letzte Aktualisierung: 2026-04-19*

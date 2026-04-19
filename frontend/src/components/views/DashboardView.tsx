@@ -1,6 +1,5 @@
-import { Box, Card, CardContent, Grid, Typography } from '@mui/material'
-import { SmartToy as SmartToyIcon } from '@mui/icons-material'
-import { WeatherWidget, StockWidget } from '../widgets'
+import { Box, Grid } from '@mui/material'
+import { WeatherWidget, StockWidget, SummaryWidget } from '../widgets'
 
 export function DashboardView() {
   return (
@@ -14,19 +13,9 @@ export function DashboardView() {
           <StockWidget />
         </Grid>
 
-        {/* AI Summary Placeholder */}
+        {/* KI Summary Widget */}
         <Grid size={{ xs: 12 }}>
-          <Card sx={{ minHeight: 200, display: 'flex', flexDirection: 'column' }}>
-            <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <SmartToyIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                KI-Zusammenfassung
-              </Typography>
-              <Typography variant="body2" color="text.secondary" textAlign="center">
-                Hier wird bald eine intelligente Zusammenfassung Ihrer neuesten Artikel angezeigt.
-              </Typography>
-            </CardContent>
-          </Card>
+          <SummaryWidget />
         </Grid>
       </Grid>
     </Box>

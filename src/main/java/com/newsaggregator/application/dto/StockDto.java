@@ -7,11 +7,15 @@ import java.math.BigDecimal;
  */
 public class StockDto {
 
-    private final String symbol;
-    private final String name;
-    private final BigDecimal value;
-    private final BigDecimal change;
-    private final BigDecimal changePercent;
+    private String symbol;
+    private String name;
+    private BigDecimal value;
+    private BigDecimal change;
+    private BigDecimal changePercent;
+
+    // No-arg constructor for Jackson deserialization
+    public StockDto() {
+    }
 
     public StockDto(String symbol, String name, BigDecimal value, BigDecimal change, BigDecimal changePercent) {
         this.symbol = symbol;
@@ -25,19 +29,39 @@ public class StockDto {
         return symbol;
     }
 
+    public void setSymbol(String symbol) {
+        this.symbol = symbol;
+    }
+
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public BigDecimal getValue() {
         return value;
     }
 
+    public void setValue(BigDecimal value) {
+        this.value = value;
+    }
+
     public BigDecimal getChange() {
         return change;
     }
 
+    public void setChange(BigDecimal change) {
+        this.change = change;
+    }
+
     public BigDecimal getChangePercent() {
         return changePercent;
+    }
+
+    public void setChangePercent(BigDecimal changePercent) {
+        this.changePercent = changePercent;
     }
 }

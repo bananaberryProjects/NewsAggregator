@@ -11,7 +11,7 @@ interface CategoriesViewProps {
 export function CategoriesView({ categories, loading, onDelete }: CategoriesViewProps) {
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: 600 }}>
+      <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
         Kategorien ({categories.length})
       </Typography>
 

@@ -10,7 +10,6 @@ import {
   Typography,
   Avatar,
   IconButton,
-  CircularProgress,
   Divider,
 } from '@mui/material'
 import {
@@ -19,8 +18,6 @@ import {
   Newspaper as NewspaperIcon,
   Favorite as FavoriteIcon,
   Label as LabelIcon,
-  Refresh as RefreshIcon,
-  Delete as DeleteIcon,
   Assessment as AssessmentIcon,
   Close as CloseIcon,
 } from '@mui/icons-material'
@@ -38,10 +35,6 @@ interface SidebarProps {
   categories: Category[]
   articleCount: number
   favoriteCount: number
-  refreshingFeedId: string | null
-  onRefreshFeed: (feed: Feed) => void
-  onDeleteFeed: (feed: Feed) => void
-  onAssignCategories: (feed: Feed) => void
   isDark?: boolean
   onToggleTheme?: () => void
   activeCategoryFilter?: string[]
@@ -57,10 +50,6 @@ export function Sidebar({
   categories,
   articleCount,
   favoriteCount,
-  refreshingFeedId,
-  onRefreshFeed,
-  onDeleteFeed,
-  onAssignCategories,
   isDark,
   onToggleTheme,
 }: SidebarProps) {
@@ -165,40 +154,6 @@ export function Sidebar({
             <ListItem 
               key={feed.id} 
               disablePadding
-              secondaryAction={
-                <Box sx={{ display: 'flex', gap: 0.5 }}>
-                  <IconButton 
-                    edge="end" 
-                    size="small"
-                    onClick={() => onAssignCategories(feed)}
-                    sx={{ opacity: 0.6, '&:hover': { opacity: 1 } }}
-                    title="Kategorien zuweisen"
-                  >
-                    <LabelIcon fontSize="small" color="secondary" />
-                  </IconButton>
-                  <IconButton 
-                    edge="end" 
-                    size="small"
-                    onClick={() => onRefreshFeed(feed)}
-                    disabled={refreshingFeedId === feed.id}
-                    sx={{ opacity: 0.6, '&:hover': { opacity: 1 } }}
-                  >
-                    {refreshingFeedId === feed.id ? (
-                      <CircularProgress size={16} />
-                    ) : (
-                      <RefreshIcon fontSize="small" color="primary" />
-                    )}
-                  </IconButton>
-                  <IconButton 
-                    edge="end" 
-                    size="small"
-                    onClick={() => onDeleteFeed(feed)}
-                    sx={{ opacity: 0.6, '&:hover': { opacity: 1 } }}
-                  >
-                    <DeleteIcon fontSize="small" color="error" />
-                  </IconButton>
-                </Box>
-              }
             >
               <ListItemButton>
                 <Avatar sx={{ width: 24, height: 24, mr: 1, bgcolor: 'primary.main' }}>

@@ -172,7 +172,7 @@ export function StockWidget({ refreshIntervalSeconds = 600 }: StockWidgetProps) 
     <Card sx={{ height: '100%', minHeight: 200 }}>
       <CardMedia
         sx={{
-          height: 60,
+          height: 50,
           background: sentiment.gradient,
           display: 'flex',
           alignItems: 'center',
@@ -183,11 +183,8 @@ export function StockWidget({ refreshIntervalSeconds = 600 }: StockWidgetProps) 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: 'white' }}>
           {sentiment.icon}
           <Box>
-            <Typography variant="h6" component="div" sx={{ fontWeight: 600, lineHeight: 1.2, color: 'white' }}>
+            <Typography variant="h6" component="div" sx={{ fontWeight: 500, lineHeight: 1.2, color: 'white' }}>
               Börse
-            </Typography>
-            <Typography variant="caption" sx={{ opacity: 0.9, color: 'white' }}>
-              {sentiment.label}
             </Typography>
           </Box>
         </Box>

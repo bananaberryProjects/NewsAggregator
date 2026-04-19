@@ -1,4 +1,4 @@
-import { Box, Card, Skeleton, Typography, Alert } from '@mui/material'
+import { Box, Card, Grid, Skeleton, Typography, Alert } from '@mui/material'
 import { ArticleCard } from '../ArticleCard'
 import type { Article } from '../../api/client'
 
@@ -26,38 +26,41 @@ export function FavoritesView({
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: 600 }}>
+      <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
         Favoriten ({favoriteArticles.length})
       </Typography>
 
       {loading ? (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} sx={{ width: 480, height: 420 }}>
-              <Skeleton variant="rectangular" height={200} />
-            </Card>
+        <Grid container spacing={3}>
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} sx={{ mx: 'auto' }} key={i}>
+              <Card sx={{ height: 430 }}>
+                <Skeleton variant="rectangular" height={200} />
+              </Card>
+            </Grid>
           ))}
-        </Box>
+        </Grid>
       ) : favoriteArticles.length === 0 ? (
         <Alert severity="info">
-          Noch keine Favoriten. Klicke auf das Bookmark-Symbol bei einem Artikel, um ihn zu den Favoriten hinzuzufügen.
+          Noch keine Favoriten. Klicke auf das Bookmark-Symbol bei einem Artikel, um ihn zu den Favoriten hinzuzufuegen.
         </Alert>
       ) : (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
+        <Grid container spacing={2}>
           {[...favoriteArticles]
             .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
             .map((article) => (
-              <ArticleCard
-                key={article.id}
-                article={article}
-                isRead={isRead(article.id)}
-                isFavorite={isFavorite(article.id)}
-                updating={updatingArticleId === article.id}
-                onToggleRead={() => onToggleRead(article.id)}
-                onToggleFavorite={() => onToggleFavorite(article.id)}
-              />
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} sx={{ mx: 'auto' }} key={article.id}>
+                <ArticleCard
+                  article={article}
+                  isRead={isRead(article.id)}
+                  isFavorite={isFavorite(article.id)}
+                  updating={updatingArticleId === article.id}
+                  onToggleRead={() => onToggleRead(article.id)}
+                  onToggleFavorite={() => onToggleFavorite(article.id)}
+                />
+              </Grid>
             ))}
-        </Box>
+        </Grid>
       )}
     </Box>
   )

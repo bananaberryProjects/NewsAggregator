@@ -1,5 +1,6 @@
 package com.newsaggregator.application.dto;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -7,7 +8,12 @@ import java.util.List;
  */
 public class StockListDto {
 
-    private final List<StockDto> stocks;
+    private List<StockDto> stocks;
+
+    // No-arg constructor for Jackson deserialization
+    public StockListDto() {
+        this.stocks = new ArrayList<>();
+    }
 
     public StockListDto(List<StockDto> stocks) {
         this.stocks = stocks;
@@ -15,5 +21,10 @@ public class StockListDto {
 
     public List<StockDto> getStocks() {
         return stocks;
+    }
+
+    // Setter required for Jackson deserialization
+    public void setStocks(List<StockDto> stocks) {
+        this.stocks = stocks;
     }
 }

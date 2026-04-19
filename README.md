@@ -73,6 +73,8 @@ npx vite --host 0.0.0.0
 - ✅ **Cascade Delete** - Löschen eines Feeds löscht alle Artikel
 - ✅ **Artikel Status** - Lesen/Favoriten verwalten (PostgreSQL)
 - ✅ **Statistiken API** - Lesegewohnheiten mit /api/stats
+- ✅ **OPML Import/Export** - Feeds im OPML-Format importieren/exportieren
+- ✅ **KI-Zusammenfassung** - Tägliche Zusammenfassung mit Ollama-Integration
 
 ### Frontend
 - ✅ **React 19** mit TypeScript
@@ -93,6 +95,9 @@ npx vite --host 0.0.0.0
 - ✅ **Datum-Anzeige** - In Artikel-Kacheln mit Kalender-Icon
 - ✅ **Dashboard-Limit** - Maximal 10 neueste Artikel, nach Datum sortiert
 - ✅ **Verbesserte Textdarstellung** - Natürliche Beschreibungs-Umbrüche
+- ✅ **Dashboard Widgets** - Wetter, Börsenkurse & KI-Zusammenfassung
+- ✅ **Multi-Column Layout** - Favoriten-Seite mit Grid-Layout
+- ✅ **Artikel-Kacheln** - Optimierte Höhe für 3 Zeilen Titel + Beschreibung
 
 ## 🔌 API Endpoints
 
@@ -114,14 +119,20 @@ npx vite --host 0.0.0.0
 | GET | `/api/articles/read` | Alle gelesenen Artikel |
 | GET | `/api/articles/favorites` | Alle Favoriten |
 | GET | `/api/stats` | Lesestatistiken (Gesamt, pro Tag, pro Feed) |
+| GET | `/api/opml/export` | Feeds als OPML exportieren |
+| POST | `/api/opml/import` | Feeds aus OPML importieren |
+| GET | `/api/stocks` | Aktuelle Börsenkurse (DAX, S&P 500, BTC) |
+| GET | `/api/weather` | Aktuelle Wetterdaten |
+| GET | `/api/summary` | KI-generierte Tageszusammenfassung |
 
 ## 🖥️ Frontend Views
 
-- **🏠 Dashboard** - Statistik-Karten + Neueste 10 Artikel mit Filter (Alle/Ungelesen/Favoriten)
+- **🏠 Dashboard** - Interaktive Widgets (Wetter, Börsenkurse, KI-Zusammenfassung)
 - **📰 Feeds** - Alle Feeds mit Refresh/Delete-Buttons
 - **📄 Artikel** - Alle Artikel mit Filter (Alle/Ungelesen/Favoriten) + Interaktions-Icons
-- **⭐ Favoriten** - Alle als Favorit markierte Artikel
+- **⭐ Favoriten** - Alle als Favorit markierte Artikel (Multi-Column Grid)
 - **📊 Statistiken** - Lesegewohnheiten mit Charts (Artikel/Tag, pro Feed, Gelesen/Ungelesen)
+- **📤 OPML Import/Export** - Feeds im OPML-Format verwalten
 
 ## 📖 Technologien
 

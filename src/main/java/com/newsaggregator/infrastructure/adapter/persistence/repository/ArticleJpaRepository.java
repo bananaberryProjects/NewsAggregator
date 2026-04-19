@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -47,6 +48,14 @@ public interface ArticleJpaRepository extends JpaRepository<ArticleJpaEntity, Lo
      * @return Anzahl der Artikel
      */
     long countByFeedId(Long feedId);
+
+    /**
+     * Findet alle Artikel nach einem bestimmten Veröffentlichungsdatum.
+     *
+     * @param date Das Datum, nach dem gesucht wird
+     * @return Liste der Artikel
+     */
+    List<ArticleJpaEntity> findByPublishedAtAfter(LocalDateTime date);
 
     /**
      * Lädt alle Artikel mit Feed und Kategorien (Eager Loading).
