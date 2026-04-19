@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { Card, CardContent, Typography, Box, Skeleton, Alert, IconButton, Divider } from '@mui/material'
-import { TrendingUp, TrendingDown, Refresh, ShowChart } from '@mui/icons-material'
+import React, { useEffect, useState } from 'react'
+import { Card, CardContent, Typography, Box, Skeleton, Alert, IconButton, Divider, CardMedia } from '@mui/material'
+import { TrendingUp, TrendingDown, Refresh, ShowChart, Remove } from '@mui/icons-material'
 
 interface StockIndex {
   symbol: string
@@ -8,6 +8,57 @@ interface StockIndex {
   value: number
   change: number
   changePercent: number
+}
+
+type Sentiment = 'bullish' | 'bearish' | 'neutral'
+
+interface SentimentConfig {
+  type: Sentiment
+  gradient: string
+  icon: React.ReactNode
+  label: string
+}
+
+const getMarketSentiment = (stocks: StockIndex[]): SentimentConfig => {
+  if (stocks.length === 0) {
+    return {
+      type: 'neutral',
+      gradient: 'linear-gradient(135deg, #607d8b 0%, #90a4ae 100%)',
+      icon: <Remove sx={{ fontSize: 32 }} />,
+      label: 'Neutral'
+    }
+  }
+
+  const positiveCount = stocks.filter(s => s.change >= 0).length
+  const negativeCount = stocks.filter(s => s.change < 0).length
+  const total = stocks.length
+  const positiveRatio = positiveCount / total
+  const negativeRatio = negativeCount / total
+
+  if (positiveRatio > 0.5) {
+    return {
+      type: 'bullish',
+      gradient: 'linear-gradient(135deg, #4caf50 0%, #81c784 100%)',
+      icon: <TrendingUp sx={{ fontSize: 32 }} />,
+      label: 'Bullisch'
+    }
+  }
+
+  if (negativeRatio > 0.5) {
+    return {
+      type: 'bearish',
+      gradient: 'linear-gradient(135deg, #f44336 0%, #e57373 100%)',
+      icon: <TrendingDown sx={{ fontSize: 32 }} />,
+      label: 'Bärisch'
+    }
+  }
+
+  return {
+    type: 'neutral',
+    gradient: 'linear-gradient(135deg, #607d8b 0%, #90a4ae 100%)',
+    icon: <Remove sx={{ fontSize: 32 }} />,
+    label: 'Neutral'
+  }
 }
 
 interface StockWidgetProps {
@@ -103,24 +154,43 @@ export function StockWidget({ refreshInterval = 5 }: StockWidgetProps) {
     })
   }
 
+  const sentiment = getMarketSentiment(stocks)
+
   return (
     <Card sx={{ height: '100%', minHeight: 200 }}>
-      <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
-            Börse
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {lastUpdate && (
-              <Typography variant="caption" color="text.secondary">
-                {formatTime(lastUpdate)}
-              </Typography>
-            )}
-            <IconButton size="small" onClick={fetchStocks} disabled={loading}>
-              <Refresh />
-            </IconButton>
+      <CardMedia
+        sx={{
+          height: 60,
+          background: sentiment.gradient,
+          display: 'flex',
+          alignItems: 'center',
+          px: 2,
+          justifyContent: 'space-between'
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: 'white' }}>
+          {sentiment.icon}
+          <Box>
+            <Typography variant="h6" component="div" sx={{ fontWeight: 600, lineHeight: 1.2, color: 'white' }}>
+              Börse
+            </Typography>
+            <Typography variant="caption" sx={{ opacity: 0.9, color: 'white' }}>
+              {sentiment.label}
+            </Typography>
           </Box>
         </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {lastUpdate && (
+            <Typography variant="caption" sx={{ opacity: 0.9, color: 'white' }}>
+              {formatTime(lastUpdate)}
+            </Typography>
+          )}
+          <IconButton size="small" onClick={fetchStocks} disabled={loading} sx={{ color: 'white' }}>
+            <Refresh />
+          </IconButton>
+        </Box>
+      </CardMedia>
+      <CardContent>
 
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
