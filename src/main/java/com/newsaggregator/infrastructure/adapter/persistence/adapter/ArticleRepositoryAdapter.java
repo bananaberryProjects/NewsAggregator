@@ -114,8 +114,8 @@ public class ArticleRepositoryAdapter implements ArticleRepository {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Article> findByPublishedDateAfter(LocalDateTime date) {
-        return jpaRepository.findByPublishedDateAfter(date).stream()
+    public List<Article> findByPublishedAtAfter(LocalDateTime date) {
+        return jpaRepository.findByPublishedAtAfter(date).stream()
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
     }
