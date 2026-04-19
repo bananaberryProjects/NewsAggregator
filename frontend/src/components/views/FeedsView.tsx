@@ -55,7 +55,7 @@ export function FeedsView({ feeds, loading, refreshingFeedId, onRefresh, onDelet
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-        <Typography variant="h4" sx={{ fontWeight: 600 }}>
+        <Typography variant="h5" sx={{ fontWeight: 600 }}>
           Alle Feeds
         </Typography>
         

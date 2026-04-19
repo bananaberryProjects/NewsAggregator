@@ -85,7 +85,7 @@ export default function StatisticsView() {
 
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h4" gutterBottom>
+      <Typography variant="h5" gutterBottom>
         📊 Lesestatistiken
       </Typography>
 
