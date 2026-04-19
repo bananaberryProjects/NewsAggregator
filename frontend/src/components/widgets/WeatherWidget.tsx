@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Card, CardContent, Typography, Box, Skeleton, Alert, IconButton, CardMedia, Divider, FormControl, InputLabel, Select, MenuItem, TextField, Button } from '@mui/material'
+import { Card, CardContent, Typography, Box, Skeleton, Alert, IconButton, CardMedia, Divider } from '@mui/material'
 import { Refresh, WbSunny, Cloud, CloudOff, Opacity, AcUnit, Thunderstorm } from '@mui/icons-material'
 
 interface WeatherData {
@@ -34,6 +34,7 @@ interface City {
   lon: number
 }
 
+// List of cities kept for potential fallback (not shown in UI)
 const CITIES: City[] = [
   { name: 'Berlin', lat: 52.52, lon: 13.41 },
   { name: 'München', lat: 48.14, lon: 11.58 },
@@ -45,7 +46,7 @@ const CITIES: City[] = [
   { name: 'Leipzig', lat: 51.34, lon: 12.37 },
   { name: 'Dresden', lat: 51.05, lon: 13.74 },
   { name: 'Nürnberg', lat: 49.45, lon: 11.08 },
-  // Additional cities
+  // Additional cities (unused in UI)
   { name: 'Kiel', lat: 54.32, lon: 10.13 },
   { name: 'Bremen', lat: 53.08, lon: 8.80 },
   { name: 'Mannheim', lat: 49.48, lon: 8.46 },
@@ -53,85 +54,42 @@ const CITIES: City[] = [
   { name: 'Bonn', lat: 50.73, lon: 7.10 }
 ]
 
-// WMO Weather interpretation codes - https://open-meteo.com/en/docs
+// WMO Weather interpretation codes – https://open-meteo.com/en/docs
 const getWeatherTheme = (code: number): WeatherTheme => {
-  // Sonnig: Klarer Himmel
   if (code === 0) {
-    return {
-      gradient: 'linear-gradient(135deg, #FFD54F 0%, #FFB300 50%, #FF8F00 100%)',
-      iconBg: '#FFF8E1'
-    }
+    return { gradient: 'linear-gradient(135deg, #FFD54F 0%, #FFB300 50%, #FF8F00 100%)', iconBg: '#FFF8E1' }
   }
-  // Bewölkt: Leicht bewölkt bis bedeckt
   if (code >= 1 && code <= 3) {
-    return {
-      gradient: 'linear-gradient(135deg, #ECEFF1 0%, #B0BEC5 50%, #78909C 100%)',
-      iconBg: '#ECEFF1'
-    }
+    return { gradient: 'linear-gradient(135deg, #ECEFF1 0%, #B0BEC5 50%, #78909C 100%)', iconBg: '#ECEFF1' }
   }
-  // Nebelig
   if (code >= 45 && code <= 48) {
-    return {
-      gradient: 'linear-gradient(135deg, #CFD8DC 0%, #B0BEC5 100%)',
-      iconBg: '#CFD8DC'
-    }
+    return { gradient: 'linear-gradient(135deg, #CFD8DC 0%, #B0BEC5 100%)', iconBg: '#CFD8DC' }
   }
-  // Nieselregen / leichter Regen
   if (code >= 51 && code <= 57) {
-    return {
-      gradient: 'linear-gradient(135deg, #90CAF9 0%, #42A5F5 100%)',
-      iconBg: '#E3F2FD'
-    }
+    return { gradient: 'linear-gradient(135deg, #90CAF9 0%, #42A5F5 100%)', iconBg: '#E3F2FD' }
   }
-  // Regen
   if (code >= 61 && code <= 67) {
-    return {
-      gradient: 'linear-gradient(135deg, #42A5F5 0%, #1976D2 100%)',
-      iconBg: '#BBDEFB'
-    }
+    return { gradient: 'linear-gradient(135deg, #42A5F5 0%, #1976D2 100%)', iconBg: '#BBDEFB' }
   }
-  // Schnee
   if (code >= 71 && code <= 77) {
-    return {
-      gradient: 'linear-gradient(135deg, #B3E5FC 0%, #4FC3F7 50%, #81D4FA 100%)',
-      iconBg: '#E1F5FE'
-    }
+    return { gradient: 'linear-gradient(135deg, #B3E5FC 0%, #4FC3F7 50%, #81D4FA 100%)', iconBg: '#E1F5FE' }
   }
-  // Regenschauer
   if (code >= 80 && code <= 82) {
-    return {
-      gradient: 'linear-gradient(135deg, #1976D2 0%, #0D47A1 100%)',
-      iconBg: '#90CAF9'
-    }
+    return { gradient: 'linear-gradient(135deg, #1976D2 0%, #0D47A1 100%)', iconBg: '#90CAF9' }
   }
-  // Gewitter
   if (code >= 95) {
-    return {
-      gradient: 'linear-gradient(135deg, #5C6BC0 0%, #3949AB 50%, #1A237E 100%)',
-      iconBg: '#C5CAE9'
-    }
+    return { gradient: 'linear-gradient(135deg, #5C6BC0 0%, #3949AB 50%, #1A237E 100%)', iconBg: '#C5CAE9' }
   }
-  // Default: Sonnig
-  return {
-    gradient: 'linear-gradient(135deg, #FFD54F 0%, #FFB300 100%)',
-    iconBg: '#FFF8E1'
-  }
+  return { gradient: 'linear-gradient(135deg, #FFD54F 0%, #FFB300 100%)', iconBg: '#FFF8E1' }
 }
 
 const getMuiWeatherIcon = (code: number) => {
-  // Klarer Himmel
   if (code === 0) return WbSunny
-  // Leicht bewölkt bis bedeckt
   if (code >= 1 && code <= 3) return Cloud
-  // Nebelig
   if (code >= 45 && code <= 48) return CloudOff
-  // Nieselregen / Regen
   if (code >= 51 && code <= 67) return Opacity
-  // Schnee
   if (code >= 71 && code <= 77) return AcUnit
-  // Gewitter
   if (code >= 95) return Thunderstorm
-  // Default
   return Cloud
 }
 
@@ -171,34 +129,54 @@ export function WeatherWidget({
   const [forecast, setForecast] = useState<ForecastDay[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedLocation, setSelectedLocation] = useState<City>(() => {
+
+  // Initialise with defaults; will be overwritten by geolocation or saved location
+  const [selectedLocation, setSelectedLocation] = useState<City>({
+    name: defaultCity,
+    lat: defaultLatitude,
+    lon: defaultLongitude
+  })
+
+  // Load saved location from localStorage on mount
+  useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
       try {
-        return JSON.parse(saved) as City
+        const parsed = JSON.parse(saved) as City
+        setSelectedLocation(parsed)
       } catch {}
     }
-    return { name: defaultCity, lat: defaultLatitude, lon: defaultLongitude }
-  })
+  }, [])
 
-  // State for custom city input
-  const [customCity, setCustomCity] = useState('')
+  // Obtain user's location on mount (fallback to defaults if denied)
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords
+          setSelectedLocation({ name: 'Mein Standort', lat: latitude, lon: longitude })
+        },
+        () => {
+          // Permission denied – keep current (default or saved) location
+        }
+      )
+    }
+  }, [])
+
+  // Persist location changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(selectedLocation))
+  }, [selectedLocation])
 
   const fetchWeather = async () => {
     setLoading(true)
     setError(null)
-
     try {
       const response = await fetch(
         `https://api.open-meteo.com/v1/forecast?latitude=${selectedLocation.lat}&longitude=${selectedLocation.lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&forecast_days=3`
       )
-
-      if (!response.ok) {
-        throw new Error('Wetterdaten konnten nicht geladen werden')
-      }
-
+      if (!response.ok) throw new Error('Wetterdaten konnten nicht geladen werden')
       const data = await response.json()
-
       setWeather({
         temperature: data.current.temperature_2m,
         weatherCode: data.current.weather_code,
@@ -206,8 +184,6 @@ export function WeatherWidget({
         todayMin: Math.round(data.daily.temperature_2m_min[0]),
         todayMax: Math.round(data.daily.temperature_2m_max[0])
       })
-
-      // Parse forecast data
       if (data.daily) {
         const forecastData: ForecastDay[] = []
         for (let i = 0; i < data.daily.time.length; i++) {
@@ -227,52 +203,20 @@ export function WeatherWidget({
     }
   }
 
-  // Fetch weather when location changes
+  // Refetch when location changes
   useEffect(() => {
     fetchWeather()
-  }, [selectedLocation])
-
-  // Save location to localStorage when it changes
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(selectedLocation))
   }, [selectedLocation])
 
   const handleRefresh = () => {
     fetchWeather()
   }
 
-  // Custom city handling
-  const handleCustomCity = async () => {
-    if (!customCity.trim()) return
-    try {
-      const resp = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(customCity)}&count=1`)
-      const data = await resp.json()
-      if (data.results && data.results.length > 0) {
-        const loc = data.results[0]
-        setSelectedLocation({ name: loc.name, lat: loc.latitude, lon: loc.longitude })
-        setCustomCity('')
-        setError(null)
-      } else {
-        setError('Stadt nicht gefunden')
-      }
-    } catch (e) {
-      setError('Fehler beim Suchen der Stadt')
-    }
-  }
-
-  const handleLocationChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    const cityName = event.target.value as string
-    const city = CITIES.find(c => c.name === cityName)
-    if (city) {
-      setSelectedLocation(city)
-    }
-  }
-
   const theme = weather ? getWeatherTheme(weather.weatherCode) : getWeatherTheme(0)
 
   return (
     <Card sx={{ height: '100%', minHeight: 200, overflow: 'hidden' }}>
-      {/* Dynamischer Header mit Hintergrund-Farbverlauf */}
+      {/* Header */}
       <CardMedia
         sx={{
           height: 60,
@@ -288,63 +232,18 @@ export function WeatherWidget({
           Wetter
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <Select
-              value={selectedLocation.name}
-              onChange={handleLocationChange}
-              sx={{
-                color: 'white',
-                '.MuiSelect-icon': { color: 'white' },
-                '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.5)' },
-                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'white' }
-              }}
-            >
-              {CITIES.map((city) => (
-                <MenuItem key={city.name} value={city.name}>
-                  {city.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
           <IconButton size="small" onClick={handleRefresh} disabled={loading} sx={{ color: 'white' }}>
             <Refresh />
           </IconButton>
         </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}>
-            <TextField
-              size="small"
-              placeholder="Stadt"
-              value={customCity}
-              onChange={(e) => setCustomCity(e.target.value)}
-              sx={{
-                backgroundColor: 'rgba(255,255,255,0.15)',
-                borderRadius: 1,
-                mr: 0.5,
-                '& .MuiInputBase-input': { color: 'white' },
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.5)' },
-                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'white' }
-              }}
-            />
-            <Button
-              variant="contained"
-              size="small"
-              onClick={handleCustomCity}
-              disabled={!customCity.trim()}
-              sx={{ textTransform: 'none' }}
-            >
-              Add
-            </Button>
-          </Box>
-        </CardMedia>
+      </CardMedia>
 
       <CardContent sx={{ pt: 2 }}>
-
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
           </Alert>
         )}
-
         {loading ? (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Skeleton variant="rounded" width={64} height={64} sx={{ borderRadius: 1 }} />
@@ -355,9 +254,8 @@ export function WeatherWidget({
           </Box>
         ) : weather ? (
           <Box>
-            {/* Aktuelles Wetter */}
+            {/* Current weather */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              {/* Links: Icon + Temp + Min/Max */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Box
                   sx={{
@@ -384,8 +282,6 @@ export function WeatherWidget({
                   </Typography>
                 </Box>
               </Box>
-
-              {/* Rechts: Ort + Beschreibung */}
               <Box sx={{ textAlign: 'right' }}>
                 <Typography variant="h5" color="text.secondary" sx={{ fontWeight: 500 }}>
                   {selectedLocation.name}
@@ -395,13 +291,12 @@ export function WeatherWidget({
                 </Typography>
               </Box>
             </Box>
-
-            {/* 3-Tage Vorhersage */}
+            {/* Forecast */}
             {forecast.length > 0 && (
               <>
                 <Divider sx={{ my: 1.5 }} />
                 <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-                  3-Tage Vorhersage
+                  3‑Tage Vorhersage
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1 }}>
                   {forecast.map((day, index) => (
