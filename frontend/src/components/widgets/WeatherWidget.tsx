@@ -165,7 +165,17 @@ export function WeatherWidget({
   const [forecast, setForecast] = useState<ForecastDay[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedLocation, setSelectedLocation] = useState<City>({ name: defaultCity, lat: defaultLatitude, lon: defaultLongitude })
+  const [selectedLocation, setSelectedLocation] = useState<City>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      try {
+        return JSON.parse(saved) as City
+      } catch {
+        // Invalid saved data, fall through to default
+      }
+    }
+    return { name: defaultCity, lat: defaultLatitude, lon: defaultLongitude }
+  })
 
   const fetchWeather = async () => {
     setLoading(true)
@@ -209,19 +219,6 @@ export function WeatherWidget({
       setLoading(false)
     }
   }
-
-  // Load saved location from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved) as City
-        setSelectedLocation(parsed)
-      } catch {
-        // Invalid saved data, ignore
-      }
-    }
-  }, [])
 
   // Fetch weather when location changes
   useEffect(() => {
