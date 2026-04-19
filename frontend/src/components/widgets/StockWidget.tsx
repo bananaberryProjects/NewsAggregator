@@ -160,7 +160,7 @@ export function StockWidget({ refreshInterval = 5 }: StockWidgetProps) {
     <Card sx={{ height: '100%', minHeight: 200 }}>
       <CardMedia
         sx={{
-          height: 60,
+          height: 80,
           background: sentiment.gradient,
           display: 'flex',
           alignItems: 'center',
