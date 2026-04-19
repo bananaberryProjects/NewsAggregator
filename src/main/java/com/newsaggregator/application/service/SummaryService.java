@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class SummaryService {
@@ -35,49 +36,38 @@ public class SummaryService {
     }
 
     public String generateSummary() {
-        // Get articles from last 72 hours (more lenient for testing)
         LocalDateTime cutoff = LocalDateTime.now().minusHours(72);
         List<Article> recentArticles = articleRepository.findByPublishedAtAfter(cutoff);
 
-        System.out.println("[SummaryService] Found " + recentArticles.size() + " articles in last 72h");
-
         if (recentArticles.isEmpty()) {
-            // Fallback: get last 10 articles regardless of date
             recentArticles = articleRepository.findAll().stream()
                 .sorted((a, b) -> b.getPublishedAt().compareTo(a.getPublishedAt()))
                 .limit(10)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
             
             if (recentArticles.isEmpty()) {
-                return "Keine Artikel verfügbar. Bitte fügen Sie Feeds hinzu.";
+                return "Keine Artikel verfuegbar.";
             }
         }
 
-        // Build prompt
         StringBuilder prompt = new StringBuilder();
-        prompt.append("Erstelle eine kurze, informative Zusammenfassung (max. 3 Sätze) der folgenden News-Artikel:\n\n");
+        prompt.append("Erstelle eine kurze Zusammenfassung (max. 3 Saetze):\n\n");
         
-        recentArticles.stream()
-            .limit(10) // Limit to 10 most recent
-            .forEach(article -> {
-                prompt.append("- ").append(article.getTitle());
-                if (article.getDescription() != null && !article.getDescription().isEmpty()) {
-                    prompt.append(": ").append(article.getDescription().substring(0, 
-                        Math.min(article.getDescription().length(), 100)));
-                }
-                prompt.append("\n");
-            });
+        for (Article article : recentArticles.stream().limit(10).toList()) {
+            prompt.append("- ").append(article.getTitle());
+            if (article.getDescription() != null && !article.getDescription().isEmpty()) {
+                prompt.append(": ").append(article.getDescription().substring(0, 
+                    Math.min(article.getDescription().length(), 100)));
+            }
+            prompt.append("\n");
+        }
 
         prompt.append("\nZusammenfassung:");
 
-        // Call Ollama
         try {
-            System.out.println("[SummaryService] Calling Ollama with prompt length: " + prompt.length());
             String summary = callOllama(prompt.toString());
-            System.out.println("[SummaryService] Ollama response: " + summary);
             return summary != null && !summary.isEmpty() ? summary : generateFallbackSummary(recentArticles);
         } catch (Exception e) {
-            System.err.println("[SummaryService] Error calling Ollama: " + e.getMessage());
             return generateFallbackSummary(recentArticles);
         }
     }
@@ -90,7 +80,6 @@ public class SummaryService {
                 .map(Article::getTitle)
                 .reduce((a, b) -> a + ", " + b)
                 .orElse("Keine Artikel"));
-    }
     }
 
     private String callOllama(String prompt) throws Exception {
