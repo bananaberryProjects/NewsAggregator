@@ -1,9 +1,12 @@
 package com.newsaggregator.application.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.newsaggregator.domain.model.Article;
-import com.newsaggregator.domain.port.out.ArticleRepository;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -11,10 +14,10 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.newsaggregator.domain.model.Article;
+import com.newsaggregator.domain.port.out.ArticleRepository;
 
 @Service
 public class SummaryService {
@@ -36,18 +39,12 @@ public class SummaryService {
     }
 
     public String generateSummary() {
-        LocalDateTime cutoff = LocalDateTime.now().minusHours(72);
-        List<Article> recentArticles = articleRepository.findByPublishedAtAfter(cutoff);
+        // Get articles from today (since midnight)
+        LocalDateTime todayStart = LocalDate.now().atStartOfDay();
+        List<Article> recentArticles = articleRepository.findByPublishedAtAfter(todayStart);
 
         if (recentArticles.isEmpty()) {
-            recentArticles = articleRepository.findAll().stream()
-                .sorted((a, b) -> b.getPublishedAt().compareTo(a.getPublishedAt()))
-                .limit(10)
-                .collect(Collectors.toList());
-            
-            if (recentArticles.isEmpty()) {
-                return "Keine Artikel verfuegbar.";
-            }
+            return "Keine neuen Artikel fuer heute verfuegbar.";
         }
 
         StringBuilder prompt = new StringBuilder();
