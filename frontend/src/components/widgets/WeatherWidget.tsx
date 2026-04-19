@@ -6,6 +6,8 @@ interface WeatherData {
   temperature: number
   weatherCode: number
   description: string
+  todayMin: number
+  todayMax: number
 }
 
 interface ForecastDay {
@@ -187,7 +189,9 @@ export function WeatherWidget({
       setWeather({
         temperature: data.current.temperature_2m,
         weatherCode: data.current.weather_code,
-        description: getWeatherDescription(data.current.weather_code)
+        description: getWeatherDescription(data.current.weather_code),
+        todayMin: Math.round(data.daily.temperature_2m_min[0]),
+        todayMax: Math.round(data.daily.temperature_2m_max[0])
       })
 
       // Parse forecast data
@@ -301,30 +305,38 @@ export function WeatherWidget({
         ) : weather ? (
           <Box>
             {/* Aktuelles Wetter */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 2 }}>
-              {/* Grosses Icon mit Hintergrund */}
-              <Box
-                sx={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: '50%',
-                  backgroundColor: theme.iconBg,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  flexShrink: 0
-                }}
-              >
-                <WeatherIcon code={weather.weatherCode} size={64} />
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              {/* Links: Icon + Temp + Min/Max */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: '50%',
+                    backgroundColor: theme.iconBg,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    flexShrink: 0
+                  }}
+                >
+                  <WeatherIcon code={weather.weatherCode} size={64} />
+                </Box>
+                <Box>
+                  <Typography variant="h3" component="div" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+                    {Math.round(weather.temperature)}°C
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
+                    <span>H: {weather.todayMax}°</span>
+                    <span>T: {weather.todayMin}°</span>
+                  </Typography>
+                </Box>
               </Box>
 
-              {/* Temperatur und Details */}
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="h3" component="div" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
-                  {Math.round(weather.temperature)}°C
-                </Typography>
-                <Typography variant="body1" sx={{ fontWeight: 500, color: 'text.primary', mt: 0.5 }}>
+              {/* Rechts: Ort + Beschreibung */}
+              <Box sx={{ textAlign: 'right' }}>
+                <Typography variant="body1" sx={{ fontWeight: 500, color: 'text.primary' }}>
                   {weather.description}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -361,7 +373,7 @@ export function WeatherWidget({
                       <Typography variant="caption" sx={{ fontWeight: 600, mb: 0.5 }}>
                         {day.day}
                       </Typography>
-                      <WeatherIcon code={day.weatherCode} size={32} />
+                      <WeatherIcon code={day.weatherCode} size={54} />
                       <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, alignItems: 'center' }}>
                         <Typography variant="caption" sx={{ fontWeight: 600 }}>
                           {day.maxTemp}°
