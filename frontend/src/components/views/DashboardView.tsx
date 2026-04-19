@@ -94,7 +94,7 @@ export function DashboardView({
   return (
     <Box>
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 11, sm: 6, md: 3 }}>
           <Paper elevation={2} sx={{ p: 2, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <FeedIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8 }} />
@@ -107,7 +107,7 @@ export function DashboardView({
             </Box>
           </Paper>
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 11, sm: 6, md: 3 }}>
           <Paper elevation={2} sx={{ p: 2, background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white' }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <ArticleIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8 }} />
@@ -120,7 +120,7 @@ export function DashboardView({
             </Box>
           </Paper>
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 11, sm: 6, md: 3 }}>
           <Paper elevation={2} sx={{ p: 2, background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', color: 'white' }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <FavoriteIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8 }} />
@@ -133,7 +133,7 @@ export function DashboardView({
             </Box>
           </Paper>
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 11, sm: 6, md: 3 }}>
           <Paper elevation={2} sx={{ p: 2, background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', color: 'white' }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <LabelIcon sx={{ fontSize: 40, mr: 2, opacity: 0.8 }} />
@@ -222,7 +222,7 @@ export function DashboardView({
         {loading ? (
           <Grid container spacing={3}>
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Grid size={{ xs: 12, sm: 6 }} key={i}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} sx={{ mx: 'auto',  }} key={i}>
                 <Card sx={{ height: 420 }}>
                   <Skeleton variant="rectangular" height={200} />
                 </Card>
@@ -234,19 +234,20 @@ export function DashboardView({
             Keine Artikel gefunden für den aktuellen Filter.
           </Alert>
         ) : (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
+          <Grid container spacing={3}>
             {dashboardArticles.map((article) => (
-              <ArticleCard
-                key={article.id}
-                article={article}
-                isRead={isRead(article.id)}
-                isFavorite={isFavorite(article.id)}
-                updating={updatingArticleId === article.id}
-                onToggleRead={() => onToggleRead(article.id)}
-                onToggleFavorite={() => onToggleFavorite(article.id)}
-              />
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} sx={{ mx: 'auto',  }} key={article.id}>
+                <ArticleCard
+                  article={article}
+                  isRead={isRead(article.id)}
+                  isFavorite={isFavorite(article.id)}
+                  updating={updatingArticleId === article.id}
+                  onToggleRead={() => onToggleRead(article.id)}
+                  onToggleFavorite={() => onToggleFavorite(article.id)}
+                />
+              </Grid>
             ))}
-          </Box>
+          </Grid>
         )}
       </Box>
     </Box>

@@ -20,8 +20,13 @@ import {
   Box,
   Container,
   Fab,
+  AppBar,
+  Toolbar,
+  IconButton,
+  Typography,
+  useMediaQuery,
 } from '@mui/material'
-import { Add as AddIcon } from '@mui/icons-material'
+import { Add as AddIcon, Menu as MenuIcon } from '@mui/icons-material'
 import { useTheme, useFeeds, useArticles, useCategories } from './hooks'
 import { Sidebar } from './components'
 import { DashboardView, FeedsView, ArticlesView, FavoritesView, CategoriesView, StatisticsView } from './components/views'
@@ -37,6 +42,7 @@ function App() {
   const { categories, loadCategories, deleteCategory } = useCategories()
 
   const [mobileOpen, setMobileOpen] = useState(false)
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const [activeView, setActiveView] = useState<'dashboard' | 'feeds' | 'articles' | 'favorites' | 'categories' | 'statistics'>('dashboard')
 
   // Filter states - initial values from localStorage
@@ -191,6 +197,32 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Box sx={{ display: 'flex' }}>
+        {/* Mobile AppBar */}
+        {isMobile && (
+          <AppBar
+            position="fixed"
+            sx={{
+              display: { md: 'none' },
+              zIndex: (theme) => theme.zIndex.drawer + 1,
+            }}
+          >
+            <Toolbar>
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                edge="start"
+                onClick={() => setMobileOpen(true)}
+                sx={{ mr: 2 }}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+                News Aggregator
+              </Typography>
+            </Toolbar>
+          </AppBar>
+        )}
+
         <Sidebar
           mobileOpen={mobileOpen}
           setMobileOpen={setMobileOpen}
@@ -225,13 +257,15 @@ function App() {
           component="main"
           sx={{
             flexGrow: 1,
-            p: 3,
-            width: { sm: `calc(100% - ${drawerWidth}px)` },
+            p: { xs: 1, sm: 3 },
+            width: { md: `calc(100% - ${drawerWidth}px)` },
             minHeight: '100vh',
             bgcolor: 'background.default',
           }}
         >
-          <Container maxWidth="xl">
+          {/* Spacer for mobile AppBar */}
+          {isMobile && <Toolbar />}
+          <Container maxWidth="xl" sx={{ px: { xs: 0, sm: 3 } }}>
             {renderContent()}
           </Container>
         </Box>

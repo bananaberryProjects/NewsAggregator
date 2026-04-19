@@ -11,6 +11,7 @@ import {
   Avatar,
   IconButton,
   CircularProgress,
+  Divider,
 } from '@mui/material'
 import {
   RssFeed as FeedIcon,
@@ -21,6 +22,7 @@ import {
   Refresh as RefreshIcon,
   Delete as DeleteIcon,
   Assessment as AssessmentIcon,
+  Close as CloseIcon,
 } from '@mui/icons-material'
 import type { Feed, Category } from '../../api/client'
 import { ThemeToggleButton } from '../ThemeToggleButton'
@@ -42,6 +44,8 @@ interface SidebarProps {
   onAssignCategories: (feed: Feed) => void
   isDark?: boolean
   onToggleTheme?: () => void
+  activeCategoryFilter?: string[]
+  onCategoryFilterChange?: (categoryIds: string[]) => void
 }
 
 export function Sidebar({
@@ -60,9 +64,25 @@ export function Sidebar({
   isDark,
   onToggleTheme,
 }: SidebarProps) {
+  const handleDrawerClose = () => {
+    setMobileOpen(false)
+  }
+
   const drawer = (
-    <Box sx={{ mt: 2 }}>
-      <Box sx={{ px: 2, mb: 3, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+    <Box sx={{ mt: { xs: 1, md: 2 } }}>
+      {/* Mobile Drawer Header with Close Button */}
+      <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1 }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
+          Menü
+        </Typography>
+        <IconButton onClick={handleDrawerClose}>
+          <CloseIcon />
+        </IconButton>
+      </Box>
+      <Divider sx={{ display: { xs: 'block', md: 'none' }, mb: 2 }} />
+
+      {/* Desktop Header */}
+      <Box sx={{ px: 2, mb: 3, display: { xs: 'none', md: 'flex' }, alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <Box>
           <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
             News Aggregator
@@ -78,16 +98,16 @@ export function Sidebar({
 
       <List>
         <ListItem disablePadding>
-          <ListItemButton selected={activeView === 'dashboard'} onClick={() => setActiveView('dashboard')}>
+          <ListItemButton selected={activeView === 'dashboard'} onClick={() => { setActiveView('dashboard'); handleDrawerClose(); }}>
             <ListItemIcon>
               <NewspaperIcon color="primary" />
             </ListItemIcon>
             <ListItemText primary="Dashboard" />
           </ListItemButton>
         </ListItem>
-        
+
         <ListItem disablePadding>
-          <ListItemButton selected={activeView === 'feeds'} onClick={() => setActiveView('feeds')}>
+          <ListItemButton selected={activeView === 'feeds'} onClick={() => { setActiveView('feeds'); handleDrawerClose(); }}>
             <ListItemIcon>
               <FeedIcon />
             </ListItemIcon>
@@ -95,9 +115,9 @@ export function Sidebar({
             <Chip size="small" label={feeds.length} />
           </ListItemButton>
         </ListItem>
-        
+
         <ListItem disablePadding>
-          <ListItemButton selected={activeView === 'articles'} onClick={() => setActiveView('articles')}>
+          <ListItemButton selected={activeView === 'articles'} onClick={() => { setActiveView('articles'); handleDrawerClose(); }}>
             <ListItemIcon>
               <ArticleIcon />
             </ListItemIcon>
@@ -105,9 +125,9 @@ export function Sidebar({
             <Chip size="small" label={articleCount} />
           </ListItemButton>
         </ListItem>
-        
+
         <ListItem disablePadding>
-          <ListItemButton selected={activeView === 'favorites'} onClick={() => setActiveView('favorites')}>
+          <ListItemButton selected={activeView === 'favorites'} onClick={() => { setActiveView('favorites'); handleDrawerClose(); }}>
             <ListItemIcon>
               <FavoriteIcon />
             </ListItemIcon>
@@ -115,9 +135,9 @@ export function Sidebar({
             <Chip size="small" label={favoriteCount} color="secondary" />
           </ListItemButton>
         </ListItem>
-        
+
         <ListItem disablePadding>
-          <ListItemButton selected={activeView === 'categories'} onClick={() => setActiveView('categories')}>
+          <ListItemButton selected={activeView === 'categories'} onClick={() => { setActiveView('categories'); handleDrawerClose(); }}>
             <ListItemIcon>
               <LabelIcon />
             </ListItemIcon>
@@ -125,9 +145,9 @@ export function Sidebar({
             <Chip size="small" label={categories.length} />
           </ListItemButton>
         </ListItem>
-        
+
         <ListItem disablePadding>
-          <ListItemButton selected={activeView === 'statistics'} onClick={() => setActiveView('statistics')}>
+          <ListItemButton selected={activeView === 'statistics'} onClick={() => { setActiveView('statistics'); handleDrawerClose(); }}>
             <ListItemIcon>
               <AssessmentIcon />
             </ListItemIcon>
@@ -199,25 +219,27 @@ export function Sidebar({
   return (
     <Box
       component="nav"
-      sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+      sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
     >
+      {/* Mobile Drawer - Temporary */}
       <Drawer
         variant="temporary"
         open={mobileOpen}
-        onClose={() => setMobileOpen(false)}
+        onClose={handleDrawerClose}
         ModalProps={{ keepMounted: true }}
         sx={{
-          display: { xs: 'block', sm: 'none' },
+          display: { xs: 'block', md: 'none' },
           '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
         }}
       >
         {drawer}
       </Drawer>
-      
+
+      {/* Desktop Drawer - Permanent */}
       <Drawer
         variant="permanent"
         sx={{
-          display: { xs: 'none', sm: 'block' },
+          display: { xs: 'none', md: 'block' },
           '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
         }}
         open
