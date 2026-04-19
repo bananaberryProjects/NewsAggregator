@@ -302,7 +302,7 @@ export function WeatherWidget({
                   <WeatherIcon code={weather.weatherCode} size={64} />
                 </Box>
                 <Box>
-                  <Typography variant="h3" component="div" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+                  <Typography variant="h4" component="div" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
                     {Math.round(weather.temperature)}°C
                   </Typography>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
@@ -314,11 +314,11 @@ export function WeatherWidget({
 
               {/* Rechts: Ort + Beschreibung */}
               <Box sx={{ textAlign: 'right' }}>
-                <Typography variant="body1" sx={{ fontWeight: 500, color: 'text.primary' }}>
-                  {weather.description}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                <Typography variant="h5" color="text.secondary" sx={{ fontWeight: 500 }}>
                   {city}
+                </Typography>
+                <Typography variant="body2" sx={{ mt: 0.5 }}>
+                  {weather.description}
                 </Typography>
               </Box>
             </Box>
@@ -351,7 +351,7 @@ export function WeatherWidget({
                       <Typography variant="caption" sx={{ fontWeight: 600, mb: 0.5 }}>
                         {day.day}
                       </Typography>
-                      <WeatherIcon code={day.weatherCode} size={48} />
+                      <WeatherIcon code={day.weatherCode} size={32} />
                       <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, alignItems: 'center' }}>
                         <Typography variant="caption" sx={{ fontWeight: 600 }}>
                           {day.maxTemp}°

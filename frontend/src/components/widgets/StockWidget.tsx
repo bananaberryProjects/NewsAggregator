@@ -62,44 +62,78 @@ const getMarketSentiment = (stocks: StockIndex[]): SentimentConfig => {
 }
 
 interface StockWidgetProps {
-  refreshInterval?: number // in minutes
+  refreshIntervalSeconds?: number // in seconds, default 60
 }
 
-// Mock data generator (since free stock APIs with CORS are limited)
-// In a real app, you would use a proper API like Alpha Vantage, Finnhub, or Yahoo Finance
-const generateMockData = (): StockIndex[] => {
-  const baseValues: Record<string, number> = {
-    'DAX': 18500,
-    'S&P500': 5500,
-    'BTC': 65000
+interface YahooChartResult {
+  meta: {
+    regularMarketPrice: number
+    previousClose: number
+    shortName?: string
+    symbol: string
   }
-
-  return [
-    {
-      symbol: 'DAX',
-      name: 'DAX',
-      value: baseValues['DAX'] + (Math.random() - 0.5) * 200,
-      change: (Math.random() - 0.5) * 150,
-      changePercent: (Math.random() - 0.5) * 1.5
-    },
-    {
-      symbol: 'S&P500',
-      name: 'S&P 500',
-      value: baseValues['S&P500'] + (Math.random() - 0.5) * 100,
-      change: (Math.random() - 0.5) * 50,
-      changePercent: (Math.random() - 0.5) * 1.2
-    },
-    {
-      symbol: 'BTC',
-      name: 'Bitcoin',
-      value: baseValues['BTC'] + (Math.random() - 0.5) * 3000,
-      change: (Math.random() - 0.5) * 2000,
-      changePercent: (Math.random() - 0.5) * 5
-    }
-  ]
 }
 
-export function StockWidget({ refreshInterval = 5 }: StockWidgetProps) {
+interface YahooResponse {
+  chart: {
+    result?: YahooChartResult[]
+    error?: { description: string }
+  }
+}
+
+const SYMBOLS = [
+  { symbol: '^GDAXI', displayName: 'DAX', shortName: 'DAX' },
+  { symbol: '^GSPC', displayName: 'S&P 500', shortName: 'S&P500' },
+  { symbol: 'BTC-USD', displayName: 'Bitcoin', shortName: 'BTC' }
+]
+
+const fetchYahooData = async (): Promise<StockIndex[]> => {
+  const results: StockIndex[] = []
+
+  await Promise.all(
+    SYMBOLS.map(async ({ symbol, displayName, shortName }) => {
+      try {
+        const response = await fetch(
+          `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=2d`
+        )
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status} for ${symbol}`)
+        }
+
+        const data: YahooResponse = await response.json()
+
+        if (data.chart.error || !data.chart.result || data.chart.result.length === 0) {
+          throw new Error(`Keine Daten für ${symbol}`)
+        }
+
+        const result = data.chart.result[0]
+        const meta = result.meta
+        const currentPrice = meta.regularMarketPrice
+        const previousClose = meta.previousClose
+
+        const change = currentPrice - previousClose
+        const changePercent = previousClose !== 0 ? (change / previousClose) * 100 : 0
+
+        results.push({
+          symbol: shortName,
+          name: displayName,
+          value: currentPrice,
+          change,
+          changePercent
+        })
+      } catch (err) {
+        console.error(`Fehler beim Laden von ${symbol}:`, err)
+      }
+    })
+  )
+
+  return results.sort(
+    (a, b) => SYMBOLS.findIndex(s => s.shortName === a.symbol) - SYMBOLS.findIndex(s => s.shortName === b.symbol)
+  )
+}
+
+export function StockWidget({ refreshIntervalSeconds = 60 }: StockWidgetProps) {
   const [stocks, setStocks] = useState<StockIndex[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -110,14 +144,12 @@ export function StockWidget({ refreshInterval = 5 }: StockWidgetProps) {
     setError(null)
 
     try {
-      // Simulating API delay
-      await new Promise(resolve => setTimeout(resolve, 500))
+      const data = await fetchYahooData()
 
-      // In a real implementation, you would fetch from an actual API:
-      // const response = await fetch('https://api.example.com/stocks')
-      // const data = await response.json()
+      if (data.length === 0) {
+        throw new Error('Keine Kursdaten verfügbar')
+      }
 
-      const data = generateMockData()
       setStocks(data)
       setLastUpdate(new Date())
     } catch (err) {
@@ -135,10 +167,10 @@ export function StockWidget({ refreshInterval = 5 }: StockWidgetProps) {
   useEffect(() => {
     const interval = setInterval(() => {
       fetchStocks()
-    }, refreshInterval * 60 * 1000)
+    }, refreshIntervalSeconds * 1000)
 
     return () => clearInterval(interval)
-  }, [refreshInterval])
+  }, [refreshIntervalSeconds])
 
   const formatNumber = (num: number, decimals: number = 0): string => {
     return new Intl.NumberFormat('de-DE', {
@@ -226,7 +258,9 @@ export function StockWidget({ refreshInterval = 5 }: StockWidgetProps) {
                   </Box>
                   <Box sx={{ textAlign: 'right' }}>
                     <Typography variant="body1" component="div" sx={{ fontWeight: 500 }}>
-                      {formatNumber(stock.value, stock.symbol === 'BTC' ? 0 : 0)}
+                      {stock.symbol === 'BTC'
+                        ? formatNumber(stock.value, 2)
+                        : formatNumber(stock.value, 0)}
                     </Typography>
                     <Box
                       sx={{
@@ -254,7 +288,7 @@ export function StockWidget({ refreshInterval = 5 }: StockWidgetProps) {
             <Box sx={{ mt: 2, pt: 1, borderTop: '1px dashed', borderColor: 'divider' }}>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <ShowChart sx={{ fontSize: 14 }} />
-                Demo-Daten (aktualisiert alle {refreshInterval} Min.)
+                Yahoo Finance • Aktualisiert alle {refreshIntervalSeconds}s
               </Typography>
             </Box>
           </Box>
