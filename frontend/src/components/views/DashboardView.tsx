@@ -222,7 +222,7 @@ export function DashboardView({
         {loading ? (
           <Grid container spacing={3}>
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Grid size={{ xs: 12, sm: 6 }} key={i}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={i}>
                 <Card sx={{ height: 420 }}>
                   <Skeleton variant="rectangular" height={200} />
                 </Card>
@@ -234,19 +234,20 @@ export function DashboardView({
             Keine Artikel gefunden für den aktuellen Filter.
           </Alert>
         ) : (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
+          <Grid container spacing={3}>
             {dashboardArticles.map((article) => (
-              <ArticleCard
-                key={article.id}
-                article={article}
-                isRead={isRead(article.id)}
-                isFavorite={isFavorite(article.id)}
-                updating={updatingArticleId === article.id}
-                onToggleRead={() => onToggleRead(article.id)}
-                onToggleFavorite={() => onToggleFavorite(article.id)}
-              />
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={article.id}>
+                <ArticleCard
+                  article={article}
+                  isRead={isRead(article.id)}
+                  isFavorite={isFavorite(article.id)}
+                  updating={updatingArticleId === article.id}
+                  onToggleRead={() => onToggleRead(article.id)}
+                  onToggleFavorite={() => onToggleFavorite(article.id)}
+                />
+              </Grid>
             ))}
-          </Box>
+          </Grid>
         )}
       </Box>
     </Box>
