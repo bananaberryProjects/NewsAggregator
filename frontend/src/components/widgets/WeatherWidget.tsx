@@ -257,29 +257,36 @@ export function WeatherWidget({
             {/* Current weather */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box
-                  sx={{
-                    width: 80,
-                    height: 80,
-                    borderRadius: '50%',
-                    backgroundColor: theme.iconBg,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                    flexShrink: 0
-                  }}
-                >
-                  <WeatherIcon code={weather.weatherCode} size={64} />
-                </Box>
-                <Box>
-                  <Typography variant="h4" component="div" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
-                    {Math.round(weather.temperature)}°C
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
-                    <span>H: {weather.todayMax}°</span>
-                    <span>T: {weather.todayMin}°</span>
-                  </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+                  <Box
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      borderRadius: '50%',
+                      backgroundColor: theme.iconBg,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                      flexShrink: 0
+                    }}
+                  >
+                    <WeatherIcon code={weather.weatherCode} size={64} />
+                  </Box>
+                  <Box>
+                    <Typography variant="h4" component="div" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+                      {Math.round(weather.temperature)}°C
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                      <Typography variant="caption" color="text.secondary">
+                        H: {weather.todayMax}°
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary"
+                      >
+                        T: {weather.todayMin}°
+                      </Typography>
+                    </Box>
+                  </Box>
                 </Box>
               </Box>
               <Box sx={{ textAlign: 'right' }}>
