@@ -1,13 +1,15 @@
 package com.newsaggregator.infrastructure.adapter.web;
 
-import com.newsaggregator.application.dto.StockListDto;
-import com.newsaggregator.application.service.StockService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.newsaggregator.application.dto.StockListDto;
+import com.newsaggregator.application.service.StockService;
 
 /**
  * REST Controller für Börsenkursdaten.
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api/stocks")
+@CrossOrigin(origins = {"http://localhost:5173", "http://mac-mini.local:5173"})
 public class StockController {
 
     private static final Logger logger = LoggerFactory.getLogger(StockController.class);
