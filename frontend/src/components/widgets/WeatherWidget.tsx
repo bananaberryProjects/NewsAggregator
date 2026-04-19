@@ -228,9 +228,12 @@ export function WeatherWidget({
           px: 2
         }}
       >
-        <Typography variant="h5" component="div" sx={{ fontWeight: 600, color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
-          Wetter
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <WbSunny sx={{ color: 'white', fontSize: 28 }} />
+          <Typography variant="h6" component="div" sx={{ fontWeight: 500, color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
+            Wetter
+          </Typography>
+        </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <IconButton size="small" onClick={handleRefresh} disabled={loading} sx={{ color: 'white' }}>
             <Refresh />

@@ -38,7 +38,7 @@ export function SummaryWidget({ refreshIntervalSeconds = 600 }: { refreshInterva
       {/* Header with gradient */}
       <CardMedia
         sx={{
-          height: 60,
+          height: 50,
           background: 'linear-gradient(135deg, #7C4DFF 0%, #651FFF 50%, #6200EA 100%)',
           display: 'flex',
           alignItems: 'center',
