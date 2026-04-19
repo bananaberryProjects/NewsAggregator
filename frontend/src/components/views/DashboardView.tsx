@@ -7,6 +7,7 @@ import {
 } from '@mui/icons-material'
 import { useEffect } from 'react'
 import { ArticleCard } from '../ArticleCard'
+import { WeatherWidget, StockWidget } from '../widgets'
 import type { Article, Feed, Category } from '../../api/client'
 
 interface DashboardViewProps {
@@ -145,6 +146,16 @@ export function DashboardView({
               </Box>
             </Box>
           </Paper>
+        </Grid>
+      </Grid>
+
+      {/* Widgets Section */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <WeatherWidget />
+        </Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <StockWidget />
         </Grid>
       </Grid>
 
