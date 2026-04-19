@@ -221,7 +221,7 @@ export function WeatherWidget({
           px: 2
         }}
       >
-        <Typography variant="h6" component="div" sx={{ fontWeight: 600, color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
+        <Typography variant="h5" component="div" sx={{ fontWeight: 600, color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
           Wetter
         </Typography>
         <Box>
