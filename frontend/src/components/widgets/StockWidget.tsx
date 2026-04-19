@@ -27,7 +27,7 @@ const getCurrency = (symbol: string): string => {
     case 'S&P 500':
       return '$'
     case 'BTC':
-      return '€'
+      return '$'
     default:
       return ''
   }
@@ -72,7 +72,6 @@ const getMarketSentiment = (stocks: StockIndex[]): SentimentConfig => {
     icon: <Remove sx={{ fontSize: 32 }} />,
     label: 'Neutral'
   }
-}
 }
 
 interface StockWidgetProps {
@@ -237,15 +236,16 @@ export function StockWidget({ refreshIntervalSeconds = 600 }: StockWidgetProps) 
                       {stock.symbol}
                     </Typography>
                   </Box>
-                  <Box sx={{ textAlign: 'right' }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                     <Typography variant="body1" component="div" sx={{ fontWeight: 500 }}>
-                      {getCurrency(stock.symbol)}{stock.symbol === 'BTC' ? formatNumber(stock.value, 2) : formatNumber(stock.value, 0)}
+                      {stock.symbol === 'BTC' ? formatNumber(stock.value, 2) : formatNumber(stock.value, 0)} {getCurrency(stock.symbol)}
                     </Typography>
                     <Box
                       sx={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: 0.5,
+                        mt: 0.5,
                         color: stock.change >= 0 ? 'success.main' : 'error.main'
                       }}
                     >
