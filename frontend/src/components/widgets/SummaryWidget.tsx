@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Card, CardContent, Typography, Box, Skeleton, Alert, IconButton } from '@mui/material'
-import { Refresh } from '@mui/icons-material'
+import { Card, CardContent, Typography, Box, Skeleton, Alert, IconButton, CardMedia } from '@mui/material'
+import { Refresh, SmartToy } from '@mui/icons-material'
 
 export function SummaryWidget({ refreshIntervalSeconds = 600 }: { refreshIntervalSeconds?: number }) {
   const [summary, setSummary] = useState<string>('')
@@ -35,7 +35,34 @@ export function SummaryWidget({ refreshIntervalSeconds = 600 }: { refreshInterva
 
   return (
     <Card sx={{ minHeight: 200, display: 'flex', flexDirection: 'column' }}>
-      <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      {/* Header with gradient */}
+      <CardMedia
+        sx={{
+          height: 60,
+          background: 'linear-gradient(135deg, #7C4DFF 0%, #651FFF 50%, #6200EA 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          px: 2,
+          justifyContent: 'space-between'
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <SmartToy sx={{ color: 'white', fontSize: 28 }} />
+          <Typography variant="h6" sx={{ color: 'white', fontWeight: 500 }}>
+            KI-Zusammenfassung
+          </Typography>
+        </Box>
+        <IconButton
+          size="small"
+          onClick={fetchSummary}
+          disabled={loading}
+          sx={{ color: 'white' }}
+        >
+          <Refresh />
+        </IconButton>
+      </CardMedia>
+
+      <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pt: 2 }}>
         {loading && !summary ? (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Skeleton width={200} height={24} />
@@ -49,16 +76,11 @@ export function SummaryWidget({ refreshIntervalSeconds = 600 }: { refreshInterva
           </Typography>
         )}
         {lastUpdate && (
-          <Typography variant="caption" sx={{ mt: 1 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 2 }}>
             Aktualisiert: {formatTime(lastUpdate)}
           </Typography>
         )}
       </CardContent>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 1 }}>
-        <IconButton size="small" onClick={fetchSummary} disabled={loading}>
-          <Refresh />
-        </IconButton>
-      </Box>
     </Card>
   )
 }

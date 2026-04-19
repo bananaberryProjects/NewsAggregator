@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
  *
  * <p>Die Anwendung folgt der hexagonalen Architektur:</p>
  * <ul>
- *   <li><b>domain:</b> Geschäftslogik, Entities, Ports</li>
+ *   <li><b>domain:</b> Geschäftslogik, Entities, Ports</li>mvn 
  *   <li><b>application:</b> Use Cases, Application Services, DTOs</li>
  *   <li><b>infrastructure:</b> Adapters (Persistence, Web, RSS)</li>
  * </ul>

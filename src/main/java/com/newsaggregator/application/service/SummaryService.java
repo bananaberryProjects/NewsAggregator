@@ -2,10 +2,8 @@ package com.newsaggregator.application.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -48,7 +46,7 @@ public class SummaryService {
         }
 
         StringBuilder prompt = new StringBuilder();
-        prompt.append("Erstelle eine kurze Zusammenfassung (max. 3 Saetze):\n\n");
+        prompt.append("Erstelle eine kurze Zusammenfassung (max. 5 Saetze):\n\n");
         
         for (Article article : recentArticles.stream().limit(10).toList()) {
             prompt.append("- ").append(article.getTitle());
