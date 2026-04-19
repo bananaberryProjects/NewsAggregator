@@ -80,7 +80,7 @@ interface StockListApiDto {
 const API_BASE_URL = '/api'
 
 const fetchStockData = async (): Promise<StockIndex[]> => {
-  const response = await fetch(`${API_BASE_URL}/api/stocks`)
+  const response = await fetch(`${API_BASE_URL}/stocks`)
 
   if (!response.ok) {
     if (response.status === 204) {
@@ -100,7 +100,7 @@ const fetchStockData = async (): Promise<StockIndex[]> => {
   }))
 }
 
-export function StockWidget({ refreshIntervalSeconds = 60 }: StockWidgetProps) {
+export function StockWidget({ refreshIntervalSeconds = 600 }: StockWidgetProps) {
   const [stocks, setStocks] = useState<StockIndex[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -255,7 +255,7 @@ export function StockWidget({ refreshIntervalSeconds = 60 }: StockWidgetProps) {
             <Box sx={{ mt: 2, pt: 1, borderTop: '1px dashed', borderColor: 'divider' }}>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <ShowChart sx={{ fontSize: 14 }} />
-                Yahoo Finance • Aktualisiert alle {refreshIntervalSeconds}s
+                Yahoo Finance • Aktualisiert alle {refreshIntervalSeconds/60} Minuten
               </Typography>
             </Box>
           </Box>

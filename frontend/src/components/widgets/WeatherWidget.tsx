@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Card, CardContent, Typography, Box, Skeleton, Alert, IconButton, TextField, CardMedia, Divider } from '@mui/material'
-import { LocationOn, Refresh, WbSunny, Cloud, CloudOff, Opacity, AcUnit, Thunderstorm } from '@mui/icons-material'
+import { Card, CardContent, Typography, Box, Skeleton, Alert, IconButton, CardMedia, Divider, FormControl, InputLabel, Select, MenuItem } from '@mui/material'
+import { Refresh, WbSunny, Cloud, CloudOff, Opacity, AcUnit, Thunderstorm } from '@mui/icons-material'
 
 interface WeatherData {
   temperature: number
@@ -27,6 +27,25 @@ interface WeatherWidgetProps {
   defaultLongitude?: number
   defaultCity?: string
 }
+
+interface City {
+  name: string
+  lat: number
+  lon: number
+}
+
+const CITIES: City[] = [
+  { name: 'Berlin', lat: 52.52, lon: 13.41 },
+  { name: 'München', lat: 48.14, lon: 11.58 },
+  { name: 'Hamburg', lat: 53.55, lon: 9.99 },
+  { name: 'Köln', lat: 50.94, lon: 6.96 },
+  { name: 'Frankfurt', lat: 50.11, lon: 8.68 },
+  { name: 'Stuttgart', lat: 48.78, lon: 9.18 },
+  { name: 'Düsseldorf', lat: 51.23, lon: 6.78 },
+  { name: 'Leipzig', lat: 51.34, lon: 12.37 },
+  { name: 'Dresden', lat: 51.05, lon: 13.74 },
+  { name: 'Nürnberg', lat: 49.45, lon: 11.08 }
+]
 
 // WMO Weather interpretation codes - https://open-meteo.com/en/docs
 const getWeatherTheme = (code: number): WeatherTheme => {
@@ -135,6 +154,8 @@ const getWeekdayAbbreviation = (dateStr: string): string => {
   return days[date.getDay()]
 }
 
+const STORAGE_KEY = 'weather-location'
+
 export function WeatherWidget({
   defaultLatitude = 52.52,
   defaultLongitude = 13.41,
@@ -144,10 +165,7 @@ export function WeatherWidget({
   const [forecast, setForecast] = useState<ForecastDay[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [latitude, setLatitude] = useState(defaultLatitude)
-  const [longitude, setLongitude] = useState(defaultLongitude)
-  const [city, setCity] = useState(defaultCity)
-  const [showSettings, setShowSettings] = useState(false)
+  const [selectedLocation, setSelectedLocation] = useState<City>({ name: defaultCity, lat: defaultLatitude, lon: defaultLongitude })
 
   const fetchWeather = async () => {
     setLoading(true)
@@ -155,7 +173,7 @@ export function WeatherWidget({
 
     try {
       const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&forecast_days=3`
+        `https://api.open-meteo.com/v1/forecast?latitude=${selectedLocation.lat}&longitude=${selectedLocation.lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&forecast_days=3`
       )
 
       if (!response.ok) {
@@ -192,17 +210,39 @@ export function WeatherWidget({
     }
   }
 
+  // Load saved location from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved) as City
+        setSelectedLocation(parsed)
+      } catch {
+        // Invalid saved data, ignore
+      }
+    }
+  }, [])
+
+  // Fetch weather when location changes
   useEffect(() => {
     fetchWeather()
-  }, [latitude, longitude])
+  }, [selectedLocation])
+
+  // Save location to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(selectedLocation))
+  }, [selectedLocation])
 
   const handleRefresh = () => {
     fetchWeather()
   }
 
-  const handleLocationSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    fetchWeather()
+  const handleLocationChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    const cityName = event.target.value as string
+    const city = CITIES.find(c => c.name === cityName)
+    if (city) {
+      setSelectedLocation(city)
+    }
   }
 
   const theme = weather ? getWeatherTheme(weather.weatherCode) : getWeatherTheme(0)
@@ -224,10 +264,25 @@ export function WeatherWidget({
         <Typography variant="h5" component="div" sx={{ fontWeight: 600, color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
           Wetter
         </Typography>
-        <Box>
-          <IconButton size="small" onClick={() => setShowSettings(!showSettings)} sx={{ color: 'white' }}>
-            <LocationOn />
-          </IconButton>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <Select
+              value={selectedLocation.name}
+              onChange={handleLocationChange}
+              sx={{
+                color: 'white',
+                '.MuiSelect-icon': { color: 'white' },
+                '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.5)' },
+                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'white' }
+              }}
+            >
+              {CITIES.map((city) => (
+                <MenuItem key={city.name} value={city.name}>
+                  {city.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <IconButton size="small" onClick={handleRefresh} disabled={loading} sx={{ color: 'white' }}>
             <Refresh />
           </IconButton>
@@ -235,36 +290,6 @@ export function WeatherWidget({
       </CardMedia>
 
       <CardContent sx={{ pt: 2 }}>
-        {showSettings && (
-          <Box component="form" onSubmit={handleLocationSubmit} sx={{ mb: 2 }}>
-            <TextField
-              fullWidth
-              size="small"
-              label="Stadt"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              sx={{ mb: 1 }}
-            />
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <TextField
-                size="small"
-                label="Breitengrad"
-                type="number"
-                value={latitude}
-                onChange={(e) => setLatitude(parseFloat(e.target.value))}
-                sx={{ flex: 1 }}
-              />
-              <TextField
-                size="small"
-                label="Längengrad"
-                type="number"
-                value={longitude}
-                onChange={(e) => setLongitude(parseFloat(e.target.value))}
-                sx={{ flex: 1 }}
-              />
-            </Box>
-          </Box>
-        )}
 
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -315,7 +340,7 @@ export function WeatherWidget({
               {/* Rechts: Ort + Beschreibung */}
               <Box sx={{ textAlign: 'right' }}>
                 <Typography variant="h5" color="text.secondary" sx={{ fontWeight: 500 }}>
-                  {city}
+                  {selectedLocation.name}
                 </Typography>
                 <Typography variant="body2" sx={{ mt: 0.5 }}>
                   {weather.description}
