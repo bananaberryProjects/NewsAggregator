@@ -273,19 +273,13 @@ export function WeatherWidget({
                   >
                     <WeatherIcon code={weather.weatherCode} size={64} />
                   </Box>
-                  <Box>
+                  <Box sx={{ textAlign: 'center' }}>
                     <Typography variant="h4" component="div" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
                       {Math.round(weather.temperature)}°C
                     </Typography>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                       <Typography variant="caption" color="text.secondary">
-                        H: {weather.todayMax}°
+                        H: {weather.todayMax}° T: {weather.todayMin}°
                       </Typography>
-                      <Typography variant="caption" color="text.secondary"
-                      >
-                        T: {weather.todayMin}°
-                      </Typography>
-                    </Box>
                   </Box>
                 </Box>
               </Box>
