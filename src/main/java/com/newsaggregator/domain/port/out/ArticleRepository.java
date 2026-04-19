@@ -3,6 +3,7 @@ package com.newsaggregator.domain.port.out;
 import com.newsaggregator.domain.model.Article;
 import com.newsaggregator.domain.model.ArticleId;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,6 +61,14 @@ public interface ArticleRepository {
      * @return Liste der Artikel
      */
     List<Article> findByFeedId(Long feedId);
+
+    /**
+     * Findet alle Artikel nach einem bestimmten Veröffentlichungsdatum.
+     *
+     * @param date Das Datum, nach dem gesucht wird
+     * @return Liste der Artikel
+     */
+    List<Article> findByPublishedAtAfter(LocalDateTime date);
 
     /**
      * Prüft, ob ein Artikel mit diesem Link existiert.

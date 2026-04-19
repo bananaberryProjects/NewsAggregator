@@ -3,7 +3,7 @@ package com.newsaggregator.application.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newsaggregator.domain.model.Article;
-import com.newsaggregator.infrastructure.adapter.persistence.ArticleRepository;
+import com.newsaggregator.domain.port.out.ArticleRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -37,7 +37,7 @@ public class SummaryService {
     public String generateSummary() {
         // Get articles from last 24 hours
         LocalDateTime yesterday = LocalDateTime.now().minusHours(24);
-        List<Article> recentArticles = articleRepository.findByPublishedDateAfter(yesterday);
+        List<Article> recentArticles = articleRepository.findByPublishedAtAfter(yesterday);
 
         if (recentArticles.isEmpty()) {
             return "Keine neuen Artikel in den letzten 24 Stunden.";

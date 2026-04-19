@@ -12,6 +12,7 @@ import com.newsaggregator.infrastructure.adapter.persistence.repository.FeedJpaR
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -109,5 +110,13 @@ public class ArticleRepositoryAdapter implements ArticleRepository {
     @Transactional(readOnly = true)
     public boolean existsByLink(String link) {
         return jpaRepository.existsByLink(link);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Article> findByPublishedDateAfter(LocalDateTime date) {
+        return jpaRepository.findByPublishedDateAfter(date).stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
     }
 }
