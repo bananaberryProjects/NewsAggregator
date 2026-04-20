@@ -18,13 +18,17 @@ import org.springframework.test.web.servlet.MvcResult;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newsaggregator.application.dto.CategoryDto;
+import com.newsaggregator.application.dto.UpdateCategoryCommand;
 import com.newsaggregator.application.service.CategoryService;
+import com.newsaggregator.application.service.UpdateCategoryService;
 import com.newsaggregator.domain.model.Category;
+import com.newsaggregator.domain.model.CategoryId;
 
 /**
  * Unit-Test für CategoryController.
@@ -41,10 +45,13 @@ class CategoryControllerTest {
     @Mock
     private CategoryService categoryService;
 
+    @Mock
+    private UpdateCategoryService updateCategoryService;
+
     @BeforeEach
     @SuppressWarnings("unused")
     void setUp() {
-        CategoryController controller = new CategoryController(categoryService);
+        CategoryController controller = new CategoryController(categoryService, updateCategoryService);
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
         objectMapper = new ObjectMapper();
     }
@@ -203,5 +210,129 @@ class CategoryControllerTest {
 
         // Then
         assertThat(result.getResponse().getStatus()).isEqualTo(200);
+    }
+
+    @Test
+    void deleteCategory_WithNonExistingId_ShouldReturnOk() throws Exception {
+        // Given - Controller fängt keine Exceptions, daher wird 200 zurückgegeben
+        String categoryId = UUID.randomUUID().toString();
+        doNothing().when(categoryService).deleteCategory(categoryId);
+
+        // When
+        @SuppressWarnings("null")
+        MvcResult result = mockMvc.perform(delete("/api/categories/{id}", categoryId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        // Then
+        assertThat(result.getResponse().getStatus()).isEqualTo(200);
+    }
+
+    @Test
+    void updateCategory_WithValidData_ShouldReturnUpdatedCategory() throws Exception {
+        // Given
+        String categoryId = "550e8400-e29b-41d4-a716-446655440000";
+        Category updatedCategory = new Category(
+                CategoryId.of(categoryId),
+                "Updated Name",
+                "#ff0000",
+                "new-icon"
+        );
+
+        when(updateCategoryService.updateCategory(categoryId, "Updated Name", "#ff0000", "new-icon"))
+                .thenReturn(updatedCategory);
+
+        UpdateCategoryCommand command = new UpdateCategoryCommand();
+        command.setName("Updated Name");
+        command.setColor("#ff0000");
+        command.setIcon("new-icon");
+
+        // When
+        @SuppressWarnings("null")
+        MvcResult result = mockMvc.perform(put("/api/categories/{id}", categoryId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(command)))
+                .andReturn();
+
+        // Then
+        assertThat(result.getResponse().getStatus()).isEqualTo(200);
+        CategoryDto responseBody = objectMapper.readValue(
+                result.getResponse().getContentAsString(),
+                CategoryDto.class);
+        assertThat(responseBody.name()).isEqualTo("Updated Name");
+        assertThat(responseBody.color()).isEqualTo("#ff0000");
+        assertThat(responseBody.icon()).isEqualTo("new-icon");
+    }
+
+    @Test
+    void updateCategory_WithNonExistingId_ShouldReturn404() throws Exception {
+        // Given
+        String categoryId = "550e8400-e29b-41d4-a716-446655440000";
+
+        when(updateCategoryService.updateCategory(categoryId, "Updated Name", "#ff0000", "new-icon"))
+                .thenThrow(new IllegalArgumentException("Kategorie mit ID " + categoryId + " nicht gefunden"));
+
+        UpdateCategoryCommand command = new UpdateCategoryCommand();
+        command.setName("Updated Name");
+        command.setColor("#ff0000");
+        command.setIcon("new-icon");
+
+        // When
+        @SuppressWarnings("null")
+        MvcResult result = mockMvc.perform(put("/api/categories/{id}", categoryId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(command)))
+                .andReturn();
+
+        // Then
+        assertThat(result.getResponse().getStatus()).isEqualTo(404);
+    }
+
+    @Test
+    void updateCategory_WithInvalidData_ShouldReturn400() throws Exception {
+        // Given
+        String categoryId = "550e8400-e29b-41d4-a716-446655440000";
+
+        when(updateCategoryService.updateCategory(categoryId, "", "#ff0000", "new-icon"))
+                .thenThrow(new IllegalArgumentException("Kategorie-Name darf nicht leer sein"));
+
+        UpdateCategoryCommand command = new UpdateCategoryCommand();
+        command.setName("");
+        command.setColor("#ff0000");
+        command.setIcon("new-icon");
+
+        // When
+        @SuppressWarnings("null")
+        MvcResult result = mockMvc.perform(put("/api/categories/{id}", categoryId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(command)))
+                .andReturn();
+
+        // Then
+        assertThat(result.getResponse().getStatus()).isEqualTo(400);
+    }
+
+    @Test
+    void updateCategory_WithNullName_ShouldReturn400() throws Exception {
+        // Given
+        String categoryId = "550e8400-e29b-41d4-a716-446655440000";
+
+        when(updateCategoryService.updateCategory(categoryId, null, "#ff0000", "new-icon"))
+                .thenThrow(new IllegalArgumentException("Kategorie-Name darf nicht leer sein"));
+
+        UpdateCategoryCommand command = new UpdateCategoryCommand();
+        command.setName(null);
+        command.setColor("#ff0000");
+        command.setIcon("new-icon");
+
+        // When
+        @SuppressWarnings("null")
+        MvcResult result = mockMvc.perform(put("/api/categories/{id}", categoryId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(command)))
+                .andReturn();
+
+        // Then
+        assertThat(result.getResponse().getStatus()).isEqualTo(400);
     }
 }

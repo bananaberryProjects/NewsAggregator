@@ -1,5 +1,5 @@
 import { Avatar, Box, Button, Card, Grid, IconButton, Skeleton, Typography } from '@mui/material'
-import { Refresh as RefreshIcon, Delete as DeleteIcon, UploadFile, Download } from '@mui/icons-material'
+import { Refresh as RefreshIcon, Delete as DeleteIcon, Edit as EditIcon, UploadFile, Download } from '@mui/icons-material'
 import { useRef, useState } from 'react'
 import type { Feed } from '../../api/client'
 import { importOpml, exportOpml, downloadBlob } from '../../api/client'
@@ -11,10 +11,11 @@ interface FeedsViewProps {
   refreshingFeedId: string | null
   onRefresh: (feed: Feed) => void
   onDelete: (feed: Feed) => void
+  onEdit: (feed: Feed) => void
   onImportSuccess?: () => void
 }
 
-export function FeedsView({ feeds, loading, refreshingFeedId, onRefresh, onDelete, onImportSuccess }: FeedsViewProps) {
+export function FeedsView({ feeds, loading, refreshingFeedId, onRefresh, onDelete, onEdit, onImportSuccess }: FeedsViewProps) {
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [importing, setImporting] = useState(false)
   const [exporting, setExporting] = useState(false)
@@ -113,14 +114,17 @@ export function FeedsView({ feeds, loading, refreshingFeedId, onRefresh, onDelet
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1 }}>
-                  <IconButton onClick={() => onRefresh(feed)} disabled={refreshingFeedId === feed.id} color="primary">
+                  <IconButton onClick={() => onEdit(feed)} color="primary" title="Feed bearbeiten">
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton onClick={() => onRefresh(feed)} disabled={refreshingFeedId === feed.id} color="primary" title="Feed aktualisieren">
                     {refreshingFeedId === feed.id ? (
                       <Skeleton variant="circular" width={20} height={20} />
                     ) : (
                       <RefreshIcon />
                     )}
                   </IconButton>
-                  <IconButton onClick={() => onDelete(feed)} color="error">
+                  <IconButton onClick={() => onDelete(feed)} color="error" title="Feed löschen">
                     <DeleteIcon />
                   </IconButton>
                 </Box>

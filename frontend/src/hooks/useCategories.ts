@@ -13,8 +13,13 @@ export function useCategories() {
     }
   }, [])
 
-  const addCategory = async (name: string, color: string) => {
-    await categoriesApi.create({ name: name.trim(), color })
+  const addCategory = async (name: string, color: string, icon?: string) => {
+    await categoriesApi.create({ name: name.trim(), color, icon })
+    await loadCategories()
+  }
+
+  const updateCategory = async (id: string, name: string, color: string, icon: string) => {
+    await categoriesApi.update(id, { name: name.trim(), color, icon })
     await loadCategories()
   }
 
@@ -28,5 +33,6 @@ export function useCategories() {
     loadCategories,
     addCategory,
     deleteCategory,
+    updateCategory,
   }
 }

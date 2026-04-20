@@ -48,7 +48,7 @@ public class SummaryService {
         }
 
         StringBuilder prompt = new StringBuilder();
-        prompt.append("Erstelle eine kurze Zusammenfassung (max. 5 Saetze):\n\n");
+        prompt.append("Unterteile die Artikel in Kategorien und fasse sie pro Kategorie in 2 bis 3 Sätzen zusammen:\n\n");
         
         for (Article article : recentArticles.stream().limit(10).toList()) {
             prompt.append("- ").append(article.getTitle());

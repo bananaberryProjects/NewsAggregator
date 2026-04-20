@@ -2,6 +2,7 @@ package com.newsaggregator.infrastructure.adapter.web;
 
 import com.newsaggregator.application.dto.AddFeedCommand;
 import com.newsaggregator.application.dto.AssignCategoriesCommand;
+import com.newsaggregator.application.dto.UpdateFeedCommand;
 import com.newsaggregator.application.service.FeedManagementService;
 import com.newsaggregator.application.dto.FeedDto;
 import com.newsaggregator.application.mapper.FeedMapper;
@@ -11,6 +12,7 @@ import com.newsaggregator.domain.port.in.DeleteFeedUseCase;
 import com.newsaggregator.domain.port.in.FetchFeedUseCase;
 import com.newsaggregator.domain.port.in.GetAllFeedsUseCase;
 import com.newsaggregator.domain.port.in.GetFeedByIdUseCase;
+import com.newsaggregator.domain.port.in.UpdateFeedUseCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +39,7 @@ public class FeedController {
     private final DeleteFeedUseCase deleteFeedUseCase;
     private final FeedManagementService feedManagementService;
     private final FetchFeedUseCase fetchFeedUseCase;
+    private final UpdateFeedUseCase updateFeedUseCase;
     private final FeedMapper feedMapper;
 
     public FeedController(GetAllFeedsUseCase getAllFeedsUseCase,
@@ -45,6 +48,7 @@ public class FeedController {
                           DeleteFeedUseCase deleteFeedUseCase,
                           FeedManagementService feedManagementService,
                           FetchFeedUseCase fetchFeedUseCase,
+                          UpdateFeedUseCase updateFeedUseCase,
                           FeedMapper feedMapper) {
         this.getAllFeedsUseCase = getAllFeedsUseCase;
         this.getFeedByIdUseCase = getFeedByIdUseCase;
@@ -52,6 +56,7 @@ public class FeedController {
         this.deleteFeedUseCase = deleteFeedUseCase;
         this.feedManagementService = feedManagementService;
         this.fetchFeedUseCase = fetchFeedUseCase;
+        this.updateFeedUseCase = updateFeedUseCase;
         this.feedMapper = feedMapper;
     }
 
@@ -147,6 +152,27 @@ public class FeedController {
         } catch (IllegalArgumentException e) {
             logger.warn("Feed nicht gefunden: {}", id);
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
+     * Aktualisiert einen bestehenden Feed.
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<FeedDto> updateFeed(
+            @PathVariable Long id,
+            @RequestBody UpdateFeedCommand command) {
+        logger.info("PUT /api/feeds/{} aufgerufen: {}", id, command.getName());
+
+        try {
+            var feed = updateFeedUseCase.updateFeed(id, command.getName(), command.getUrl(), command.getDescription());
+            return ResponseEntity.ok(feedMapper.toDto(feed));
+        } catch (IllegalArgumentException e) {
+            logger.warn("Fehler beim Aktualisieren des Feeds: {}", e.getMessage());
+            if (e.getMessage().contains("nicht gefunden")) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.badRequest().build();
         }
     }
 }

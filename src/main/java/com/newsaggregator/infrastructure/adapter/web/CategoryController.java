@@ -1,7 +1,9 @@
 package com.newsaggregator.infrastructure.adapter.web;
 
 import com.newsaggregator.application.dto.CategoryDto;
+import com.newsaggregator.application.dto.UpdateCategoryCommand;
 import com.newsaggregator.application.service.CategoryService;
+import com.newsaggregator.application.service.UpdateCategoryService;
 import com.newsaggregator.domain.model.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,9 +20,11 @@ import java.util.stream.Collectors;
 public class CategoryController {
     private static final Logger log = LoggerFactory.getLogger(CategoryController.class);
     private final CategoryService categoryService;
+    private final UpdateCategoryService updateCategoryService;
 
-    public CategoryController(CategoryService categoryService) {
+    public CategoryController(CategoryService categoryService, UpdateCategoryService updateCategoryService) {
         this.categoryService = categoryService;
+        this.updateCategoryService = updateCategoryService;
     }
 
     private CategoryDto toDto(Category category) {
@@ -56,5 +60,23 @@ public class CategoryController {
         log.info("DELETE /api/categories/{} aufgerufen", id);
         categoryService.deleteCategory(id);
         return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<CategoryDto> updateCategory(
+            @PathVariable String id,
+            @RequestBody UpdateCategoryCommand command) {
+        log.info("PUT /api/categories/{} aufgerufen: {}", id, command.getName());
+        try {
+            Category category = updateCategoryService.updateCategory(
+                id, command.getName(), command.getColor(), command.getIcon());
+            return ResponseEntity.ok(toDto(category));
+        } catch (IllegalArgumentException e) {
+            log.warn("Fehler beim Aktualisieren der Kategorie: {}", e.getMessage());
+            if (e.getMessage().contains("nicht gefunden")) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.badRequest().build();
+        }
     }
 }
