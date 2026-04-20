@@ -30,23 +30,24 @@ import { Add as AddIcon, Menu as MenuIcon } from '@mui/icons-material'
 import { useTheme, useFeeds, useArticles, useCategories } from './hooks'
 import { Sidebar } from './components'
 import { DashboardView, FeedsView, ArticlesView, FavoritesView, CategoriesView, StatisticsView } from './components/views'
-import { AddFeedDialog, DeleteFeedDialog, EditFeedCategoriesDialog } from './components/dialogs'
-import type { Feed } from './api/client'
+import { AddFeedDialog, DeleteFeedDialog, EditFeedDialog, EditCategoryDialog, AddCategoryDialog } from './components/dialogs'
+import type { Feed, Category } from './api/client'
 
 const drawerWidth = 280
 
 function App() {
   const { theme, isDark, toggleTheme } = useTheme()
-  const { feeds, loading: feedsLoading, error: feedsError, loadFeeds, addFeed, deleteFeed, refreshFeed, assignCategories } = useFeeds()
+  const { feeds, loading: feedsLoading, error: feedsError, loadFeeds, addFeed, deleteFeed, refreshFeed, assignCategories, updateFeed } = useFeeds()
   const { articles, articleStatuses, loadArticles, toggleRead, toggleFavorite, updatingArticleId } = useArticles()
-  const { categories, loadCategories, deleteCategory } = useCategories()
+  const { categories, loadCategories, deleteCategory, updateCategory, addCategory } = useCategories()
 
   const [mobileOpen, setMobileOpen] = useState(false)
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const [activeView, setActiveView] = useState<'dashboard' | 'feeds' | 'articles' | 'favorites' | 'categories' | 'statistics'>('dashboard')
 
   // Filter states - initial values from localStorage
-  const [dashboardFilter, setDashboardFilter] = useState<'all' | 'unread' | 'favorites'>(() => getInitialFilterState('dashboard-filter'))
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_dashboardFilter, _setDashboardFilter] = useState<'all' | 'unread' | 'favorites'>(() => getInitialFilterState('dashboard-filter'))
   const [dashboardCategoryFilter, setDashboardCategoryFilter] = useState<string[]>([])
   const [articlesFilter, setArticlesFilter] = useState<'all' | 'unread' | 'favorites'>(() => getInitialFilterState('articles-filter'))
   const [articlesCategoryFilter, setArticlesCategoryFilter] = useState<string[]>([])
@@ -56,10 +57,17 @@ function App() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [feedToDelete, setFeedToDelete] = useState<Feed | null>(null)
 
-  // Edit categories dialog state
-  const [editCategoriesDialogOpen, setEditCategoriesDialogOpen] = useState(false)
-  const [feedToEditCategories, setFeedToEditCategories] = useState<Feed | null>(null)
+  // Edit feed dialog state
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [feedToEdit, setFeedToEdit] = useState<Feed | null>(null)
   const [editSelectedCategories, setEditSelectedCategories] = useState<string[]>([])
+
+  // Edit category dialog state
+  const [editCategoryDialogOpen, setEditCategoryDialogOpen] = useState(false)
+  const [categoryToEdit, setCategoryToEdit] = useState<Category | null>(null)
+
+  // Add category dialog state
+  const [addCategoryDialogOpen, setAddCategoryDialogOpen] = useState(false)
 
   // Add feed form
   const [newFeedUrl, setNewFeedUrl] = useState('')
@@ -94,48 +102,64 @@ function App() {
     setFeedToDelete(null)
   }
 
-  const handleOpenEditCategories = (feed: Feed) => {
-    setFeedToEditCategories(feed)
+  const handleOpenEditDialog = (feed: Feed) => {
+    setFeedToEdit(feed)
     setEditSelectedCategories(feed.categoryIds || [])
-    setEditCategoriesDialogOpen(true)
+    setEditDialogOpen(true)
   }
 
-  const handleCloseEditCategories = () => {
-    setEditCategoriesDialogOpen(false)
-    setFeedToEditCategories(null)
+  const handleCloseEditDialog = () => {
+    setEditDialogOpen(false)
+    setFeedToEdit(null)
     setEditSelectedCategories([])
   }
 
-  const handleSaveCategories = async () => {
-    if (!feedToEditCategories) return
-    await assignCategories(feedToEditCategories.id, editSelectedCategories)
-    setEditCategoriesDialogOpen(false)
-    setFeedToEditCategories(null)
+  const handleUpdateFeed = async (name: string, url: string, description: string, categoryIds: string[]) => {
+    if (!feedToEdit) return
+    await updateFeed(feedToEdit.id, name, url, description)
+    await assignCategories(feedToEdit.id, categoryIds)
+    setEditDialogOpen(false)
+    setFeedToEdit(null)
     setEditSelectedCategories([])
+  }
+
+  const handleOpenEditCategoryDialog = (category: Category) => {
+    setCategoryToEdit(category)
+    setEditCategoryDialogOpen(true)
+  }
+
+  const handleCloseEditCategoryDialog = () => {
+    setEditCategoryDialogOpen(false)
+    setCategoryToEdit(null)
+  }
+
+  const handleUpdateCategory = async (name: string, color: string, icon: string) => {
+    if (!categoryToEdit) return
+    await updateCategory(categoryToEdit.id, name, color, icon)
+    setEditCategoryDialogOpen(false)
+    setCategoryToEdit(null)
+  }
+
+  const handleOpenAddCategoryDialog = () => {
+    setAddCategoryDialogOpen(true)
+  }
+
+  const handleCloseAddCategoryDialog = () => {
+    setAddCategoryDialogOpen(false)
+  }
+
+  const handleAddCategory = async (name: string, color: string, icon: string) => {
+    await addCategory(name, color, icon)
+    setAddCategoryDialogOpen(false)
   }
 
   const renderContent = () => {
     const loading = feedsLoading
-    const error = feedsError
 
     switch (activeView) {
       case 'dashboard':
         return (
-          <DashboardView
-            feeds={feeds}
-            articles={articles}
-            categories={categories}
-            loading={loading}
-            error={error}
-            articleStatuses={articleStatuses}
-            updatingArticleId={updatingArticleId}
-            dashboardFilter={dashboardFilter}
-            dashboardCategoryFilter={dashboardCategoryFilter}
-            onFilterChange={setDashboardFilter}
-            onCategoryFilterChange={setDashboardCategoryFilter}
-            onToggleRead={toggleRead}
-            onToggleFavorite={toggleFavorite}
-          />
+          <DashboardView />
         )
       case 'feeds':
         return (
@@ -148,6 +172,7 @@ function App() {
               setFeedToDelete(feed)
               setDeleteDialogOpen(true)
             }}
+            onEdit={handleOpenEditDialog}
             onImportSuccess={loadFeeds}
           />
         )
@@ -184,6 +209,7 @@ function App() {
             categories={categories}
             loading={loading}
             onDelete={deleteCategory}
+            onEdit={handleOpenEditCategoryDialog}
           />
         )
       case 'statistics':
@@ -273,6 +299,16 @@ function App() {
           </Fab>
         )}
 
+        {activeView === 'categories' && (
+          <Fab
+            color="primary"
+            sx={{ position: 'fixed', bottom: 24, right: 24 }}
+            onClick={handleOpenAddCategoryDialog}
+          >
+            <AddIcon />
+          </Fab>
+        )}
+
         <AddFeedDialog
           open={addDialogOpen}
           onClose={() => {
@@ -309,18 +345,33 @@ function App() {
           error={feedsError}
         />
 
-        <EditFeedCategoriesDialog
-          open={editCategoriesDialogOpen}
-          onClose={handleCloseEditCategories}
-          onSubmit={handleSaveCategories}
-          feed={feedToEditCategories}
+        <EditFeedDialog
+          open={editDialogOpen}
+          onClose={handleCloseEditDialog}
+          onSubmit={handleUpdateFeed}
+          feed={feedToEdit}
+          loading={feedsLoading}
+          categories={categories}
           selectedCategories={editSelectedCategories}
-          toggleCategory={(id) => {
+          onToggleCategory={(id) => {
             setEditSelectedCategories(prev =>
               prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
             )
           }}
-          categories={categories}
+        />
+
+        <EditCategoryDialog
+          open={editCategoryDialogOpen}
+          onClose={handleCloseEditCategoryDialog}
+          onSubmit={handleUpdateCategory}
+          category={categoryToEdit}
+          loading={feedsLoading}
+        />
+
+        <AddCategoryDialog
+          open={addCategoryDialogOpen}
+          onClose={handleCloseAddCategoryDialog}
+          onSubmit={handleAddCategory}
           loading={feedsLoading}
         />
       </Box>

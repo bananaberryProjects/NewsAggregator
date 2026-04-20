@@ -35,6 +35,7 @@ interface City {
 }
 
 // List of cities kept for potential fallback (not shown in UI)
+/*
 const CITIES: City[] = [
   { name: 'Berlin', lat: 52.52, lon: 13.41 },
   { name: 'München', lat: 48.14, lon: 11.58 },
@@ -53,6 +54,7 @@ const CITIES: City[] = [
   { name: 'Freiburg', lat: 47.99, lon: 7.85 },
   { name: 'Bonn', lat: 50.73, lon: 7.10 }
 ]
+*/
 
 // WMO Weather interpretation codes – https://open-meteo.com/en/docs
 const getWeatherTheme = (code: number): WeatherTheme => {

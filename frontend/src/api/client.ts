@@ -122,6 +122,8 @@ export const feedsApi = {
   getAll: () => fetchApi<Feed[]>('/feeds'),
   add: (feed: { name: string; url: string }) => 
     fetchApi<Feed>('/feeds', { method: 'POST', body: JSON.stringify(feed) }),
+  update: (id: string, feed: { name: string; url: string; description?: string }) => 
+    fetchApi<Feed>(`/feeds/${id}`, { method: 'PUT', body: JSON.stringify(feed) }),
   delete: (id: string) => 
     fetchApi<void>(`/feeds/${id}`, { method: 'DELETE' }),
   fetchArticles: (id: string) => 
@@ -146,6 +148,8 @@ export const categoriesApi = {
   getAll: () => fetchApi<Category[]>('/categories'),
   create: (category: { name: string; color?: string; icon?: string }) => 
     fetchApi<Category>('/categories', { method: 'POST', body: JSON.stringify(category) }),
+  update: (id: string, category: { name: string; color?: string; icon?: string }) => 
+    fetchApi<Category>(`/categories/${id}`, { method: 'PUT', body: JSON.stringify(category) }),
   delete: (id: string) => fetchApi<void>(`/categories/${id}`, { method: 'DELETE' }),
 };
 

@@ -22,9 +22,9 @@ import java.util.ArrayList;
 public class Feed {
 
     private final FeedId id;
-    private final String name;
-    private final String url;
-    private final String description;
+    private String name;
+    private String url;
+    private String description;
     private final LocalDateTime createdAt;
 
     private LocalDateTime lastFetched;
@@ -193,6 +193,15 @@ public class Feed {
         if (categoryIds != null) {
             this.categoryIds.addAll(categoryIds);
         }
+    }
+
+    /**
+     * Aktualisiert die Feed-Daten.
+     */
+    public void update(String name, String url, String description) {
+        this.name = validateNotEmpty(name, "Name");
+        this.url = validateUrl(url);
+        this.description = description;
     }
 
     // ==================== Objekt-Methoden ====================

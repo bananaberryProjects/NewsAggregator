@@ -71,7 +71,7 @@ export function SummaryWidget({ refreshIntervalSeconds = 600 }: { refreshInterva
         ) : error ? (
           <Alert severity="error">{error}</Alert>
         ) : (
-          <Typography variant="body1" textAlign="center">
+          <Typography variant="body1" sx={{ textAlign: 'center' }}>
             {summary}
           </Typography>
         )}

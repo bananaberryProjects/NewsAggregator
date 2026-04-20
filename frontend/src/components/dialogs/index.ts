@@ -1,3 +1,5 @@
 export { AddFeedDialog } from './AddFeedDialog'
 export { DeleteFeedDialog } from './DeleteFeedDialog'
-export { EditFeedCategoriesDialog } from './EditFeedCategoriesDialog'
+export { EditFeedDialog } from './EditFeedDialog'
+export { EditCategoryDialog } from './EditCategoryDialog'
+export { AddCategoryDialog } from './AddCategoryDialog'

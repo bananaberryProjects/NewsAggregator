@@ -34,6 +34,15 @@ export function useFeeds() {
     return newFeed
   }
 
+  const updateFeed = async (feedId: string, name: string, url: string, description: string) => {
+    await feedsApi.update(feedId, { 
+      name: name.trim(), 
+      url: url.trim(),
+      description: description.trim() || undefined
+    })
+    await loadFeeds()
+  }
+
   const deleteFeed = async (feedId: string) => {
     await feedsApi.delete(feedId)
     await loadFeeds()
@@ -65,5 +74,6 @@ export function useFeeds() {
     refreshFeed,
     assignCategories,
     setError,
+    updateFeed,
   }
 }
