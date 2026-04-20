@@ -1,5 +1,19 @@
-import { Box, Card, Chip, Grid, Skeleton, Typography, Alert } from '@mui/material'
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
+import {
+  Box,
+  Card,
+  Chip,
+  Grid,
+  Skeleton,
+  Typography,
+  Alert,
+  Drawer,
+  IconButton,
+  Divider,
+  Button,
+  Badge,
+} from '@mui/material'
+import { FilterList as FilterIcon, Close as CloseIcon } from '@mui/icons-material'
 import { ArticleCard } from '../ArticleCard'
 import type { Article, Category } from '../../api/client'
 
@@ -30,6 +44,8 @@ export function ArticlesView({
   onToggleRead,
   onToggleFavorite,
 }: ArticlesViewProps) {
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false)
+
   // Persist filter to localStorage on changes
   useEffect(() => {
     localStorage.setItem('articles-filter', articlesFilter)
@@ -79,46 +95,115 @@ export function ArticlesView({
   const isRead = (id: string) => articleStatuses[id]?.isRead ?? false
   const isFavorite = (id: string) => articleStatuses[id]?.isFavorite ?? false
 
+  // Count active filters
+  const activeFilterCount =
+    (articlesFilter !== 'all' ? 1 : 0) +
+    (articlesCategoryFilter.length > 0 ? 1 : 0)
+
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+      {/* Header mit Filter-Button */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h5" sx={{ fontWeight: 600 }}>
           Alle Artikel ({articlesList.length})
         </Typography>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'flex-end' }}>
-            <Chip
-              label="Alle"
-              onClick={() => onFilterChange('all')}
-              color={articlesFilter === 'all' ? 'primary' : 'default'}
-              variant={articlesFilter === 'all' ? 'filled' : 'outlined'}
-              size="small"
-            />
-            <Chip
-              label="Ungelesen"
-              onClick={() => onFilterChange('unread')}
-              color={articlesFilter === 'unread' ? 'primary' : 'default'}
-              variant={articlesFilter === 'unread' ? 'filled' : 'outlined'}
-              size="small"
-            />
-            <Chip
-              label="Favoriten"
-              onClick={() => onFilterChange('favorites')}
-              color={articlesFilter === 'favorites' ? 'primary' : 'default'}
-              variant={articlesFilter === 'favorites' ? 'filled' : 'outlined'}
-              size="small"
-            />
-          </Box>
+        <IconButton
+          color="primary"
+          onClick={() => setFilterDrawerOpen(true)}
+          sx={{
+            bgcolor: 'background.paper',
+            boxShadow: 1,
+            '&:hover': { bgcolor: 'background.paper', boxShadow: 2 },
+          }}
+        >
+          <Badge badgeContent={activeFilterCount > 0 ? activeFilterCount : 0} color="error">
+            <FilterIcon />
+          </Badge>
+        </IconButton>
+      </Box>
 
-          {categories.length > 0 && (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'flex-end' }}>
+      {/* Filter Drawer */}
+      <Drawer
+        anchor="right"
+        open={filterDrawerOpen}
+        onClose={() => setFilterDrawerOpen(false)}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: { xs: '85%', sm: 360 },
+            p: 3,
+            pt: { xs: 6, sm: 3 },
+          },
+        }}
+      >
+        {/* Swipe Handle für Mobile */}
+        <Box
+          sx={{
+            display: { xs: 'flex', sm: 'none' },
+            justifyContent: 'center',
+            mb: 2,
+            cursor: 'pointer',
+          }}
+          onClick={() => setFilterDrawerOpen(false)}
+        >
+          <Box
+            sx={{
+              width: 40,
+              height: 4,
+              bgcolor: 'grey.400',
+              borderRadius: 2,
+            }}
+          />
+        </Box>
+
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            Filter
+          </Typography>
+          <IconButton onClick={() => setFilterDrawerOpen(false)}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
+        <Divider sx={{ mb: 3 }} />
+
+        {/* Status Filter */}
+        <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
+          Status
+        </Typography>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 4 }}>
+          <Chip
+            label="Alle"
+            onClick={() => onFilterChange('all')}
+            color={articlesFilter === 'all' ? 'primary' : 'default'}
+            variant={articlesFilter === 'all' ? 'filled' : 'outlined'}
+          />
+          <Chip
+            label="Ungelesen"
+            onClick={() => onFilterChange('unread')}
+            color={articlesFilter === 'unread' ? 'primary' : 'default'}
+            variant={articlesFilter === 'unread' ? 'filled' : 'outlined'}
+          />
+          <Chip
+            label="Favoriten"
+            onClick={() => onFilterChange('favorites')}
+            color={articlesFilter === 'favorites' ? 'primary' : 'default'}
+            variant={articlesFilter === 'favorites' ? 'filled' : 'outlined'}
+          />
+        </Box>
+
+        {/* Category Filter */}
+        {categories.length > 0 && (
+          <>
+            <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
+              Kategorien
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
               <Chip
                 label="Alle"
                 onClick={() => onCategoryFilterChange([])}
                 color={articlesCategoryFilter.length === 0 ? 'primary' : 'default'}
                 variant={articlesCategoryFilter.length === 0 ? 'filled' : 'outlined'}
-                size="small"
               />
               {categories.map((category) => (
                 <Chip
@@ -137,18 +222,42 @@ export function ArticlesView({
                     borderColor: category.color,
                   }}
                   variant={articlesCategoryFilter.includes(category.id) ? 'filled' : 'outlined'}
-                  size="small"
                 />
               ))}
             </Box>
-          )}
-        </Box>
-      </Box>
+          </>
+        )}
 
+        <Box sx={{ flexGrow: 1 }} />
+
+        {/* Reset Button */}
+        <Button
+          variant="outlined"
+          fullWidth
+          onClick={() => {
+            onFilterChange('all')
+            onCategoryFilterChange([])
+          }}
+          sx={{ mt: 2 }}
+        >
+          Filter zurücksetzen
+        </Button>
+
+        <Button
+          variant="contained"
+          fullWidth
+          onClick={() => setFilterDrawerOpen(false)}
+          sx={{ mt: 2, display: { xs: 'flex', sm: 'none' } }}
+        >
+          Fertig
+        </Button>
+      </Drawer>
+
+      {/* Articles Grid */}
       {loading ? (
         <Grid container spacing={3}>
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} sx={{ mx: 'auto',  }} key={i}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} sx={{ mx: 'auto', }} key={i}>
               <Card sx={{ height: 430 }}>
                 <Skeleton variant="rectangular" height={200} />
               </Card>
@@ -164,7 +273,7 @@ export function ArticlesView({
           {[...articlesList]
             .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
             .map((article) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} sx={{ mx: 'auto',  }} key={article.id}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} sx={{ mx: 'auto', }} key={article.id}>
                 <ArticleCard
                   article={article}
                   isRead={isRead(article.id)}
