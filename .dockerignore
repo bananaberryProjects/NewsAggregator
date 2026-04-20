@@ -1,0 +1,37 @@
+# Git
+.git
+.gitignore
+
+# Maven
+.mvn
+mvnw.cmd
+target/
+
+# Node.js
+frontend/node_modules/
+frontend/dist/
+
+# IDE
+.idea
+.vscode
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Test files
+src/test/
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Misc
+README.md
+ROADMAP.md
+.env

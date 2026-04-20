@@ -45,6 +45,35 @@ spring:
       path: /h2-console
 
 ---
+# Docker-Profil: PostgreSQL mit Environment Variables
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:db}:${POSTGRES_PORT:5432}/${POSTGRES_DB:newsdb}
+    driver-class-name: org.postgresql.Driver
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  web:
+    resources:
+      static-locations: classpath:/static/,file:/app/static/
+
+  mvc:
+    static-path-pattern: /**
+
+---
 # Prod-Profil: PostgreSQL
 spring:
   config:
