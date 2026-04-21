@@ -67,20 +67,20 @@ public interface ArticleJpaRepository extends JpaRepository<ArticleJpaEntity, Lo
     List<ArticleJpaEntity> findAllWithFeedAndCategories();
 
     /**
-     * Findet Artikel ohne Content (contentHtml IS NULL) und ohne Fehler-Flag mit Limit.
-     * Sortiert nach createdAt DESC (neueste zuerst).
+     * Findet Artikel ohne Content (contentHtml IS NULL) und ohne Fehler-Flag
+     * von Feeds mit extractContent=true. Sortiert nach createdAt DESC.
      *
      * @param pageable Pageable mit Limit
-     * @return Liste der Artikel ohne Content, die noch nicht fehlgeschlagen sind
+     * @return Liste der Artikel ohne Content von Feeds mit aktivierter Extraktion
      */
-    @Query("SELECT a FROM ArticleJpaEntity a WHERE a.contentHtml IS NULL AND (a.contentExtractionFailed IS NULL OR a.contentExtractionFailed = false) ORDER BY a.createdAt DESC")
+    @Query("SELECT a FROM ArticleJpaEntity a JOIN FETCH a.feed f WHERE a.contentHtml IS NULL AND (a.contentExtractionFailed IS NULL OR a.contentExtractionFailed = false) AND f.extractContent = true ORDER BY a.createdAt DESC")
     List<ArticleJpaEntity> findByContentHtmlIsNull(Pageable pageable);
 
     /**
-     * Zählt Artikel ohne Content und ohne Fehler-Flag.
+     * Zählt Artikel ohne Content und ohne Fehler-Flag von Feeds mit extractContent=true.
      *
-     * @return Anzahl der Artikel ohne Content, die noch nicht fehlgeschlagen sind
+     * @return Anzahl der Artikel
      */
-    @Query("SELECT COUNT(a) FROM ArticleJpaEntity a WHERE a.contentHtml IS NULL AND (a.contentExtractionFailed IS NULL OR a.contentExtractionFailed = false)")
+    @Query("SELECT COUNT(a) FROM ArticleJpaEntity a JOIN a.feed f WHERE a.contentHtml IS NULL AND (a.contentExtractionFailed IS NULL OR a.contentExtractionFailed = false) AND f.extractContent = true")
     long countByContentHtmlIsNull();
 }
