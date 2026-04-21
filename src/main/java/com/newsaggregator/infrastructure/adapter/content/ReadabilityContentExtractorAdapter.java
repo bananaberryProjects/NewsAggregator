@@ -128,11 +128,10 @@ public class ReadabilityContentExtractorAdapter implements ArticleContentExtract
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .timeout(TIMEOUT)
-                .header("User-Agent", "Mozilla/5.0 (compatible; NewsAggregator/1.0; +https://example.com/bot)")
-                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
                 .header("Accept-Language", "de,en-US;q=0.7,en;q=0.3")
-                .header("Accept-Encoding", "gzip, deflate")
-                .header("Connection", "keep-alive")
+                .header("Accept-Encoding", "gzip, deflate, br")
                 .GET()
                 .build();
 
