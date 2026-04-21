@@ -9,6 +9,7 @@ import {
   Box,
   IconButton,
   CircularProgress,
+  Tooltip,
 } from '@mui/material'
 import {
   Launch as LaunchIcon,
@@ -19,6 +20,7 @@ import {
   VisibilityOff as VisibilityOffIcon,
   CheckCircle as CheckCircleIcon,
   Article as ArticleIcon,
+  MenuBook as MenuBookIcon,
 } from '@mui/icons-material'
 import type { Article } from '../api/client'
 import { stripHtml } from '../utils'
@@ -70,7 +72,18 @@ export function ArticleCard({
       />
       <CardContent sx={{ flexGrow: 1, overflow: 'hidden' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-          <Chip size="small" label={article.feedName || 'News'} color="primary" />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Chip size="small" label={article.feedName || 'News'} color="primary" />
+            {hasContentHtml && (
+              <Tooltip title="Vollständiger Artikel verfügbar">
+                <MenuBookIcon
+                  fontSize="small"
+                  color="success"
+                  sx={{ ml: 0.5 }}
+                />
+              </Tooltip>
+            )}
+          </Box>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <CalendarTodayIcon fontSize="inherit" />
             {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('de-DE', {

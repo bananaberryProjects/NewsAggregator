@@ -243,7 +243,7 @@ public class ReadabilityContentExtractorAdapter implements ArticleContentExtract
             return doc.body() != null ? doc.body().html() : content;
 
         } catch (Exception e) {
-            logger.warn("Fehler bei Content-Sanitisierung: {} - {}", content, e.getMessage());
+            logger.warn("Fehler bei Content-Sanitisierung: {}", e.getMessage());
             return content;
         }
     }
