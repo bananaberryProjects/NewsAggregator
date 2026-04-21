@@ -67,7 +67,9 @@ export function Sidebar({
       {/* Desktop Header */}
       <Box sx={{ px: 2, mb: 3, display: { xs: 'none', md: 'flex' }, alignItems: 'center' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Avatar src="/newsweave.jpg" sx={{ width: 40, height: 40 }} />
+          <Avatar sx={{ width: 36, height: 36, bgcolor: 'primary.main' }}>
+            <NewspaperIcon sx={{ color: 'white' }} />
+          </Avatar>
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main', letterSpacing: '-0.5px', lineHeight: 1.2 }}>
               NewsWeave
