@@ -1,6 +1,9 @@
-# 📰 News Aggregator
+# 🧵 NewsWeave
 
 Ein Spring Boot basiertes News-Aggregationssystem mit hexagonaler Architektur, PostgreSQL-Datenbank und **React + Material UI Frontend**.
+
+**Früher:** News Aggregator  
+**Jetzt:** NewsWeave - Deine personalisierte News-Plattform
 
 ## 🏗️ Architektur
 
@@ -62,54 +65,69 @@ npx vite --host 0.0.0.0
 
 ## ✨ Features
 
-### Backend
+### Content Extraction (NEU!)
+- ✅ **Automatische Content-Extraktion** - Volle Artikel-Inhalte mit Readability4J
+- ✅ **Reader View** - Aufgeräumte Artikel-Ansicht ohne externe Links
+- ✅ **Bulk-Extraktion** - Nachträgliche Extraktion für bestehende Artikel
+- ✅ **Fehler-Management** - Artikel mit fehlgeschlagener Extraktion werden markiert
+- ✅ **Feed-Level Control** - Pro Feed Content-Extraktion an/aus schaltbar
+- ✅ **Cookie-Banner-Entfernung** - Automatische Bereinigung vor Extraktion
+
+### Feed Management
 - ✅ **REST API** - Vollständige CRUD-API für Feeds & Artikel
 - ✅ **PostgreSQL Datenbank** - Persistent, produktionsbereit
-- ✅ **CORS Support** - Für Frontend-Zugriff (localhost:5173, mac-mini.local:5173)
+- ✅ **CORS Support** - Für Frontend-Zugriff
 - ✅ **RSS/Atom Feed Aggregation** - Automatisches Abrufen
 - ✅ **Media RSS Support** - Thumbnails aus `media:content`
 - ✅ **Lombok** - Boilerplate-Reduktion
 - ✅ **Hexagonale Architektur** - Clean Architecture
 - ✅ **Cascade Delete** - Löschen eines Feeds löscht alle Artikel
-- ✅ **Artikel Status** - Lesen/Favoriten verwalten (PostgreSQL)
-- ✅ **Statistiken API** - Lesegewohnheiten mit /api/stats
-- ✅ **OPML Import/Export** - Feeds im OPML-Format importieren/exportieren
-- ✅ **KI-Zusammenfassung** - Tägliche Zusammenfassung mit Ollama-Integration
+- ✅ **Artikel Status** - Lesen/Favoriten verwalten
+- ✅ **Statistiken API** - Lesegewohnheiten
+- ✅ **OPML Import/Export** - Feeds im OPML-Format
+- ✅ **KI-Zusammenfassung** - Tägliche Zusammenfassung
+- ✅ **Kategorie-Management** - Feeds in Kategorien organisieren
+- ✅ **Feed-Edit** - Name, URL, Beschreibung und Kategorien bearbeiten
 
 ### Frontend
 - ✅ **React 19** mit TypeScript
 - ✅ **Vite** - Schnelles Build-Tool
 - ✅ **Material UI (MUI)** - Modernes, responsives Design
 - ✅ **Recharts** - Interaktive Charts für Statistiken
-- ✅ **Einheitliche Icons** - Herz-Icon für Favoriten überall
-- ✅ **Sidebar Navigation** - Dashboard / Feeds / Artikel / Favoriten / Statistiken
-- ✅ **Feed Management** - Hinzufügen, Löschen, Aktualisieren
-- ✅ **Artikel-Übersicht** - Einheitliche Karten (480x400px)
+- ✅ **Sidebar Navigation** - Dashboard / Feeds / Artikel / Favoriten / Kategorien / Statistiken / Einstellungen
+- ✅ **Content Extraction UI** - Reader-View Dialog mit DOMPurify-Sanitization
+- ✅ **Bulk-Extraction Dialog** - Fortschrittsanzeige für Content-Extraktion
+- ✅ **Feed Management** - Hinzufügen, Löschen, Bearbeiten mit Kategorien
+- ✅ **Category Management** - Kategorien mit Icons und Farben
+- ✅ **Artikel-Übersicht** - Einheitliche Karten mit Content-Indikator
 - ✅ **Suche** - Artikel durchsuchen
-- ✅ **Filter** - Alle / Ungelesen / Favoriten
+- ✅ **Filter** - Alle / Ungelesen / Favoriten + Kategorie-Filter
 - ✅ **Alphabetische Sortierung** - Feeds automatisch sortiert
-- ✅ **Scrollbar Feed-Liste** - Alle Feeds in Sidebar sichtbar
-- ✅ **Lokale Placeholder** - Keine externen Bild-Abhängigkeiten
-- ✅ **Dark/Light Mode** - Theme-Umschaltung
+- ✅ **Dark/Light Mode** - Theme-Umschaltung in Einstellungen
 - ✅ **Interaktive Icons** - Lesen/Gelesen markieren, Favoriten verwalten
 - ✅ **Datum-Anzeige** - In Artikel-Kacheln mit Kalender-Icon
-- ✅ **Dashboard-Limit** - Maximal 10 neueste Artikel, nach Datum sortiert
-- ✅ **Verbesserte Textdarstellung** - Natürliche Beschreibungs-Umbrüche
-- ✅ **Dashboard Widgets** - Wetter, Börsenkurse & KI-Zusammenfassung
-- ✅ **Multi-Column Layout** - Favoriten-Seite mit Grid-Layout
-- ✅ **Artikel-Kacheln** - Optimierte Höhe für 3 Zeilen Titel + Beschreibung
+- ✅ **Dashboard-Widgets** - Wetter, Börsenkurse & KI-Zusammenfassung
+- ✅ **NewsWeave Branding** - Eigenes Logo in Sidebar und Favicon
 
 ## 🔌 API Endpoints
 
+### Feeds
 | Methode | Endpoint | Beschreibung |
 |---------|----------|--------------|
 | GET | `/api/feeds` | Alle Feeds anzeigen |
 | GET | `/api/feeds/{id}` | Einzelnen Feed anzeigen |
 | POST | `/api/feeds` | Neuen Feed hinzufügen |
+| PUT | `/api/feeds/{id}` | Feed bearbeiten (inkl. extractContent) |
 | POST | `/api/feeds/{id}/fetch` | Feed manuell abrufen |
 | DELETE | `/api/feeds/{id}` | Feed löschen (inkl. Artikel) |
+| POST | `/api/feeds/{id}/categories` | Kategorien zuweisen |
+
+### Artikel
+| Methode | Endpoint | Beschreibung |
+|---------|----------|--------------|
 | GET | `/api/articles` | Alle Artikel anzeigen |
 | GET | `/api/articles/{id}` | Einzelnen Artikel anzeigen |
+| GET | `/api/articles/{id}/content` | Extrahierten Content holen |
 | GET | `/api/articles/search?query=...` | Artikel suchen |
 | GET | `/api/articles/feed/{feedId}` | Artikel eines Feeds |
 | POST | `/api/articles/{id}/read` | Als gelesen markieren |
@@ -118,10 +136,28 @@ npx vite --host 0.0.0.0
 | GET | `/api/articles/{id}/status` | Status abrufen |
 | GET | `/api/articles/read` | Alle gelesenen Artikel |
 | GET | `/api/articles/favorites` | Alle Favoriten |
-| GET | `/api/stats` | Lesestatistiken (Gesamt, pro Tag, pro Feed) |
+
+### Kategorien
+| Methode | Endpoint | Beschreibung |
+|---------|----------|--------------|
+| GET | `/api/categories` | Alle Kategorien |
+| POST | `/api/categories` | Kategorie erstellen |
+| PUT | `/api/categories/{id}` | Kategorie bearbeiten |
+| DELETE | `/api/categories/{id}` | Kategorie löschen |
+
+### Admin
+| Methode | Endpoint | Beschreibung |
+|---------|----------|--------------|
+| POST | `/api/admin/articles/extract-content` | Bulk Content-Extraktion |
+| GET | `/api/admin/articles/without-content-count` | Anzahl Artikel ohne Content |
+
+### Statistiken & Sonstiges
+| Methode | Endpoint | Beschreibung |
+|---------|----------|--------------|
+| GET | `/api/stats` | Lesestatistiken |
 | GET | `/api/opml/export` | Feeds als OPML exportieren |
 | POST | `/api/opml/import` | Feeds aus OPML importieren |
-| GET | `/api/stocks` | Aktuelle Börsenkurse (DAX, S&P 500, BTC) |
+| GET | `/api/stocks` | Aktuelle Börsenkurse |
 | GET | `/api/weather` | Aktuelle Wetterdaten |
 | GET | `/api/summary` | KI-generierte Tageszusammenfassung |
 
@@ -282,10 +318,15 @@ proxy: {
 - [x] ⭐ Artikel favorisieren
 - [x] 🔍 Filter (Alle / Ungelesen / Favoriten)
 - [x] 📊 Statistiken über Lesegewohnheiten
+- [x] 📄 **Content Extraction** - Volle Artikel-Inhalte extrahieren
+- [x] 📖 **Reader View** - Aufgeräumte Artikel-Ansicht
+- [x] 🏷️ **Kategorien** - Feeds organisieren
+- [x] 🎨 **Dark/Light Mode** - Theme-Umschaltung
+- [x] 🧵 **NewsWeave Branding** - Eigenes Logo & Name
 - [ ] 📱 PWA Support
 - [ ] 🔔 Push-Benachrichtigungen
-- [ ] 🏷️ Tags / Kategorien für Feeds
-- [ ] 📤 OPML Import/Export
+- [ ] 🔍 Volltextsuche mit Elasticsearch
+- [ ] 📤 Mobile App (React Native)
 
 ## 📄 Lizenz
 
