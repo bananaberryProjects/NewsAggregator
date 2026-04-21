@@ -1,3 +1,4 @@
 export { ArticleCard } from './ArticleCard'
 export { ArticleReaderDialog } from './ArticleReaderDialog'
+export { ContentExtractionDialog } from './ContentExtractionDialog'
 export { Sidebar } from './Layout/Sidebar'

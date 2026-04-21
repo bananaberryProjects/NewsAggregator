@@ -119,4 +119,18 @@ public class ArticleRepositoryAdapter implements ArticleRepository {
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Article> findByContentHtmlIsNull(int limit) {
+        return jpaRepository.findByContentHtmlIsNullWithLimit(limit).stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countByContentHtmlIsNull() {
+        return jpaRepository.countByContentHtmlIsNull();
+    }
 }

@@ -19,6 +19,7 @@ import {
   Favorite as FavoriteIcon,
   Label as LabelIcon,
   Assessment as AssessmentIcon,
+  Settings as SettingsIcon,
   Close as CloseIcon,
 } from '@mui/icons-material'
 import type { Feed, Category } from '../../api/client'
@@ -30,7 +31,7 @@ interface SidebarProps {
   mobileOpen: boolean
   setMobileOpen: (open: boolean) => void
   activeView: string
-  setActiveView: (view: 'dashboard' | 'feeds' | 'articles' | 'favorites' | 'categories' | 'statistics') => void
+  setActiveView: (view: 'dashboard' | 'feeds' | 'articles' | 'favorites' | 'categories' | 'statistics' | 'settings') => void
   feeds: Feed[]
   categories: Category[]
   articleCount: number
@@ -141,6 +142,15 @@ export function Sidebar({
               <AssessmentIcon />
             </ListItemIcon>
             <ListItemText primary="Statistiken" />
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem disablePadding>
+          <ListItemButton selected={activeView === 'settings'} onClick={() => { setActiveView('settings'); handleDrawerClose(); }}>
+            <ListItemIcon>
+              <SettingsIcon />
+            </ListItemIcon>
+            <ListItemText primary="Einstellungen" />
           </ListItemButton>
         </ListItem>
       </List>

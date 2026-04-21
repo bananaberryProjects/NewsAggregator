@@ -29,10 +29,12 @@ import {
 import { Add as AddIcon, Menu as MenuIcon } from '@mui/icons-material'
 import { useTheme, useFeeds, useArticles, useCategories } from './hooks'
 import { Sidebar } from './components'
-import { DashboardView, FeedsView, ArticlesView, FavoritesView, CategoriesView, StatisticsView } from './components/views'
+import { DashboardView, FeedsView, ArticlesView, FavoritesView, CategoriesView, StatisticsView, SettingsView } from './components/views'
 import { AddFeedDialog, DeleteFeedDialog, EditFeedDialog, EditCategoryDialog, AddCategoryDialog } from './components/dialogs'
 import { ArticleReaderDialog } from './components/ArticleReaderDialog'
+import { ContentExtractionDialog } from './components/ContentExtractionDialog'
 import type { Feed, Category, Article } from './api/client'
+import { adminApi } from './api/client'
 
 const drawerWidth = 280
 
@@ -44,7 +46,7 @@ function App() {
 
   const [mobileOpen, setMobileOpen] = useState(false)
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
-  const [activeView, setActiveView] = useState<'dashboard' | 'feeds' | 'articles' | 'favorites' | 'categories' | 'statistics'>('dashboard')
+  const [activeView, setActiveView] = useState<'dashboard' | 'feeds' | 'articles' | 'favorites' | 'categories' | 'statistics' | 'settings'>('dashboard')
 
   // Filter states - initial values from localStorage
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -74,6 +76,19 @@ function App() {
   const [readerDialogOpen, setReaderDialogOpen] = useState(false)
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null)
 
+  // Content extraction dialog state
+  const [extractionDialogOpen, setExtractionDialogOpen] = useState(false)
+  const [articlesWithoutContent, setArticlesWithoutContent] = useState(0)
+
+  const loadArticlesWithoutContentCount = async () => {
+    try {
+      const response = await adminApi.getArticlesWithoutContentCount()
+      setArticlesWithoutContent(response.count)
+    } catch (error) {
+      console.error('Failed to load articles without content count:', error)
+    }
+  }
+
   // Add feed form
   const [newFeedUrl, setNewFeedUrl] = useState('')
   const [newFeedName, setNewFeedName] = useState('')
@@ -85,6 +100,7 @@ function App() {
 
   const loadData = async () => {
     await Promise.all([loadFeeds(), loadArticles(), loadCategories()])
+    await loadArticlesWithoutContentCount()
   }
 
   const favoriteCount = useMemo(() => {
@@ -231,6 +247,13 @@ function App() {
         )
       case 'statistics':
         return <StatisticsView />
+      case 'settings':
+        return (
+          <SettingsView
+            articlesWithoutContent={articlesWithoutContent}
+            onOpenExtractionDialog={() => setExtractionDialogOpen(true)}
+          />
+        )
       default:
         return null
     }
@@ -396,6 +419,16 @@ function App() {
           article={selectedArticle}
           open={readerDialogOpen}
           onClose={handleCloseReader}
+        />
+
+        <ContentExtractionDialog
+          open={extractionDialogOpen}
+          onClose={() => {
+            setExtractionDialogOpen(false)
+            loadArticlesWithoutContentCount()
+          }}
+          articlesWithoutContent={articlesWithoutContent}
+          onExtractionComplete={loadArticlesWithoutContentCount}
         />
       </Box>
     </ThemeProvider>

@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(./mvnw test *)"
+      "Bash(./mvnw test *)",
+      "Bash(mvn spring-boot:run)",
+      "Bash(mvn clean *)",
+      "Bash(mvn compile *)",
+      "Bash(mvn test *)"
     ]
   }
 }

@@ -189,3 +189,25 @@ export interface ReadingStatistics {
 export const statisticsApi = {
   getStatistics: () => fetchApi<ReadingStatistics>('/stats'),
 };
+
+export interface ExtractionResponse {
+  success: boolean;
+  message: string;
+  errors: unknown;
+  processedCount: number;
+  successCount: number;
+  failedCount: number;
+  skippedCount: number;
+}
+
+export interface ArticlesWithoutContentCount {
+  count: number;
+  hasArticlesWithoutContent: boolean;
+}
+
+export const adminApi = {
+  extractContent: (limit: number = 50, delayMs: number = 2000) =>
+    fetchApi<ExtractionResponse>(`/admin/articles/extract-content?limit=${limit}&delayMs=${delayMs}`, { method: 'POST' }),
+  getArticlesWithoutContentCount: () =>
+    fetchApi<ArticlesWithoutContentCount>('/admin/articles/without-content/count'),
+};

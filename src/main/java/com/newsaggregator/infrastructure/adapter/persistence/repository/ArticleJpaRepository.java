@@ -64,4 +64,21 @@ public interface ArticleJpaRepository extends JpaRepository<ArticleJpaEntity, Lo
      */
     @Query("SELECT DISTINCT a FROM ArticleJpaEntity a LEFT JOIN FETCH a.feed f LEFT JOIN FETCH f.categories")
     List<ArticleJpaEntity> findAllWithFeedAndCategories();
+
+    /**
+     * Findet Artikel ohne Content (contentHtml IS NULL) mit Limit.
+     *
+     * @param limit Maximale Anzahl
+     * @return Liste der Artikel ohne Content
+     */
+    @Query("SELECT a FROM ArticleJpaEntity a WHERE a.contentHtml IS NULL ORDER BY a.createdAt ASC")
+    List<ArticleJpaEntity> findByContentHtmlIsNullWithLimit(@Param("limit") int limit);
+
+    /**
+     * Zählt Artikel ohne Content.
+     *
+     * @return Anzahl der Artikel ohne Content
+     */
+    @Query("SELECT COUNT(a) FROM ArticleJpaEntity a WHERE a.contentHtml IS NULL")
+    long countByContentHtmlIsNull();
 }
