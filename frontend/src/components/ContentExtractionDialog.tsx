@@ -9,13 +9,12 @@ import {
   Box,
   LinearProgress,
   Alert,
-  TextField,
   Slider,
 } from '@mui/material';
 import {
   CloudDownload as CloudDownloadIcon,
 } from '@mui/icons-material';
-import { adminApi } from '../../api/client';
+import { adminApi } from '../api/client';
 
 interface ContentExtractionDialogProps {
   open: boolean;
