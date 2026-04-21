@@ -54,16 +54,24 @@ public class FeedFetchingService implements FetchFeedUseCase {
 
     /**
      * Extrahiert den Content für einen Artikel mittels Readability4J.
-     * Bei Fehlern wird der Artikel ohne Content zurückgegeben.
+     * Bei Fehlern wird der Artikel ohne Content zurückgegeben und als fehlgeschlagen markiert.
      *
      * @param article Der Artikel ohne Content
-     * @return Der Artikel mit extrahiertem Content (wenn erfolgreich)
+     * @param extractContent true wenn Content extrahiert werden soll
+     * @return Der Artikel mit extrahiertem Content (wenn erfolgreich) oder ohne Content
      */
-    private Article extractContentForArticle(Article article) {
+    private Article extractContentForArticle(Article article, boolean extractContent) {
+        // Wenn Content-Extraktion deaktiviert ist, nicht versuchen
+        if (!extractContent) {
+            logger.debug("Content-Extraktion für Feed '{}' deaktiviert, überspringe Artikel '{}'",
+                    article.getFeed().getName(), article.getTitle());
+            return article;
+        }
+
         try {
             if (!contentExtractor.canExtract(article.getLink())) {
                 logger.debug("Content-Extraktion nicht möglich für URL: {}", article.getLink());
-                return article;
+                return article.withExtractionFailed();
             }
 
             String extractedContent = contentExtractor.extractContent(article.getLink());
@@ -71,16 +79,19 @@ public class FeedFetchingService implements FetchFeedUseCase {
             if (extractedContent != null && !extractedContent.isBlank()) {
                 logger.debug("Content extrahiert für '{}': {} Zeichen", article.getTitle(), extractedContent.length());
                 return article.withExtractedContent(extractedContent);
+            } else {
+                // Leere Antwort = Fehler
+                logger.warn("Leere Content-Antwort für '{}'", article.getLink());
+                return article.withExtractionFailed();
             }
 
         } catch (ArticleContentExtractor.ContentExtractionException e) {
             logger.warn("Content-Extraktion fehlgeschlagen für '{}': {}", article.getLink(), e.getMessage());
+            return article.withExtractionFailed();
         } catch (Exception e) {
             logger.error("Unerwarteter Fehler bei Content-Extraktion für '{}': {}", article.getLink(), e.getMessage());
+            return article.withExtractionFailed();
         }
-
-        // Bei Fehler: Artikel ohne Content zurückgeben
-        return article;
     }
 
     // ==================== Use Case: FetchFeed ====================
@@ -106,8 +117,8 @@ public class FeedFetchingService implements FetchFeedUseCase {
             // Neue Artikel speichern (Duplikate überspringen) mit Content-Extraktion
             for (Article article : newArticles) {
                 if (!articleRepository.existsByLink(article.getLink())) {
-                    // Content-Extraktion für neue Artikel durchführen
-                    Article articleWithContent = extractContentForArticle(article);
+                    // Content-Extraktion für neue Artikel durchführen (nur wenn Feed.extractContent true)
+                    Article articleWithContent = extractContentForArticle(article, feed.shouldExtractContent());
                     articleRepository.save(articleWithContent);
                     savedCount++;
                 }

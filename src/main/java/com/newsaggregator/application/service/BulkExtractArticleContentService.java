@@ -74,6 +74,9 @@ public class BulkExtractArticleContentService implements BulkExtractArticleConte
                             processedArticle.getExtractedContent().length());
                 } else {
                     failedCount++;
+                    // Artikel als fehlgeschlagen markieren
+                    Article failedArticle = article.withExtractionFailed();
+                    articleRepository.save(failedArticle);
                     errors.add(new ExtractionError(
                             article.getId() != null ? article.getId().getValue() : null,
                             article.getTitle(),
@@ -85,6 +88,13 @@ public class BulkExtractArticleContentService implements BulkExtractArticleConte
 
             } catch (Exception e) {
                 failedCount++;
+                // Artikel als fehlgeschlagen markieren
+                try {
+                    Article failedArticle = article.withExtractionFailed();
+                    articleRepository.save(failedArticle);
+                } catch (Exception saveEx) {
+                    logger.error("Konnte Artikel nicht als fehlgeschlagen markieren: {}", saveEx.getMessage());
+                }
                 errors.add(new ExtractionError(
                         article.getId() != null ? article.getId().getValue() : null,
                         article.getTitle(),

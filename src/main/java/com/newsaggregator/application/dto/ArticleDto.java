@@ -31,5 +31,6 @@ public class ArticleDto {
     private String feedName;
     private List<String> categoryIds;
     private String contentHtml;
+    private Boolean extractionFailed;
 
 }

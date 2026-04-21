@@ -67,20 +67,20 @@ public interface ArticleJpaRepository extends JpaRepository<ArticleJpaEntity, Lo
     List<ArticleJpaEntity> findAllWithFeedAndCategories();
 
     /**
-     * Findet Artikel ohne Content (contentHtml IS NULL) mit Limit.
+     * Findet Artikel ohne Content (contentHtml IS NULL) und ohne Fehler-Flag mit Limit.
      * Sortiert nach createdAt DESC (neueste zuerst).
      *
      * @param pageable Pageable mit Limit
-     * @return Liste der Artikel ohne Content
+     * @return Liste der Artikel ohne Content, die noch nicht fehlgeschlagen sind
      */
-    @Query("SELECT a FROM ArticleJpaEntity a WHERE a.contentHtml IS NULL ORDER BY a.createdAt DESC")
+    @Query("SELECT a FROM ArticleJpaEntity a WHERE a.contentHtml IS NULL AND (a.contentExtractionFailed IS NULL OR a.contentExtractionFailed = false) ORDER BY a.createdAt DESC")
     List<ArticleJpaEntity> findByContentHtmlIsNull(Pageable pageable);
 
     /**
-     * Zählt Artikel ohne Content.
+     * Zählt Artikel ohne Content und ohne Fehler-Flag.
      *
-     * @return Anzahl der Artikel ohne Content
+     * @return Anzahl der Artikel ohne Content, die noch nicht fehlgeschlagen sind
      */
-    @Query("SELECT COUNT(a) FROM ArticleJpaEntity a WHERE a.contentHtml IS NULL")
+    @Query("SELECT COUNT(a) FROM ArticleJpaEntity a WHERE a.contentHtml IS NULL AND (a.contentExtractionFailed IS NULL OR a.contentExtractionFailed = false)")
     long countByContentHtmlIsNull();
 }

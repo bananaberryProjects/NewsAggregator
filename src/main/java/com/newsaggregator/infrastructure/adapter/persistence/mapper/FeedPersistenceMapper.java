@@ -32,7 +32,8 @@ public class FeedPersistenceMapper {
                 entity.getDescription(),
                 entity.getCreatedAt(),
                 entity.getLastFetched(),
-                mapStatus(entity.getStatus())
+                mapStatus(entity.getStatus()),
+                entity.getExtractContent() != null ? entity.getExtractContent() : true
         );
 
         // Kategorien zuweisen
@@ -68,6 +69,7 @@ public class FeedPersistenceMapper {
         entity.setCreatedAt(domain.getCreatedAt());
         entity.setLastFetched(domain.getLastFetched());
         entity.setStatus(mapStatus(domain.getStatus()));
+        entity.setExtractContent(domain.isExtractContent());
 
         return entity;
     }
@@ -85,6 +87,7 @@ public class FeedPersistenceMapper {
         entity.setDescription(domain.getDescription());
         entity.setLastFetched(domain.getLastFetched());
         entity.setStatus(mapStatus(domain.getStatus()));
+        entity.setExtractContent(domain.isExtractContent());
         // createdAt und ID werden nicht aktualisiert
     }
 
