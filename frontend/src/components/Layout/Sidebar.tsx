@@ -74,8 +74,8 @@ export function Sidebar({
       {/* Desktop Header */}
       <Box sx={{ px: 2, mb: 3, display: { xs: 'none', md: 'flex' }, alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <Box>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
-            News Aggregator
+          <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main', letterSpacing: '-0.5px' }}>
+            NewsWeave
           </Typography>
           <Typography variant="caption" color="text.secondary">
             Deine personalisierte News

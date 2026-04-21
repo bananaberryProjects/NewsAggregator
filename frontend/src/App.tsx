@@ -283,7 +283,7 @@ function App() {
                 <MenuIcon />
               </IconButton>
               <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-                News Aggregator
+                NewsWeave
               </Typography>
             </Toolbar>
           </AppBar>
