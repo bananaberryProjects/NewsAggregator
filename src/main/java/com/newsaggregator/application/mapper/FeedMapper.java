@@ -51,6 +51,7 @@ public class FeedMapper {
                 .status(feed.getStatus() != null ? feed.getStatus().name() : null)
                 .articleCount(articleCount)
                 .categoryIds(categoryIds)
+                .extractContent(feed.isExtractContent())
                 .build();
     }
 }

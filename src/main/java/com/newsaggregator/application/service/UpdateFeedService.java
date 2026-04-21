@@ -27,8 +27,8 @@ public class UpdateFeedService implements UpdateFeedUseCase {
     }
 
     @Override
-    public Feed updateFeed(Long id, String name, String url, String description) {
-        logger.info("Aktualisiere Feed mit ID {}: name={}, url={}", id, name, url);
+    public Feed updateFeed(Long id, String name, String url, String description, Boolean extractContent) {
+        logger.info("Aktualisiere Feed mit ID {}: name={}, url={}, extractContent={}", id, name, url, extractContent);
 
         // Validierung
         if (name == null || name.trim().isEmpty()) {
@@ -51,7 +51,11 @@ public class UpdateFeedService implements UpdateFeedUseCase {
         }
 
         Feed feed = existingFeed.get();
-        feed.update(name.trim(), url.trim(), description != null ? description.trim() : null);
+        if (extractContent != null) {
+            feed.update(name.trim(), url.trim(), description != null ? description.trim() : null, extractContent);
+        } else {
+            feed.update(name.trim(), url.trim(), description != null ? description.trim() : null);
+        }
         
         Feed updatedFeed = feedRepository.save(feed);
         logger.info("Feed {} erfolgreich aktualisiert", id);

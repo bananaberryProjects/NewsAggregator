@@ -221,18 +221,19 @@ class FeedControllerTest {
         // Given
         Feed updatedFeed = createTestFeed(1L, "Updated Feed", "https://newurl.com/feed");
 
-        when(updateFeedUseCase.updateFeed(1L, "Updated Feed", "https://newurl.com/feed", "Updated Description"))
+        when(updateFeedUseCase.updateFeed(1L, "Updated Feed", "https://newurl.com/feed", "Updated Description", true))
                 .thenReturn(updatedFeed);
 
         UpdateFeedCommand command = new UpdateFeedCommand();
         command.setName("Updated Feed");
         command.setUrl("https://newurl.com/feed");
         command.setDescription("Updated Description");
+        command.setExtractContent(true);
 
         // When / Then
         mockMvc.perform(put("/api/feeds/1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Updated Feed\",\"url\":\"https://newurl.com/feed\",\"description\":\"Updated Description\"}"))
+                        .content("{\"name\":\"Updated Feed\",\"url\":\"https://newurl.com/feed\",\"description\":\"Updated Description\",\"extractContent\":true}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Updated Feed"));
     }
@@ -240,7 +241,7 @@ class FeedControllerTest {
     @Test
     void updateFeed_WithNonExistingId_ShouldReturn404() throws Exception {
         // Given
-        when(updateFeedUseCase.updateFeed(1L, "Updated Feed", "https://newurl.com/feed", "Updated Description"))
+        when(updateFeedUseCase.updateFeed(1L, "Updated Feed", "https://newurl.com/feed", "Updated Description", true))
                 .thenThrow(new IllegalArgumentException("Feed mit ID 1 nicht gefunden"));
 
         UpdateFeedCommand command = new UpdateFeedCommand();
@@ -251,33 +252,33 @@ class FeedControllerTest {
         // When / Then
         mockMvc.perform(put("/api/feeds/1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Updated Feed\",\"url\":\"https://newurl.com/feed\",\"description\":\"Updated Description\"}"))
+                        .content("{\"name\":\"Updated Feed\",\"url\":\"https://newurl.com/feed\",\"description\":\"Updated Description\",\"extractContent\":true}"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void updateFeed_WithInvalidData_ShouldReturn400() throws Exception {
         // Given
-        when(updateFeedUseCase.updateFeed(1L, "", "https://newurl.com/feed", "Updated Description"))
+        when(updateFeedUseCase.updateFeed(1L, "", "https://newurl.com/feed", "Updated Description", false))
                 .thenThrow(new IllegalArgumentException("Feed-Name darf nicht leer sein"));
 
         // When / Then
         mockMvc.perform(put("/api/feeds/1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"\",\"url\":\"https://newurl.com/feed\",\"description\":\"Updated Description\"}"))
+                        .content("{\"name\":\"\",\"url\":\"https://newurl.com/feed\",\"description\":\"Updated Description\",\"extractContent\":false}"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void updateFeed_WithDuplicateUrl_ShouldReturn400() throws Exception {
         // Given
-        when(updateFeedUseCase.updateFeed(1L, "Updated Feed", "https://duplicate.com/feed", "Updated Description"))
+        when(updateFeedUseCase.updateFeed(1L, "Updated Feed", "https://duplicate.com/feed", "Updated Description", true))
                 .thenThrow(new IllegalArgumentException("Ein Feed mit dieser URL existiert bereits"));
 
         // When / Then
         mockMvc.perform(put("/api/feeds/1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Updated Feed\",\"url\":\"https://duplicate.com/feed\",\"description\":\"Updated Description\"}"))
+                        .content("{\"name\":\"Updated Feed\",\"url\":\"https://duplicate.com/feed\",\"description\":\"Updated Description\",\"extractContent\":true}"))
                 .andExpect(status().isBadRequest());
     }
 

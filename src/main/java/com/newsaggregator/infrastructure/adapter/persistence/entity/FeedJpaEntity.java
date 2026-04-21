@@ -48,6 +48,9 @@ public class FeedJpaEntity {
     @Enumerated(EnumType.STRING)
     private FeedStatus status = FeedStatus.ACTIVE;
 
+    @Column(name = "extract_content")
+    private Boolean extractContent = true;
+
     @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ArticleJpaEntity> articles = new ArrayList<>();
 

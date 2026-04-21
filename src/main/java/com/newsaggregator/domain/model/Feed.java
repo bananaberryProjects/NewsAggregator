@@ -16,7 +16,7 @@ import java.util.ArrayList;
  * </p>
  * <p>
  * Unveränderliche Felder (immutable): id, name, url, description, createdAt
- * Veränderliche Felder: lastFetched, status, articles
+ * Veränderliche Felder: lastFetched, status, articles, extractContent
  * </p>
  */
 public class Feed {
@@ -29,6 +29,7 @@ public class Feed {
 
     private LocalDateTime lastFetched;
     private FeedStatus status;
+    private boolean extractContent;
     private final Set<Article> articles;
     private final List<CategoryId> categoryIds;
 
@@ -36,7 +37,14 @@ public class Feed {
      * Factory-Methode für neue Feeds (ohne ID - wird von Repository vergeben).
      */
     public static Feed createNew(String name, String url, String description) {
-        return new Feed(null, name, url, description, LocalDateTime.now(), null, FeedStatus.ACTIVE);
+        return new Feed(null, name, url, description, LocalDateTime.now(), null, FeedStatus.ACTIVE, true);
+    }
+
+    /**
+     * Factory-Methode für neue Feeds mit extractContent Option.
+     */
+    public static Feed createNew(String name, String url, String description, boolean extractContent) {
+        return new Feed(null, name, url, description, LocalDateTime.now(), null, FeedStatus.ACTIVE, extractContent);
     }
 
     /**
@@ -44,11 +52,19 @@ public class Feed {
      */
     public static Feed of(FeedId id, String name, String url, String description,
                           LocalDateTime createdAt, LocalDateTime lastFetched, FeedStatus status) {
-        return new Feed(id, name, url, description, createdAt, lastFetched, status);
+        return new Feed(id, name, url, description, createdAt, lastFetched, status, true);
+    }
+
+    /**
+     * Factory-Methode für vorhandene Feeds mit extractContent Option.
+     */
+    public static Feed of(FeedId id, String name, String url, String description,
+                          LocalDateTime createdAt, LocalDateTime lastFetched, FeedStatus status, boolean extractContent) {
+        return new Feed(id, name, url, description, createdAt, lastFetched, status, extractContent);
     }
 
     private Feed(FeedId id, String name, String url, String description,
-                 LocalDateTime createdAt, LocalDateTime lastFetched, FeedStatus status) {
+                 LocalDateTime createdAt, LocalDateTime lastFetched, FeedStatus status, boolean extractContent) {
         this.id = id;
         this.name = validateNotEmpty(name, "Name");
         this.url = validateUrl(url);
@@ -56,6 +72,7 @@ public class Feed {
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt darf nicht null sein");
         this.lastFetched = lastFetched;
         this.status = Objects.requireNonNull(status, "status darf nicht null sein");
+        this.extractContent = extractContent;
         this.articles = new HashSet<>();
         this.categoryIds = new ArrayList<>();
     }
@@ -123,6 +140,20 @@ public class Feed {
     }
 
     /**
+     * Prüft, ob Content für diesen Feed extrahiert werden soll.
+     */
+    public boolean shouldExtractContent() {
+        return this.extractContent;
+    }
+
+    /**
+     * Setzt die Content-Extraktion Option.
+     */
+    public void setExtractContent(boolean extractContent) {
+        this.extractContent = extractContent;
+    }
+
+    /**
      * Fügt einen Artikel zum Feed hinzu.
      */
     public void addArticle(Article article) {
@@ -168,6 +199,10 @@ public class Feed {
         return status;
     }
 
+    public boolean isExtractContent() {
+        return extractContent;
+    }
+
     public Set<Article> getArticles() {
         return Collections.unmodifiableSet(articles);
     }
@@ -204,6 +239,16 @@ public class Feed {
         this.description = description;
     }
 
+    /**
+     * Aktualisiert die Feed-Daten inklusive extractContent.
+     */
+    public void update(String name, String url, String description, boolean extractContent) {
+        this.name = validateNotEmpty(name, "Name");
+        this.url = validateUrl(url);
+        this.description = description;
+        this.extractContent = extractContent;
+    }
+
     // ==================== Objekt-Methoden ====================
 
     @Override
@@ -227,6 +272,7 @@ public class Feed {
                 ", name='" + name + '\'' +
                 ", url='" + url + '\'' +
                 ", status=" + status +
+                ", extractContent=" + extractContent +
                 '}';
     }
 }

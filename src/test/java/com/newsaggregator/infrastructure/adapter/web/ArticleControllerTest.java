@@ -266,4 +266,81 @@ class ArticleControllerTest {
                 result.getResponse().getContentAsString(), new TypeReference<>() {});
         assertThat(responseBody).isEmpty();
     }
+
+    @Test
+    void getArticleContent_WithExistingId_ShouldReturnArticleWithContentHtml() throws Exception {
+        // Given
+        ArticleDto article = ArticleDto.builder()
+                .id(1L)
+                .title("Test Article with Content")
+                .description("Description")
+                .link("http://example.com/article")
+                .publishedAt(LocalDateTime.of(2024, 1, 15, 10, 30))
+                .feedId(1L)
+                .feedName("Test Feed")
+                .contentHtml("<h1>Article Content</h1><p>This is the extracted content.</p>")
+                .build();
+
+        when(articleSearchService.getArticleById(1L)).thenReturn(article);
+
+        // When
+        @SuppressWarnings("null")
+        MvcResult result = mockMvc.perform(get("/api/articles/1/content")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        // Then
+        assertThat(result.getResponse().getStatus()).isEqualTo(200);
+        ArticleDto responseBody = objectMapper.readValue(
+                result.getResponse().getContentAsString(), ArticleDto.class);
+        assertThat(responseBody.getId()).isEqualTo(1L);
+        assertThat(responseBody.getTitle()).isEqualTo("Test Article with Content");
+        assertThat(responseBody.getContentHtml()).isEqualTo("<h1>Article Content</h1><p>This is the extracted content.</p>");
+    }
+
+    @Test
+    void getArticleContent_WithNonExistingId_ShouldReturn404() throws Exception {
+        // Given
+        when(articleSearchService.getArticleById(999L))
+                .thenThrow(new IllegalArgumentException("Artikel nicht gefunden: 999"));
+
+        // When
+        @SuppressWarnings("null")
+        MvcResult result = mockMvc.perform(get("/api/articles/999/content")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        // Then
+        assertThat(result.getResponse().getStatus()).isEqualTo(404);
+    }
+
+    @Test
+    void getArticleContent_WithoutContentHtml_ShouldReturnNullContent() throws Exception {
+        // Given
+        ArticleDto article = ArticleDto.builder()
+                .id(1L)
+                .title("Test Article without Content")
+                .description("Description")
+                .link("http://example.com/article")
+                .publishedAt(LocalDateTime.of(2024, 1, 15, 10, 30))
+                .feedId(1L)
+                .feedName("Test Feed")
+                .contentHtml(null)
+                .build();
+
+        when(articleSearchService.getArticleById(1L)).thenReturn(article);
+
+        // When
+        @SuppressWarnings("null")
+        MvcResult result = mockMvc.perform(get("/api/articles/1/content")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        // Then
+        assertThat(result.getResponse().getStatus()).isEqualTo(200);
+        ArticleDto responseBody = objectMapper.readValue(
+                result.getResponse().getContentAsString(), ArticleDto.class);
+        assertThat(responseBody.getId()).isEqualTo(1L);
+        assertThat(responseBody.getContentHtml()).isNull();
+    }
 }

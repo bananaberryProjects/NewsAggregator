@@ -34,11 +34,12 @@ export function useFeeds() {
     return newFeed
   }
 
-  const updateFeed = async (feedId: string, name: string, url: string, description: string) => {
+  const updateFeed = async (feedId: string, name: string, url: string, description: string, extractContent?: boolean) => {
     await feedsApi.update(feedId, { 
       name: name.trim(), 
       url: url.trim(),
-      description: description.trim() || undefined
+      description: description.trim() || undefined,
+      extractContent
     })
     await loadFeeds()
   }

@@ -49,4 +49,10 @@ public class ArticleJpaEntity {
     @JoinColumn(name = "feed_id", nullable = false)
     private FeedJpaEntity feed;
 
+    @Column(name = "content_html", columnDefinition = "TEXT")
+    private String contentHtml;
+
+    @Column(name = "content_extraction_failed")
+    private Boolean contentExtractionFailed = false;
+
 }

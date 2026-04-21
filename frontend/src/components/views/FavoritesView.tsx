@@ -9,6 +9,7 @@ interface FavoritesViewProps {
   updatingArticleId: string | null
   onToggleRead: (articleId: string) => void
   onToggleFavorite: (articleId: string) => void
+  onOpenReader: (article: Article) => void
 }
 
 export function FavoritesView({
@@ -18,6 +19,7 @@ export function FavoritesView({
   updatingArticleId,
   onToggleRead,
   onToggleFavorite,
+  onOpenReader,
 }: FavoritesViewProps) {
   const favoriteArticles = articles.filter(a => articleStatuses[a.id]?.isFavorite)
 
@@ -55,8 +57,10 @@ export function FavoritesView({
                   isRead={isRead(article.id)}
                   isFavorite={isFavorite(article.id)}
                   updating={updatingArticleId === article.id}
+                  hasContentHtml={!!article.contentHtml}
                   onToggleRead={() => onToggleRead(article.id)}
                   onToggleFavorite={() => onToggleFavorite(article.id)}
+                  onOpenReader={() => onOpenReader(article)}
                 />
               </Grid>
             ))}

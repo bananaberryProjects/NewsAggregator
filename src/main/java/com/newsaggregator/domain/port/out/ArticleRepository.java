@@ -77,4 +77,19 @@ public interface ArticleRepository {
      * @return true, falls ein Artikel mit diesem Link existiert
      */
     boolean existsByLink(String link);
+
+    /**
+     * Findet alle Artikel ohne extrahierten Content (contentHtml ist null).
+     *
+     * @param limit Maximale Anzahl zurückgegebener Artikel
+     * @return Liste der Artikel ohne Content
+     */
+    List<Article> findByContentHtmlIsNull(int limit);
+
+    /**
+     * Zählt alle Artikel ohne extrahierten Content.
+     *
+     * @return Anzahl der Artikel ohne Content
+     */
+    long countByContentHtmlIsNull();
 }

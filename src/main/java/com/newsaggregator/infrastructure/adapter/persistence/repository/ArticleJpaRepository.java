@@ -1,6 +1,7 @@
 package com.newsaggregator.infrastructure.adapter.persistence.repository;
 
 import com.newsaggregator.infrastructure.adapter.persistence.entity.ArticleJpaEntity;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -64,4 +65,22 @@ public interface ArticleJpaRepository extends JpaRepository<ArticleJpaEntity, Lo
      */
     @Query("SELECT DISTINCT a FROM ArticleJpaEntity a LEFT JOIN FETCH a.feed f LEFT JOIN FETCH f.categories")
     List<ArticleJpaEntity> findAllWithFeedAndCategories();
+
+    /**
+     * Findet Artikel ohne Content (contentHtml IS NULL) und ohne Fehler-Flag
+     * von Feeds mit extractContent=true. Sortiert nach createdAt DESC.
+     *
+     * @param pageable Pageable mit Limit
+     * @return Liste der Artikel ohne Content von Feeds mit aktivierter Extraktion
+     */
+    @Query("SELECT a FROM ArticleJpaEntity a JOIN FETCH a.feed f WHERE a.contentHtml IS NULL AND (a.contentExtractionFailed IS NULL OR a.contentExtractionFailed = false) AND f.extractContent = true ORDER BY a.createdAt DESC")
+    List<ArticleJpaEntity> findByContentHtmlIsNull(Pageable pageable);
+
+    /**
+     * Zählt Artikel ohne Content und ohne Fehler-Flag von Feeds mit extractContent=true.
+     *
+     * @return Anzahl der Artikel
+     */
+    @Query("SELECT COUNT(a) FROM ArticleJpaEntity a JOIN a.feed f WHERE a.contentHtml IS NULL AND (a.contentExtractionFailed IS NULL OR a.contentExtractionFailed = false) AND f.extractContent = true")
+    long countByContentHtmlIsNull();
 }

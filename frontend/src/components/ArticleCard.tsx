@@ -9,6 +9,7 @@ import {
   Box,
   IconButton,
   CircularProgress,
+  Tooltip,
 } from '@mui/material'
 import {
   Launch as LaunchIcon,
@@ -18,6 +19,8 @@ import {
   Visibility as VisibilityIcon,
   VisibilityOff as VisibilityOffIcon,
   CheckCircle as CheckCircleIcon,
+  Article as ArticleIcon,
+  MenuBook as MenuBookIcon,
 } from '@mui/icons-material'
 import type { Article } from '../api/client'
 import { stripHtml } from '../utils'
@@ -29,8 +32,10 @@ interface ArticleCardProps {
   isRead: boolean
   isFavorite: boolean
   updating: boolean
+  hasContentHtml: boolean
   onToggleRead: () => void
   onToggleFavorite: () => void
+  onOpenReader: () => void
 }
 
 export function ArticleCard({
@@ -38,8 +43,10 @@ export function ArticleCard({
   isRead,
   isFavorite,
   updating,
+  hasContentHtml,
   onToggleRead,
   onToggleFavorite,
+  onOpenReader,
 }: ArticleCardProps) {
   return (
     <Card
@@ -65,7 +72,18 @@ export function ArticleCard({
       />
       <CardContent sx={{ flexGrow: 1, overflow: 'hidden' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-          <Chip size="small" label={article.feedName || 'News'} color="primary" />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Chip size="small" label={article.feedName || 'News'} color="primary" />
+            {hasContentHtml && (
+              <Tooltip title="Vollständiger Artikel verfügbar">
+                <MenuBookIcon
+                  fontSize="small"
+                  color="primary"
+                  sx={{ ml: 0.5 }}
+                />
+              </Tooltip>
+            )}
+          </Box>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <CalendarTodayIcon fontSize="inherit" />
             {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('de-DE', {
@@ -119,14 +137,14 @@ export function ArticleCard({
       </CardContent>
       
       <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
-        <Button 
-          size="small" 
-          startIcon={<LaunchIcon />} 
-          onClick={() => window.open(article.link, '_blank')}
+        <Button
+          size="small"
+          startIcon={hasContentHtml ? <ArticleIcon /> : <LaunchIcon />}
+          onClick={hasContentHtml ? onOpenReader : () => window.open(article.link, '_blank')}
         >
-          Lesen
+          {hasContentHtml ? 'Weiterlesen' : 'Lesen'}
         </Button>
-        
+
         <Box>
           <IconButton
             size="small"

@@ -9,6 +9,7 @@ import com.newsaggregator.infrastructure.adapter.persistence.mapper.ArticlePersi
 import com.newsaggregator.infrastructure.adapter.persistence.repository.ArticleJpaRepository;
 import com.newsaggregator.infrastructure.adapter.persistence.repository.FeedJpaRepository;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -118,5 +119,19 @@ public class ArticleRepositoryAdapter implements ArticleRepository {
         return jpaRepository.findByPublishedAtAfter(date).stream()
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Article> findByContentHtmlIsNull(int limit) {
+        return jpaRepository.findByContentHtmlIsNull(PageRequest.of(0, limit)).stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countByContentHtmlIsNull() {
+        return jpaRepository.countByContentHtmlIsNull();
     }
 }

@@ -165,7 +165,7 @@ public class FeedController {
         logger.info("PUT /api/feeds/{} aufgerufen: {}", id, command.getName());
 
         try {
-            var feed = updateFeedUseCase.updateFeed(id, command.getName(), command.getUrl(), command.getDescription());
+            var feed = updateFeedUseCase.updateFeed(id, command.getName(), command.getUrl(), command.getDescription(), command.getExtractContent());
             return ResponseEntity.ok(feedMapper.toDto(feed));
         } catch (IllegalArgumentException e) {
             logger.warn("Fehler beim Aktualisieren des Feeds: {}", e.getMessage());

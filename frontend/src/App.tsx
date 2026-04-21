@@ -29,9 +29,12 @@ import {
 import { Add as AddIcon, Menu as MenuIcon } from '@mui/icons-material'
 import { useTheme, useFeeds, useArticles, useCategories } from './hooks'
 import { Sidebar } from './components'
-import { DashboardView, FeedsView, ArticlesView, FavoritesView, CategoriesView, StatisticsView } from './components/views'
+import { DashboardView, FeedsView, ArticlesView, FavoritesView, CategoriesView, StatisticsView, SettingsView } from './components/views'
 import { AddFeedDialog, DeleteFeedDialog, EditFeedDialog, EditCategoryDialog, AddCategoryDialog } from './components/dialogs'
-import type { Feed, Category } from './api/client'
+import { ArticleReaderDialog } from './components/ArticleReaderDialog'
+import { ContentExtractionDialog } from './components/ContentExtractionDialog'
+import type { Feed, Category, Article } from './api/client'
+import { adminApi } from './api/client'
 
 const drawerWidth = 280
 
@@ -43,12 +46,11 @@ function App() {
 
   const [mobileOpen, setMobileOpen] = useState(false)
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
-  const [activeView, setActiveView] = useState<'dashboard' | 'feeds' | 'articles' | 'favorites' | 'categories' | 'statistics'>('dashboard')
+  const [activeView, setActiveView] = useState<'dashboard' | 'feeds' | 'articles' | 'favorites' | 'categories' | 'statistics' | 'settings'>('dashboard')
 
   // Filter states - initial values from localStorage
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_dashboardFilter, _setDashboardFilter] = useState<'all' | 'unread' | 'favorites'>(() => getInitialFilterState('dashboard-filter'))
-  const [dashboardCategoryFilter, setDashboardCategoryFilter] = useState<string[]>([])
   const [articlesFilter, setArticlesFilter] = useState<'all' | 'unread' | 'favorites'>(() => getInitialFilterState('articles-filter'))
   const [articlesCategoryFilter, setArticlesCategoryFilter] = useState<string[]>([])
 
@@ -69,6 +71,23 @@ function App() {
   // Add category dialog state
   const [addCategoryDialogOpen, setAddCategoryDialogOpen] = useState(false)
 
+  // Reader dialog state
+  const [readerDialogOpen, setReaderDialogOpen] = useState(false)
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null)
+
+  // Content extraction dialog state
+  const [extractionDialogOpen, setExtractionDialogOpen] = useState(false)
+  const [articlesWithoutContent, setArticlesWithoutContent] = useState(0)
+
+  const loadArticlesWithoutContentCount = async () => {
+    try {
+      const response = await adminApi.getArticlesWithoutContentCount()
+      setArticlesWithoutContent(response.count)
+    } catch (error) {
+      console.error('Failed to load articles without content count:', error)
+    }
+  }
+
   // Add feed form
   const [newFeedUrl, setNewFeedUrl] = useState('')
   const [newFeedName, setNewFeedName] = useState('')
@@ -80,6 +99,7 @@ function App() {
 
   const loadData = async () => {
     await Promise.all([loadFeeds(), loadArticles(), loadCategories()])
+    await loadArticlesWithoutContentCount()
   }
 
   const favoriteCount = useMemo(() => {
@@ -114,9 +134,9 @@ function App() {
     setEditSelectedCategories([])
   }
 
-  const handleUpdateFeed = async (name: string, url: string, description: string, categoryIds: string[]) => {
+  const handleUpdateFeed = async (name: string, url: string, description: string, categoryIds: string[], extractContent: boolean) => {
     if (!feedToEdit) return
-    await updateFeed(feedToEdit.id, name, url, description)
+    await updateFeed(feedToEdit.id, name, url, description, extractContent)
     await assignCategories(feedToEdit.id, categoryIds)
     setEditDialogOpen(false)
     setFeedToEdit(null)
@@ -151,6 +171,16 @@ function App() {
   const handleAddCategory = async (name: string, color: string, icon: string) => {
     await addCategory(name, color, icon)
     setAddCategoryDialogOpen(false)
+  }
+
+  const handleOpenReader = (article: Article) => {
+    setSelectedArticle(article)
+    setReaderDialogOpen(true)
+  }
+
+  const handleCloseReader = () => {
+    setReaderDialogOpen(false)
+    setSelectedArticle(null)
   }
 
   const renderContent = () => {
@@ -190,6 +220,7 @@ function App() {
             onCategoryFilterChange={setArticlesCategoryFilter}
             onToggleRead={toggleRead}
             onToggleFavorite={toggleFavorite}
+            onOpenReader={handleOpenReader}
           />
         )
       case 'favorites':
@@ -201,6 +232,7 @@ function App() {
             updatingArticleId={updatingArticleId}
             onToggleRead={toggleRead}
             onToggleFavorite={toggleFavorite}
+            onOpenReader={handleOpenReader}
           />
         )
       case 'categories':
@@ -214,6 +246,15 @@ function App() {
         )
       case 'statistics':
         return <StatisticsView />
+      case 'settings':
+        return (
+          <SettingsView
+            articlesWithoutContent={articlesWithoutContent}
+            onOpenExtractionDialog={() => setExtractionDialogOpen(true)}
+            isDark={isDark}
+            onToggleTheme={toggleTheme}
+          />
+        )
       default:
         return null
     }
@@ -243,7 +284,7 @@ function App() {
                 <MenuIcon />
               </IconButton>
               <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-                News Aggregator
+                NewsWeave
               </Typography>
             </Toolbar>
           </AppBar>
@@ -258,18 +299,6 @@ function App() {
           categories={categories}
           articleCount={articles.length}
           favoriteCount={favoriteCount}
-          isDark={isDark}
-          onToggleTheme={toggleTheme}
-          // Category filter - use appropriate filter based on active view
-          activeCategoryFilter={activeView === 'articles' ? articlesCategoryFilter : dashboardCategoryFilter}
-          onCategoryFilterChange={(categoryIds) => {
-            if (activeView === 'articles') {
-              setArticlesCategoryFilter(categoryIds)
-            } else {
-              // Apply to dashboard for dashboard, feeds, favorites, categories, statistics views
-              setDashboardCategoryFilter(categoryIds)
-            }
-          }}
         />
 
         <Box
@@ -373,6 +402,22 @@ function App() {
           onClose={handleCloseAddCategoryDialog}
           onSubmit={handleAddCategory}
           loading={feedsLoading}
+        />
+
+        <ArticleReaderDialog
+          article={selectedArticle}
+          open={readerDialogOpen}
+          onClose={handleCloseReader}
+        />
+
+        <ContentExtractionDialog
+          open={extractionDialogOpen}
+          onClose={() => {
+            setExtractionDialogOpen(false)
+            loadArticlesWithoutContentCount()
+          }}
+          articlesWithoutContent={articlesWithoutContent}
+          onExtractionComplete={loadArticlesWithoutContentCount}
         />
       </Box>
     </ThemeProvider>

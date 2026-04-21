@@ -66,7 +66,7 @@ class UpdateFeedServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        Feed result = service.updateFeed(FEED_ID, "New Name", "https://newurl.com/feed", "New Description");
+        Feed result = service.updateFeed(FEED_ID, "New Name", "https://newurl.com/feed", "New Description", true);
 
         // Then
         assertThat(result)
@@ -89,7 +89,7 @@ class UpdateFeedServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        Feed result = service.updateFeed(FEED_ID, "  New Name  ", "  https://newurl.com/feed  ", "Description");
+        Feed result = service.updateFeed(FEED_ID, "  New Name  ", "  https://newurl.com/feed  ", "Description", true);
 
         // Then
         assertThat(result.getName()).isEqualTo("New Name");
@@ -99,7 +99,7 @@ class UpdateFeedServiceTest {
     @Test
     void updateFeed_WithNullName_ShouldThrowException() {
         // When/Then
-        assertThatThrownBy(() -> service.updateFeed(FEED_ID, null, "https://example.com", "Description"))
+        assertThatThrownBy(() -> service.updateFeed(FEED_ID, null, "https://example.com", "Description", true))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Feed-Name darf nicht leer sein");
     }
@@ -107,7 +107,7 @@ class UpdateFeedServiceTest {
     @Test
     void updateFeed_WithEmptyName_ShouldThrowException() {
         // When/Then
-        assertThatThrownBy(() -> service.updateFeed(FEED_ID, "   ", "https://example.com", "Description"))
+        assertThatThrownBy(() -> service.updateFeed(FEED_ID, "   ", "https://example.com", "Description", true))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Feed-Name darf nicht leer sein");
     }
@@ -115,7 +115,7 @@ class UpdateFeedServiceTest {
     @Test
     void updateFeed_WithNullUrl_ShouldThrowException() {
         // When/Then
-        assertThatThrownBy(() -> service.updateFeed(FEED_ID, "Name", null, "Description"))
+        assertThatThrownBy(() -> service.updateFeed(FEED_ID, "Name", null, "Description", true))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Feed-URL darf nicht leer sein");
     }
@@ -123,7 +123,7 @@ class UpdateFeedServiceTest {
     @Test
     void updateFeed_WithEmptyUrl_ShouldThrowException() {
         // When/Then
-        assertThatThrownBy(() -> service.updateFeed(FEED_ID, "Name", "   ", "Description"))
+        assertThatThrownBy(() -> service.updateFeed(FEED_ID, "Name", "   ", "Description", true))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Feed-URL darf nicht leer sein");
     }
@@ -135,7 +135,7 @@ class UpdateFeedServiceTest {
                 .thenReturn(Optional.empty());
 
         // When/Then
-        assertThatThrownBy(() -> service.updateFeed(FEED_ID, "Name", "https://example.com", "Description"))
+        assertThatThrownBy(() -> service.updateFeed(FEED_ID, "Name", "https://example.com", "Description", true))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Feed mit ID " + FEED_ID + " nicht gefunden");
     }
@@ -152,7 +152,7 @@ class UpdateFeedServiceTest {
                 .thenReturn(Optional.of(otherFeed));
 
         // When/Then
-        assertThatThrownBy(() -> service.updateFeed(FEED_ID, "Name", "https://other.com/feed", "Description"))
+        assertThatThrownBy(() -> service.updateFeed(FEED_ID, "Name", "https://other.com/feed", "Description", true))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Ein Feed mit dieser URL existiert bereits");
     }
@@ -170,7 +170,7 @@ class UpdateFeedServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        Feed result = service.updateFeed(FEED_ID, "Updated Name", "https://example.com/feed", "Updated Description");
+        Feed result = service.updateFeed(FEED_ID, "Updated Name", "https://example.com/feed", "Updated Description", true);
 
         // Then
         assertThat(result.getName()).isEqualTo("Updated Name");
@@ -189,7 +189,7 @@ class UpdateFeedServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        Feed result = service.updateFeed(FEED_ID, "New Name", "https://newurl.com/feed", null);
+        Feed result = service.updateFeed(FEED_ID, "New Name", "https://newurl.com/feed", null, true);
 
         // Then
         assertThat(result.getDescription()).isNull();
@@ -208,7 +208,7 @@ class UpdateFeedServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        Feed result = service.updateFeed(FEED_ID, "New Name", "https://newurl.com/feed", "   ");
+        Feed result = service.updateFeed(FEED_ID, "New Name", "https://newurl.com/feed", "   ", true);
 
         // Then - empty after trim
         assertThat(result.getDescription()).isEmpty();

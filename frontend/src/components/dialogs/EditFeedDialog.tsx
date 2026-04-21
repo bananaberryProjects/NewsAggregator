@@ -10,6 +10,8 @@ import {
   Typography,
   CircularProgress,
   Alert,
+  FormControlLabel,
+  Switch,
 } from '@mui/material'
 import { useState, useEffect } from 'react'
 import type { Feed, Category } from '../../api/client'
@@ -17,7 +19,7 @@ import type { Feed, Category } from '../../api/client'
 interface EditFeedDialogProps {
   open: boolean
   onClose: () => void
-  onSubmit: (name: string, url: string, description: string, categoryIds: string[]) => void
+  onSubmit: (name: string, url: string, description: string, categoryIds: string[], extractContent: boolean) => void
   feed: Feed | null
   loading: boolean
   categories: Category[]
@@ -38,6 +40,7 @@ export function EditFeedDialog({
   const [name, setName] = useState('')
   const [url, setUrl] = useState('')
   const [description, setDescription] = useState('')
+  const [extractContent, setExtractContent] = useState(true)
   const [errors, setErrors] = useState<{ name?: string; url?: string }>({})
   const [submitError, setSubmitError] = useState<string | null>(null)
 
@@ -46,6 +49,7 @@ export function EditFeedDialog({
       setName(feed.name)
       setUrl(feed.url)
       setDescription(feed.description || '')
+      setExtractContent(feed.extractContent !== false)
       setErrors({})
       setSubmitError(null)
     }
@@ -73,7 +77,7 @@ export function EditFeedDialog({
     setSubmitError(null)
     if (validate()) {
       try {
-        onSubmit(name.trim(), url.trim(), description.trim(), selectedCategories)
+        onSubmit(name.trim(), url.trim(), description.trim(), selectedCategories, extractContent)
       } catch (error) {
         setSubmitError(error instanceof Error ? error.message : 'Ein Fehler ist aufgetreten')
       }
@@ -138,6 +142,27 @@ export function EditFeedDialog({
             fullWidth
             disabled={loading}
             placeholder="Optionale Beschreibung des Feeds"
+          />
+
+          {/* Content-Extraktion Toggle */}
+          <FormControlLabel
+            control={
+              <Switch
+                checked={extractContent}
+                onChange={(e) => setExtractContent(e.target.checked)}
+                disabled={loading}
+              />
+            }
+            label={
+              <Box>
+                <Typography variant="body2" component="span">
+                  Content-Extraktion
+                </Typography>
+                <Typography variant="caption" sx={{ display: 'block' }} color="text.secondary">
+                  Volle Artikelinhalte extrahieren und lokal speichern
+                </Typography>
+              </Box>
+            }
           />
           
           {/* Kategorien-Auswahl */}

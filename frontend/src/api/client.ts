@@ -9,6 +9,7 @@ export interface Feed {
   articleCount: number;
   lastFetchedAt: string | null;
   categoryIds?: string[];
+  extractContent?: boolean;
 }
 
 export interface Article {
@@ -20,6 +21,7 @@ export interface Article {
   publishedAt: string;
   feedName: string;
   categoryIds?: string[];
+  contentHtml?: string | null;
 }
 
 export interface ArticleReadStatus {
@@ -122,7 +124,7 @@ export const feedsApi = {
   getAll: () => fetchApi<Feed[]>('/feeds'),
   add: (feed: { name: string; url: string }) => 
     fetchApi<Feed>('/feeds', { method: 'POST', body: JSON.stringify(feed) }),
-  update: (id: string, feed: { name: string; url: string; description?: string }) => 
+  update: (id: string, feed: { name: string; url: string; description?: string; extractContent?: boolean }) => 
     fetchApi<Feed>(`/feeds/${id}`, { method: 'PUT', body: JSON.stringify(feed) }),
   delete: (id: string) => 
     fetchApi<void>(`/feeds/${id}`, { method: 'DELETE' }),
@@ -136,6 +138,8 @@ export const feedsApi = {
 export const articlesApi = {
   getAll: () => fetchApi<Article[]>('/articles'),
   search: (query: string) => fetchApi<Article[]>(`/articles?query=${encodeURIComponent(query)}`),
+  getById: (id: string) => fetchApi<Article>(`/articles/${id}`),
+  getContent: (id: string) => fetchApi<Article>(`/articles/${id}/content`),
   markAsRead: (id: string) => fetchApi<ArticleReadStatus>(`/articles/${id}/read`, { method: 'POST' }),
   markAsUnread: (id: string) => fetchApi<ArticleReadStatus>(`/articles/${id}/unread`, { method: 'POST' }),
   toggleFavorite: (id: string) => fetchApi<ArticleReadStatus>(`/articles/${id}/favorite`, { method: 'POST' }),
@@ -185,4 +189,26 @@ export interface ReadingStatistics {
 
 export const statisticsApi = {
   getStatistics: () => fetchApi<ReadingStatistics>('/stats'),
+};
+
+export interface ExtractionResponse {
+  success: boolean;
+  message: string;
+  errors: unknown;
+  processedCount: number;
+  successCount: number;
+  failedCount: number;
+  skippedCount: number;
+}
+
+export interface ArticlesWithoutContentCount {
+  count: number;
+  hasArticlesWithoutContent: boolean;
+}
+
+export const adminApi = {
+  extractContent: (limit: number = 50, delayMs: number = 2000) =>
+    fetchApi<ExtractionResponse>(`/admin/articles/extract-content?limit=${limit}&delayMs=${delayMs}`, { method: 'POST' }),
+  getArticlesWithoutContentCount: () =>
+    fetchApi<ArticlesWithoutContentCount>('/admin/articles/without-content/count'),
 };
