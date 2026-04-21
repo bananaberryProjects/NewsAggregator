@@ -42,6 +42,7 @@ Feature-Ideen und zukünftige Entwicklungen für das News Aggregator Projekt.
 - [ ] **Smart Fetch** - Häufigkeit pro Feed konfigurierbar
 - [ ] **Auto-Cleanup** - Alte Artikel automatisch löschen (X Tage)
 - [ ] **Duplicate Detection** - Doppelte Artikel erkennen und zusammenführen
+- [ ] **Headless Browser** - Für Artikel mit Bot-Schutz (Cloudflare, etc.) via Selenium/Playwright
 
 ### 🔐 Authentifizierung & Multi-User
 - [ ] **User-Accounts** - Mehrere Benutzer mit eigenen Feeds
@@ -96,4 +97,4 @@ Für neue Feature-Vorschläge:
 
 ---
 
-*Letzte Aktualisierung: 2026-04-19*
+*Letzte Aktualisierung: 2026-04-21*
