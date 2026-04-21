@@ -62,7 +62,7 @@ class ReadabilityContentExtractorAdapterTest {
     }
 
     @Test
-    void extractContent_WithMetadata_ShouldReturnFailure_ForInvalidUrl() {
+    void extractContent_WithMetadata_ShouldReturnFailure_ForInvalidUrl() throws Exception {
         // Given
         String invalidUrl = "not-a-valid-url";
 
@@ -76,7 +76,7 @@ class ReadabilityContentExtractorAdapterTest {
     }
 
     @Test
-    void extractContent_ShouldReturnFailureResult_ForUnsupportedProtocol() {
+    void extractContent_ShouldReturnFailureResult_ForUnsupportedProtocol() throws Exception {
         // Given
         String unsupportedUrl = "ftp://example.com/file.txt";
 
@@ -87,5 +87,18 @@ class ReadabilityContentExtractorAdapterTest {
         assertNotNull(result);
         assertFalse(result.successful());
         assertNull(result.content());
+    }
+
+    @Test
+    void extractContent_WithMetadata_ShouldReturnFailure_ForUnsupportedProtocol() throws Exception {
+        // Given - a URL that is not supported (not HTTP/HTTPS)
+        String unsupportedUrl = "file:///etc/passwd";
+
+        // When
+        ArticleContentExtractor.ExtractionResult result = extractor.extractContentWithMetadata(unsupportedUrl);
+
+        // Then
+        assertNotNull(result);
+        assertFalse(result.successful());
     }
 }

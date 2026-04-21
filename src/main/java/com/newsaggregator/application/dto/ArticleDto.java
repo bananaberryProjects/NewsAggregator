@@ -30,5 +30,6 @@ public class ArticleDto {
     private Long feedId;
     private String feedName;
     private List<String> categoryIds;
+    private String contentHtml;
 
 }

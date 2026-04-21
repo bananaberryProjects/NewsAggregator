@@ -29,6 +29,7 @@ interface ArticlesViewProps {
   onCategoryFilterChange: (categories: string[]) => void
   onToggleRead: (articleId: string) => void
   onToggleFavorite: (articleId: string) => void
+  onOpenReader: (article: Article) => void
 }
 
 export function ArticlesView({
@@ -43,6 +44,7 @@ export function ArticlesView({
   onCategoryFilterChange,
   onToggleRead,
   onToggleFavorite,
+  onOpenReader,
 }: ArticlesViewProps) {
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false)
 
@@ -279,8 +281,10 @@ export function ArticlesView({
                   isRead={isRead(article.id)}
                   isFavorite={isFavorite(article.id)}
                   updating={updatingArticleId === article.id}
+                  hasContentHtml={!!article.contentHtml}
                   onToggleRead={() => onToggleRead(article.id)}
                   onToggleFavorite={() => onToggleFavorite(article.id)}
+                  onOpenReader={() => onOpenReader(article)}
                 />
               </Grid>
             ))}

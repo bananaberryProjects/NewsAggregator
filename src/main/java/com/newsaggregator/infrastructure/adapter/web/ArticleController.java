@@ -69,4 +69,19 @@ public class ArticleController {
         List<ArticleDto> articles = articleSearchService.getArticlesByFeedDto(feedId);
         return ResponseEntity.ok(articles);
     }
+
+    /**
+     * Gibt den HTML-Inhalt eines Artikels zurück (für Reader View).
+     */
+    @GetMapping("/{id}/content")
+    public ResponseEntity<ArticleDto> getArticleContent(@PathVariable Long id) {
+        logger.debug("GET /api/articles/{}/content aufgerufen", id);
+        try {
+            ArticleDto article = articleSearchService.getArticleById(id);
+            return ResponseEntity.ok(article);
+        } catch (IllegalArgumentException e) {
+            logger.warn("Artikel nicht gefunden: {}", id);
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

@@ -31,7 +31,8 @@ import { useTheme, useFeeds, useArticles, useCategories } from './hooks'
 import { Sidebar } from './components'
 import { DashboardView, FeedsView, ArticlesView, FavoritesView, CategoriesView, StatisticsView } from './components/views'
 import { AddFeedDialog, DeleteFeedDialog, EditFeedDialog, EditCategoryDialog, AddCategoryDialog } from './components/dialogs'
-import type { Feed, Category } from './api/client'
+import { ArticleReaderDialog } from './components/ArticleReaderDialog'
+import type { Feed, Category, Article } from './api/client'
 
 const drawerWidth = 280
 
@@ -68,6 +69,10 @@ function App() {
 
   // Add category dialog state
   const [addCategoryDialogOpen, setAddCategoryDialogOpen] = useState(false)
+
+  // Reader dialog state
+  const [readerDialogOpen, setReaderDialogOpen] = useState(false)
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null)
 
   // Add feed form
   const [newFeedUrl, setNewFeedUrl] = useState('')
@@ -153,6 +158,16 @@ function App() {
     setAddCategoryDialogOpen(false)
   }
 
+  const handleOpenReader = (article: Article) => {
+    setSelectedArticle(article)
+    setReaderDialogOpen(true)
+  }
+
+  const handleCloseReader = () => {
+    setReaderDialogOpen(false)
+    setSelectedArticle(null)
+  }
+
   const renderContent = () => {
     const loading = feedsLoading
 
@@ -190,6 +205,7 @@ function App() {
             onCategoryFilterChange={setArticlesCategoryFilter}
             onToggleRead={toggleRead}
             onToggleFavorite={toggleFavorite}
+            onOpenReader={handleOpenReader}
           />
         )
       case 'favorites':
@@ -201,6 +217,7 @@ function App() {
             updatingArticleId={updatingArticleId}
             onToggleRead={toggleRead}
             onToggleFavorite={toggleFavorite}
+            onOpenReader={handleOpenReader}
           />
         )
       case 'categories':
@@ -373,6 +390,12 @@ function App() {
           onClose={handleCloseAddCategoryDialog}
           onSubmit={handleAddCategory}
           loading={feedsLoading}
+        />
+
+        <ArticleReaderDialog
+          article={selectedArticle}
+          open={readerDialogOpen}
+          onClose={handleCloseReader}
         />
       </Box>
     </ThemeProvider>

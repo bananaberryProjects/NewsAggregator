@@ -5,6 +5,7 @@ import com.newsaggregator.application.mapper.ArticleMapper;
 import com.newsaggregator.domain.model.Article;
 import com.newsaggregator.domain.model.Feed;
 import com.newsaggregator.domain.model.FeedId;
+import com.newsaggregator.domain.port.out.ArticleContentExtractor;
 import com.newsaggregator.domain.port.out.ArticleRepository;
 import com.newsaggregator.domain.port.out.FeedRepository;
 import com.newsaggregator.domain.port.out.RssFeedReader;
@@ -38,13 +39,16 @@ class FeedFetchingServiceTest {
     @Mock
     private RssFeedReader rssFeedReader;
 
+    @Mock
+    private ArticleContentExtractor contentExtractor;
+
     private ArticleMapper articleMapper;
     private FeedFetchingService service;
 
     @BeforeEach
     void setUp() {
         articleMapper = new ArticleMapper();
-        service = new FeedFetchingService(feedRepository, articleRepository, rssFeedReader, articleMapper);
+        service = new FeedFetchingService(feedRepository, articleRepository, rssFeedReader, contentExtractor, articleMapper);
     }
 
     @Test
@@ -60,14 +64,15 @@ class FeedFetchingServiceTest {
         when(rssFeedReader.readFeed(feed)).thenReturn(List.of(article1, article2));
         when(articleRepository.existsByLink("https://example.com/article1")).thenReturn(false);
         when(articleRepository.existsByLink("https://example.com/article2")).thenReturn(false);
+        when(contentExtractor.canExtract(anyString())).thenReturn(false); // Deaktiviere Content-Extraktion für diesen Test
         when(feedRepository.save(any(Feed.class))).thenReturn(feed);
+        when(articleRepository.save(any(Article.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
         service.fetchFeed(feedId);
 
         // Then
-        verify(articleRepository).save(article1);
-        verify(articleRepository).save(article2);
+        verify(articleRepository, times(2)).save(any(Article.class));
         verify(feedRepository, times(1)).save(any(Feed.class));
     }
 
@@ -84,14 +89,16 @@ class FeedFetchingServiceTest {
         when(rssFeedReader.readFeed(feed)).thenReturn(List.of(article1, article2));
         when(articleRepository.existsByLink("https://example.com/article1")).thenReturn(true); // Bereits vorhanden
         when(articleRepository.existsByLink("https://example.com/article2")).thenReturn(false);
+        when(contentExtractor.canExtract(anyString())).thenReturn(false);
         when(feedRepository.save(any(Feed.class))).thenReturn(feed);
+        when(articleRepository.save(any(Article.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
         service.fetchFeed(feedId);
 
         // Then
-        verify(articleRepository, never()).save(article1);
-        verify(articleRepository).save(article2);
+        verify(articleRepository, never()).save(argThat(a -> a.getLink().equals("https://example.com/article1")));
+        verify(articleRepository).save(argThat(a -> a.getLink().equals("https://example.com/article2")));
     }
 
     @Test
@@ -151,7 +158,9 @@ class FeedFetchingServiceTest {
         when(feedRepository.findById(FeedId.of(1L))).thenReturn(Optional.of(savedFeed));
         when(rssFeedReader.readFeed(savedFeed)).thenReturn(List.of(article));
         when(articleRepository.existsByLink("https://example.com/article")).thenReturn(false);
+        when(contentExtractor.canExtract(anyString())).thenReturn(false);
         when(feedRepository.save(any(Feed.class))).thenReturn(savedFeed);
+        when(articleRepository.save(any(Article.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(articleRepository.findByFeedId(1L)).thenReturn(List.of(article));
 
         // When

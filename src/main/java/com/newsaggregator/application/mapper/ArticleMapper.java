@@ -41,6 +41,7 @@ public class ArticleMapper {
                         ? article.getFeed().getId().getValue() : null)
                 .feedName(article.getFeed() != null ? article.getFeed().getName() : null)
                 .categoryIds(categoryIds)
+                .contentHtml(article.getExtractedContent())
                 .build();
     }
 }

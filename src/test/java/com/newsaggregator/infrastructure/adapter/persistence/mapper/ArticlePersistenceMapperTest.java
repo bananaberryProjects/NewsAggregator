@@ -188,7 +188,7 @@ class ArticlePersistenceMapperTest {
         Article article = Article.of(
                 com.newsaggregator.domain.model.ArticleId.of(1L),
                 "Title", "Desc", "https://example.com/article",
-                contentHtml, LocalDateTime.now(), feed, LocalDateTime.now()
+                null, contentHtml, LocalDateTime.now(), feed, LocalDateTime.now()
         );
 
         // When

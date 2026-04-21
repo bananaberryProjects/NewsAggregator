@@ -20,6 +20,7 @@ export interface Article {
   publishedAt: string;
   feedName: string;
   categoryIds?: string[];
+  contentHtml?: string | null;
 }
 
 export interface ArticleReadStatus {
@@ -136,6 +137,8 @@ export const feedsApi = {
 export const articlesApi = {
   getAll: () => fetchApi<Article[]>('/articles'),
   search: (query: string) => fetchApi<Article[]>(`/articles?query=${encodeURIComponent(query)}`),
+  getById: (id: string) => fetchApi<Article>(`/articles/${id}`),
+  getContent: (id: string) => fetchApi<Article>(`/articles/${id}/content`),
   markAsRead: (id: string) => fetchApi<ArticleReadStatus>(`/articles/${id}/read`, { method: 'POST' }),
   markAsUnread: (id: string) => fetchApi<ArticleReadStatus>(`/articles/${id}/unread`, { method: 'POST' }),
   toggleFavorite: (id: string) => fetchApi<ArticleReadStatus>(`/articles/${id}/favorite`, { method: 'POST' }),

@@ -18,6 +18,7 @@ import {
   Visibility as VisibilityIcon,
   VisibilityOff as VisibilityOffIcon,
   CheckCircle as CheckCircleIcon,
+  Article as ArticleIcon,
 } from '@mui/icons-material'
 import type { Article } from '../api/client'
 import { stripHtml } from '../utils'
@@ -29,8 +30,10 @@ interface ArticleCardProps {
   isRead: boolean
   isFavorite: boolean
   updating: boolean
+  hasContentHtml: boolean
   onToggleRead: () => void
   onToggleFavorite: () => void
+  onOpenReader: () => void
 }
 
 export function ArticleCard({
@@ -38,8 +41,10 @@ export function ArticleCard({
   isRead,
   isFavorite,
   updating,
+  hasContentHtml,
   onToggleRead,
   onToggleFavorite,
+  onOpenReader,
 }: ArticleCardProps) {
   return (
     <Card
@@ -119,14 +124,14 @@ export function ArticleCard({
       </CardContent>
       
       <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
-        <Button 
-          size="small" 
-          startIcon={<LaunchIcon />} 
-          onClick={() => window.open(article.link, '_blank')}
+        <Button
+          size="small"
+          startIcon={hasContentHtml ? <ArticleIcon /> : <LaunchIcon />}
+          onClick={hasContentHtml ? onOpenReader : () => window.open(article.link, '_blank')}
         >
-          Lesen
+          {hasContentHtml ? 'Weiterlesen' : 'Lesen'}
         </Button>
-        
+
         <Box>
           <IconButton
             size="small"
