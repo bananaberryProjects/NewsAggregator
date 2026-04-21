@@ -110,6 +110,9 @@ public class ReadabilityContentExtractorAdapter implements ArticleContentExtract
      * <p>Verwendet JSoup, das automatisch mit GZip und Deflate umgeht
      * und keine manuelle Dekomprimierung erfordert.</p>
      *
+     * <p>Entfernt vorab häufige Cookie-Banner-Elemente, um die
+     * Readability-Extraktion zu verbessern.</p>
+     *
      * @param urlString Die URL
      * @return Der HTML-Content als String
      * @throws IOException bei Netzwerkfehlern
@@ -126,7 +129,68 @@ public class ReadabilityContentExtractorAdapter implements ArticleContentExtract
                 .maxBodySize(MAX_CONTENT_LENGTH)
                 .get();
 
+        // Cookie-Banner und Consent-Dialoge vorab entfernen
+        removeCookieBanners(doc);
+
         return doc.html();
+    }
+
+    /**
+     * Entfernt häufige Cookie-Banner, Consent-Dialoge und andere
+     * störende Elemente aus dem HTML vor der Readability-Extraktion.
+     *
+     * @param doc Das JSoup Document
+     */
+    private void removeCookieBanners(Document doc) {
+        // Typische Cookie-Banner IDs und Klassen
+        String[] cookieSelectors = {
+            // IDs
+            "#cookie-banner", "#cookie-consent", "#cookie-notice", "#cookie-popup",
+            "#cookie-overlay", "#cookie-container", "#cookie-dialog",
+            "#gdpr-banner", "#gdpr-popup", "#gdpr-notice", "#gdpr-consent",
+            "#cmpbox", "#cmpbox-frame", "#usercentrics-root", "#uc-banner",
+            "#cc-banner", "#cc-window", "#cc-container",
+            "#consent-banner", "#consent-popup", "#consent-notice",
+            "#onetrust-consent-sdk", "#onetrust-banner-sdk",
+            "#CybotCookiebotDialog", "#CybotCookiebotDialogBodyUnderlay",
+            "#cookie-law-bar", "#eu-cookie-law",
+            
+            // Klassen
+            ".cookie-banner", ".cookie-consent", ".cookie-notice", ".cookie-popup",
+            ".cookie-overlay", ".cookie-container", ".cookie-dialog", ".cookie-bar",
+            ".gdpr-banner", ".gdpr-popup", ".gdpr-notice", ".gdpr-consent",
+            ".cmpbox", ".cmpbox-frame", ".usercentrics-root",
+            ".cc-banner", ".cc-window", ".cc-container",
+            ".consent-banner", ".consent-popup", ".consent-notice",
+            ".onetrust-consent-sdk", ".onetrust-banner-sdk",
+            ".cookie-law-bar", ".eu-cookie-law",
+            ".cmp-banner", ".cmp-popup", ".cmp-container",
+            
+            // Data-Attribute (häufige Consent-Manager)
+            "[data-cmp-id]", "[data-testid*='cookie']", "[data-testid*='consent']",
+            "[data-qa*='cookie']", "[data-qa*='consent']",
+            "[data-tracking*='cookie']", "[data-tracking*='consent']",
+            "[aria-label*='cookie' i]", "[aria-label*='consent' i]",
+            "[role='dialog'][aria-label*='cookie' i]"
+        };
+
+        int removedCount = 0;
+        for (String selector : cookieSelectors) {
+            try {
+                var elements = doc.select(selector);
+                if (!elements.isEmpty()) {
+                    removedCount += elements.size();
+                    elements.remove();
+                }
+            } catch (Exception e) {
+                // Ignoriere ungültige Selectoren
+                logger.trace("Ungültiger Selektor '{}': {}", selector, e.getMessage());
+            }
+        }
+
+        if (removedCount > 0) {
+            logger.debug("{} Cookie-Banner/Consent-Elemente entfernt", removedCount);
+        }
     }
 
     /**
