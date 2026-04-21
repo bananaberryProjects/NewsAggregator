@@ -23,7 +23,6 @@ import {
   Close as CloseIcon,
 } from '@mui/icons-material'
 import type { Feed, Category } from '../../api/client'
-import { ThemeToggleButton } from '../ThemeToggleButton'
 
 const drawerWidth = 280
 
@@ -36,10 +35,6 @@ interface SidebarProps {
   categories: Category[]
   articleCount: number
   favoriteCount: number
-  isDark?: boolean
-  onToggleTheme?: () => void
-  activeCategoryFilter?: string[]
-  onCategoryFilterChange?: (categoryIds: string[]) => void
 }
 
 export function Sidebar({
@@ -51,8 +46,6 @@ export function Sidebar({
   categories,
   articleCount,
   favoriteCount,
-  isDark,
-  onToggleTheme,
 }: SidebarProps) {
   const handleDrawerClose = () => {
     setMobileOpen(false)
@@ -72,7 +65,7 @@ export function Sidebar({
       <Divider sx={{ display: { xs: 'block', md: 'none' }, mb: 2 }} />
 
       {/* Desktop Header */}
-      <Box sx={{ px: 2, mb: 3, display: { xs: 'none', md: 'flex' }, alignItems: 'center', justifyContent: 'space-between' }}>
+      <Box sx={{ px: 2, mb: 3, display: { xs: 'none', md: 'flex' }, alignItems: 'center' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Avatar sx={{ width: 36, height: 36, bgcolor: 'primary.main' }}>
             <NewspaperIcon sx={{ color: 'white' }} />
@@ -86,9 +79,6 @@ export function Sidebar({
             </Typography>
           </Box>
         </Box>
-        {isDark !== undefined && onToggleTheme && (
-          <ThemeToggleButton isDark={isDark} onToggle={onToggleTheme} />
-        )}
       </Box>
 
       <List>

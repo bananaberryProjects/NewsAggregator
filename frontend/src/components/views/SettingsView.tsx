@@ -6,26 +6,59 @@ import {
   Button,
   Alert,
   Divider,
+  FormControlLabel,
+  Switch,
 } from '@mui/material'
 import {
   CloudDownload as CloudDownloadIcon,
   Storage as StorageIcon,
+  DarkMode as DarkModeIcon,
+  LightMode as LightModeIcon,
 } from '@mui/icons-material'
 
 interface SettingsViewProps {
   articlesWithoutContent: number
   onOpenExtractionDialog: () => void
+  isDark?: boolean
+  onToggleTheme?: () => void
 }
 
 export function SettingsView({
   articlesWithoutContent,
   onOpenExtractionDialog,
+  isDark,
+  onToggleTheme,
 }: SettingsViewProps) {
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', py: 4 }}>
       <Typography variant="h4" sx={{ mb: 4, fontWeight: 600 }}>
         Einstellungen
       </Typography>
+
+      {/* Appearance/Theme Card */}
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            {isDark ? <DarkModeIcon color="primary" /> : <LightModeIcon color="primary" />}
+            <Typography variant="h6">Erscheinungsbild</Typography>
+          </Box>
+
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+            Wähle zwischen hellem und dunklem Design für die App.
+          </Typography>
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={isDark}
+                onChange={onToggleTheme}
+                color="primary"
+              />
+            }
+            label={isDark ? 'Dunkles Design' : 'Helles Design'}
+          />
+        </CardContent>
+      </Card>
 
       {/* Content Extraction Card */}
       <Card sx={{ mb: 3 }}>

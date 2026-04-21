@@ -51,7 +51,6 @@ function App() {
   // Filter states - initial values from localStorage
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_dashboardFilter, _setDashboardFilter] = useState<'all' | 'unread' | 'favorites'>(() => getInitialFilterState('dashboard-filter'))
-  const [dashboardCategoryFilter, setDashboardCategoryFilter] = useState<string[]>([])
   const [articlesFilter, setArticlesFilter] = useState<'all' | 'unread' | 'favorites'>(() => getInitialFilterState('articles-filter'))
   const [articlesCategoryFilter, setArticlesCategoryFilter] = useState<string[]>([])
 
@@ -252,6 +251,8 @@ function App() {
           <SettingsView
             articlesWithoutContent={articlesWithoutContent}
             onOpenExtractionDialog={() => setExtractionDialogOpen(true)}
+            isDark={isDark}
+            onToggleTheme={toggleTheme}
           />
         )
       default:
@@ -298,18 +299,6 @@ function App() {
           categories={categories}
           articleCount={articles.length}
           favoriteCount={favoriteCount}
-          isDark={isDark}
-          onToggleTheme={toggleTheme}
-          // Category filter - use appropriate filter based on active view
-          activeCategoryFilter={activeView === 'articles' ? articlesCategoryFilter : dashboardCategoryFilter}
-          onCategoryFilterChange={(categoryIds) => {
-            if (activeView === 'articles') {
-              setArticlesCategoryFilter(categoryIds)
-            } else {
-              // Apply to dashboard for dashboard, feeds, favorites, categories, statistics views
-              setDashboardCategoryFilter(categoryIds)
-            }
-          }}
         />
 
         <Box
