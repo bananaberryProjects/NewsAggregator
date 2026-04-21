@@ -22,6 +22,7 @@ public class Article {
     private final String link;
     private final String imageUrl;
     private final String extractedContent;
+    private final boolean extractionFailed;
     private final LocalDateTime publishedAt;
     private final Feed feed;
     private final LocalDateTime createdAt;
@@ -31,7 +32,7 @@ public class Article {
      */
     public static Article createNew(String title, String description, String link,
                                     LocalDateTime publishedAt, Feed feed) {
-        return new Article(null, title, description, link, null, null, publishedAt, feed, LocalDateTime.now());
+        return new Article(null, title, description, link, null, null, false, publishedAt, feed, LocalDateTime.now());
     }
 
     /**
@@ -39,7 +40,7 @@ public class Article {
      */
     public static Article createNew(String title, String description, String link, String imageUrl,
                                     LocalDateTime publishedAt, Feed feed) {
-        return new Article(null, title, description, link, imageUrl, null, publishedAt, feed, LocalDateTime.now());
+        return new Article(null, title, description, link, imageUrl, null, false, publishedAt, feed, LocalDateTime.now());
     }
 
     /**
@@ -47,7 +48,7 @@ public class Article {
      */
     public static Article createNew(String title, String description, String link, String imageUrl,
                                     String extractedContent, LocalDateTime publishedAt, Feed feed) {
-        return new Article(null, title, description, link, imageUrl, extractedContent, publishedAt, feed, LocalDateTime.now());
+        return new Article(null, title, description, link, imageUrl, extractedContent, false, publishedAt, feed, LocalDateTime.now());
     }
 
     /**
@@ -55,7 +56,7 @@ public class Article {
      */
     public static Article of(ArticleId id, String title, String description, String link,
                              LocalDateTime publishedAt, Feed feed, LocalDateTime createdAt) {
-        return new Article(id, title, description, link, null, null, publishedAt, feed, createdAt);
+        return new Article(id, title, description, link, null, null, false, publishedAt, feed, createdAt);
     }
 
     /**
@@ -63,7 +64,7 @@ public class Article {
      */
     public static Article of(ArticleId id, String title, String description, String link, String imageUrl,
                              LocalDateTime publishedAt, Feed feed, LocalDateTime createdAt) {
-        return new Article(id, title, description, link, imageUrl, null, publishedAt, feed, createdAt);
+        return new Article(id, title, description, link, imageUrl, null, false, publishedAt, feed, createdAt);
     }
 
     /**
@@ -71,17 +72,26 @@ public class Article {
      */
     public static Article of(ArticleId id, String title, String description, String link, String imageUrl,
                              String extractedContent, LocalDateTime publishedAt, Feed feed, LocalDateTime createdAt) {
-        return new Article(id, title, description, link, imageUrl, extractedContent, publishedAt, feed, createdAt);
+        return new Article(id, title, description, link, imageUrl, extractedContent, false, publishedAt, feed, createdAt);
+    }
+
+    /**
+     * Factory-Methode für vorhandene Artikel mit allen Feldern inkl. extractionFailed.
+     */
+    public static Article of(ArticleId id, String title, String description, String link, String imageUrl,
+                             String extractedContent, boolean extractionFailed, LocalDateTime publishedAt, Feed feed, LocalDateTime createdAt) {
+        return new Article(id, title, description, link, imageUrl, extractedContent, extractionFailed, publishedAt, feed, createdAt);
     }
 
     private Article(ArticleId id, String title, String description, String link, String imageUrl,
-                    String extractedContent, LocalDateTime publishedAt, Feed feed, LocalDateTime createdAt) {
+                    String extractedContent, boolean extractionFailed, LocalDateTime publishedAt, Feed feed, LocalDateTime createdAt) {
         this.id = id;
         this.title = validateNotEmpty(title, "Titel");
         this.description = description;
         this.link = validateNotEmpty(link, "Link");
         this.imageUrl = imageUrl;
         this.extractedContent = extractedContent;
+        this.extractionFailed = extractionFailed;
         this.publishedAt = publishedAt != null ? publishedAt : LocalDateTime.now();
         this.feed = Objects.requireNonNull(feed, "Feed darf nicht null sein");
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt darf nicht null sein");
@@ -113,6 +123,28 @@ public class Article {
                 this.link,
                 this.imageUrl,
                 content,
+                false, // extractionFailed = false bei erfolgreicher Extraktion
+                this.publishedAt,
+                this.feed,
+                this.createdAt
+        );
+    }
+
+    /**
+     * Erzeugt eine Kopie dieses Artikels mit extractionFailed = true.
+     * Nützlich um fehlgeschlagene Extraktionen zu markieren.
+     *
+     * @return Ein neuer Article mit extractionFailed = true
+     */
+    public Article withExtractionFailed() {
+        return new Article(
+                this.id,
+                this.title,
+                this.description,
+                this.link,
+                this.imageUrl,
+                this.extractedContent,
+                true, // extractionFailed = true
                 this.publishedAt,
                 this.feed,
                 this.createdAt
@@ -177,6 +209,10 @@ public class Article {
         return extractedContent != null && !extractedContent.isEmpty();
     }
 
+    public boolean isExtractionFailed() {
+        return extractionFailed;
+    }
+
     public LocalDateTime getPublishedAt() {
         return publishedAt;
     }
@@ -212,6 +248,7 @@ public class Article {
                 ", title='" + title + '\'' +
                 ", link='" + link + '\'' +
                 ", hasContent=" + hasExtractedContent() +
+                ", extractionFailed=" + extractionFailed +
                 ", publishedAt=" + publishedAt +
                 '}';
     }

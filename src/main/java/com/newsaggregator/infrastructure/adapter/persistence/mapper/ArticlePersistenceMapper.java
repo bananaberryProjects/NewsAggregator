@@ -33,6 +33,7 @@ public class ArticlePersistenceMapper {
                 entity.getLink(),
                 entity.getImageUrl(),
                 entity.getContentHtml(),
+                entity.getContentExtractionFailed() != null ? entity.getContentExtractionFailed() : false,
                 entity.getPublishedAt(),
                 feedStub,
                 entity.getCreatedAt()

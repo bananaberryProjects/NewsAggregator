@@ -52,4 +52,7 @@ public class ArticleJpaEntity {
     @Column(name = "content_html", columnDefinition = "TEXT")
     private String contentHtml;
 
+    @Column(name = "content_extraction_failed")
+    private Boolean contentExtractionFailed = false;
+
 }
