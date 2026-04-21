@@ -1,6 +1,7 @@
 package com.newsaggregator.infrastructure.adapter.persistence.repository;
 
 import com.newsaggregator.infrastructure.adapter.persistence.entity.ArticleJpaEntity;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -68,11 +69,11 @@ public interface ArticleJpaRepository extends JpaRepository<ArticleJpaEntity, Lo
     /**
      * Findet Artikel ohne Content (contentHtml IS NULL) mit Limit.
      *
-     * @param limit Maximale Anzahl
+     * @param pageable Pageable mit Limit
      * @return Liste der Artikel ohne Content
      */
     @Query("SELECT a FROM ArticleJpaEntity a WHERE a.contentHtml IS NULL ORDER BY a.createdAt ASC")
-    List<ArticleJpaEntity> findByContentHtmlIsNullWithLimit(@Param("limit") int limit);
+    List<ArticleJpaEntity> findByContentHtmlIsNull(Pageable pageable);
 
     /**
      * Zählt Artikel ohne Content.
