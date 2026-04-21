@@ -185,7 +185,7 @@ export function ArticleReaderDialog({
           <Box
             sx={{
               '& p': {
-                fontSize: '1.125rem',
+                fontSize: '1rem',
                 lineHeight: 1.6,
                 mb: 2,
                 color: theme.palette.text.primary,
@@ -197,11 +197,11 @@ export function ArticleReaderDialog({
                 lineHeight: 1.3,
                 color: theme.palette.text.primary,
               },
-              '& h1': { fontSize: '1.75rem' },
-              '& h2': { fontSize: '1.5rem' },
-              '& h3': { fontSize: '1.375rem' },
-              '& h4': { fontSize: '1.25rem' },
-              '& h5, & h6': { fontSize: '1.125rem' },
+              '& h1': { fontSize: '1.5rem' },
+              '& h2': { fontSize: '1.375rem' },
+              '& h3': { fontSize: '1.25rem' },
+              '& h4': { fontSize: '1.125rem' },
+              '& h5, & h6': { fontSize: '1rem' },
               '& img': {
                 maxWidth: '100%',
                 height: 'auto',
@@ -227,7 +227,7 @@ export function ArticleReaderDialog({
                 mb: 2,
               },
               '& li': {
-                fontSize: '1.125rem',
+                fontSize: '1rem',
                 lineHeight: 1.6,
                 mb: 0.5,
               },
