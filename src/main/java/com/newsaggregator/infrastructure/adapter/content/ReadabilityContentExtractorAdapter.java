@@ -215,9 +215,13 @@ public class ReadabilityContentExtractorAdapter implements ArticleContentExtract
 
             // on*-Event-Handler entfernen
             doc.getAllElements().forEach(element -> {
-                element.attributes().asList().removeIf(attr ->
-                        attr.getKey().toLowerCase().startsWith("on")
-                );
+                // Attribute sammeln die entfernt werden sollen
+                var attrsToRemove = element.attributes().asList().stream()
+                        .filter(attr -> attr.getKey().toLowerCase().startsWith("on"))
+                        .map(attr -> attr.getKey())
+                        .toList();
+                // Attribute einzeln entfernen
+                attrsToRemove.forEach(element::removeAttr);
             });
 
             // Externe Links mit rel="noopener noreferrer" versehen
@@ -239,7 +243,7 @@ public class ReadabilityContentExtractorAdapter implements ArticleContentExtract
             return doc.body() != null ? doc.body().html() : content;
 
         } catch (Exception e) {
-            logger.warn("Fehler bei Content-Sanitisierung: {}", e.getMessage());
+            logger.warn("Fehler bei Content-Sanitisierung: {} - {}", content, e.getMessage());
             return content;
         }
     }
