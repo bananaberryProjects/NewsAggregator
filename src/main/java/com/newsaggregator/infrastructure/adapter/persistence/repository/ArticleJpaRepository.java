@@ -68,11 +68,12 @@ public interface ArticleJpaRepository extends JpaRepository<ArticleJpaEntity, Lo
 
     /**
      * Findet Artikel ohne Content (contentHtml IS NULL) mit Limit.
+     * Sortiert nach createdAt DESC (neueste zuerst).
      *
      * @param pageable Pageable mit Limit
      * @return Liste der Artikel ohne Content
      */
-    @Query("SELECT a FROM ArticleJpaEntity a WHERE a.contentHtml IS NULL ORDER BY a.createdAt ASC")
+    @Query("SELECT a FROM ArticleJpaEntity a WHERE a.contentHtml IS NULL ORDER BY a.createdAt DESC")
     List<ArticleJpaEntity> findByContentHtmlIsNull(Pageable pageable);
 
     /**
