@@ -9,6 +9,7 @@ export interface Feed {
   articleCount: number;
   lastFetchedAt: string | null;
   categoryIds?: string[];
+  extractContent?: boolean;
 }
 
 export interface Article {
@@ -123,7 +124,7 @@ export const feedsApi = {
   getAll: () => fetchApi<Feed[]>('/feeds'),
   add: (feed: { name: string; url: string }) => 
     fetchApi<Feed>('/feeds', { method: 'POST', body: JSON.stringify(feed) }),
-  update: (id: string, feed: { name: string; url: string; description?: string }) => 
+  update: (id: string, feed: { name: string; url: string; description?: string; extractContent?: boolean }) => 
     fetchApi<Feed>(`/feeds/${id}`, { method: 'PUT', body: JSON.stringify(feed) }),
   delete: (id: string) => 
     fetchApi<void>(`/feeds/${id}`, { method: 'DELETE' }),

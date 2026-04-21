@@ -135,9 +135,9 @@ function App() {
     setEditSelectedCategories([])
   }
 
-  const handleUpdateFeed = async (name: string, url: string, description: string, categoryIds: string[]) => {
+  const handleUpdateFeed = async (name: string, url: string, description: string, categoryIds: string[], extractContent: boolean) => {
     if (!feedToEdit) return
-    await updateFeed(feedToEdit.id, name, url, description)
+    await updateFeed(feedToEdit.id, name, url, description, extractContent)
     await assignCategories(feedToEdit.id, categoryIds)
     setEditDialogOpen(false)
     setFeedToEdit(null)
