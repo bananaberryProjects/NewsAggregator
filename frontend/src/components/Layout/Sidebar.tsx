@@ -72,14 +72,19 @@ export function Sidebar({
       <Divider sx={{ display: { xs: 'block', md: 'none' }, mb: 2 }} />
 
       {/* Desktop Header */}
-      <Box sx={{ px: 2, mb: 3, display: { xs: 'none', md: 'flex' }, alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <Box>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main', letterSpacing: '-0.5px' }}>
-            NewsWeave
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            Deine personalisierte News
-          </Typography>
+      <Box sx={{ px: 2, mb: 3, display: { xs: 'none', md: 'flex' }, alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Avatar sx={{ width: 36, height: 36, bgcolor: 'primary.main' }}>
+            <NewspaperIcon sx={{ color: 'white' }} />
+          </Avatar>
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main', letterSpacing: '-0.5px', lineHeight: 1.2 }}>
+              NewsWeave
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: -0.5 }}>
+              Deine personalisierte News
+            </Typography>
+          </Box>
         </Box>
         {isDark !== undefined && onToggleTheme && (
           <ThemeToggleButton isDark={isDark} onToggle={onToggleTheme} />
