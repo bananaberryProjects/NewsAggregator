@@ -163,4 +163,78 @@ class ArticleTest {
         // Then
         assertNotEquals(article1, article2);
     }
+
+    @Test
+    void createNew_WithExtractedContent_ShouldCreateArticle_WithContent() {
+        // Given
+        Feed feed = Feed.createNew("Test Feed", "https://example.com/feed", "Test");
+        LocalDateTime now = LocalDateTime.now();
+        String content = "<p>This is extracted HTML content</p>";
+
+        // When
+        Article article = Article.createNew("Title", "Desc", "https://example.com/article", "https://example.com/image.jpg", content, now, feed);
+
+        // Then
+        assertNotNull(article);
+        assertEquals(content, article.getExtractedContent());
+        assertTrue(article.hasExtractedContent());
+    }
+
+    @Test
+    void withExtractedContent_ShouldReturnNewArticle_WithContent() {
+        // Given
+        Feed feed = Feed.createNew("Test Feed", "https://example.com/feed", "Test");
+        Article article = Article.createNew("Title", "Desc", "https://example.com/article", LocalDateTime.now(), feed);
+
+        // When
+        String content = "<p>Extracted content</p>";
+        Article articleWithContent = article.withExtractedContent(content);
+
+        // Then
+        assertEquals(content, articleWithContent.getExtractedContent());
+        assertTrue(articleWithContent.hasExtractedContent());
+        // Original unchanged (immutability)
+        assertFalse(article.hasExtractedContent());
+    }
+
+    @Test
+    void withExtractedContent_ShouldPreserveAllOtherFields() {
+        // Given
+        Feed feed = Feed.createNew("Test Feed", "https://example.com/feed", "Test");
+        LocalDateTime publishedAt = LocalDateTime.now();
+        Article article = Article.createNew("Original Title", "Original Desc", "https://example.com/article", "https://example.com/image.jpg", publishedAt, feed);
+
+        // When
+        String content = "<p>New content</p>";
+        Article updated = article.withExtractedContent(content);
+
+        // Then
+        assertEquals(article.getId(), updated.getId());
+        assertEquals(article.getTitle(), updated.getTitle());
+        assertEquals(article.getDescription(), updated.getDescription());
+        assertEquals(article.getLink(), updated.getLink());
+        assertEquals(article.getImageUrl(), updated.getImageUrl());
+        assertEquals(article.getPublishedAt(), updated.getPublishedAt());
+        assertEquals(article.getFeed(), updated.getFeed());
+    }
+
+    @Test
+    void hasExtractedContent_ShouldReturnFalse_WhenContentIsNull() {
+        // Given
+        Feed feed = Feed.createNew("Test", "https://example.com/feed", "Test");
+        Article article = Article.createNew("Title", "Desc", "https://example.com/article", LocalDateTime.now(), feed);
+
+        // Then
+        assertFalse(article.hasExtractedContent());
+    }
+
+    @Test
+    void hasExtractedContent_ShouldReturnFalse_WhenContentIsEmpty() {
+        // Given
+        Feed feed = Feed.createNew("Test", "https://example.com/feed", "Test");
+        Article article = Article.createNew("Title", "Desc", "https://example.com/article", "image.jpg", "", LocalDateTime.now(), feed);
+
+        // Then
+        assertFalse(article.hasExtractedContent());
+    }
 }

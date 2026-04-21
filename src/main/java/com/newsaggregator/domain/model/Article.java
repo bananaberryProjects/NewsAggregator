@@ -21,6 +21,7 @@ public class Article {
     private final String description;
     private final String link;
     private final String imageUrl;
+    private final String extractedContent;
     private final LocalDateTime publishedAt;
     private final Feed feed;
     private final LocalDateTime createdAt;
@@ -30,7 +31,7 @@ public class Article {
      */
     public static Article createNew(String title, String description, String link,
                                     LocalDateTime publishedAt, Feed feed) {
-        return new Article(null, title, description, link, null, publishedAt, feed, LocalDateTime.now());
+        return new Article(null, title, description, link, null, null, publishedAt, feed, LocalDateTime.now());
     }
 
     /**
@@ -38,7 +39,15 @@ public class Article {
      */
     public static Article createNew(String title, String description, String link, String imageUrl,
                                     LocalDateTime publishedAt, Feed feed) {
-        return new Article(null, title, description, link, imageUrl, publishedAt, feed, LocalDateTime.now());
+        return new Article(null, title, description, link, imageUrl, null, publishedAt, feed, LocalDateTime.now());
+    }
+
+    /**
+     * Factory-Methode für neue Artikel mit Bild-URL und extrahiertem Content.
+     */
+    public static Article createNew(String title, String description, String link, String imageUrl,
+                                    String extractedContent, LocalDateTime publishedAt, Feed feed) {
+        return new Article(null, title, description, link, imageUrl, extractedContent, publishedAt, feed, LocalDateTime.now());
     }
 
     /**
@@ -46,7 +55,7 @@ public class Article {
      */
     public static Article of(ArticleId id, String title, String description, String link,
                              LocalDateTime publishedAt, Feed feed, LocalDateTime createdAt) {
-        return new Article(id, title, description, link, null, publishedAt, feed, createdAt);
+        return new Article(id, title, description, link, null, null, publishedAt, feed, createdAt);
     }
 
     /**
@@ -54,16 +63,25 @@ public class Article {
      */
     public static Article of(ArticleId id, String title, String description, String link, String imageUrl,
                              LocalDateTime publishedAt, Feed feed, LocalDateTime createdAt) {
-        return new Article(id, title, description, link, imageUrl, publishedAt, feed, createdAt);
+        return new Article(id, title, description, link, imageUrl, null, publishedAt, feed, createdAt);
+    }
+
+    /**
+     * Factory-Methode für vorhandene Artikel mit allen Feldern (inkl. extrahiertem Content).
+     */
+    public static Article of(ArticleId id, String title, String description, String link, String imageUrl,
+                             String extractedContent, LocalDateTime publishedAt, Feed feed, LocalDateTime createdAt) {
+        return new Article(id, title, description, link, imageUrl, extractedContent, publishedAt, feed, createdAt);
     }
 
     private Article(ArticleId id, String title, String description, String link, String imageUrl,
-                    LocalDateTime publishedAt, Feed feed, LocalDateTime createdAt) {
+                    String extractedContent, LocalDateTime publishedAt, Feed feed, LocalDateTime createdAt) {
         this.id = id;
         this.title = validateNotEmpty(title, "Titel");
         this.description = description;
         this.link = validateNotEmpty(link, "Link");
         this.imageUrl = imageUrl;
+        this.extractedContent = extractedContent;
         this.publishedAt = publishedAt != null ? publishedAt : LocalDateTime.now();
         this.feed = Objects.requireNonNull(feed, "Feed darf nicht null sein");
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt darf nicht null sein");
@@ -79,6 +97,27 @@ public class Article {
     }
 
     // ==================== Business-Methoden ====================
+
+    /**
+     * Erzeugt eine Kopie dieses Artikels mit extrahiertem Content.
+     * Nützlich für Content-Extraktion nach der Erstellung.
+     *
+     * @param content Der extrahierte HTML-Content
+     * @return Ein neuer Article mit gesetztem extractedContent
+     */
+    public Article withExtractedContent(String content) {
+        return new Article(
+                this.id,
+                this.title,
+                this.description,
+                this.link,
+                this.imageUrl,
+                content,
+                this.publishedAt,
+                this.feed,
+                this.createdAt
+        );
+    }
 
     /**
      * Gibt eine Zusammenfassung des Artikels zurück (z.B. für Vorschau).
@@ -130,6 +169,14 @@ public class Article {
         return imageUrl;
     }
 
+    public String getExtractedContent() {
+        return extractedContent;
+    }
+
+    public boolean hasExtractedContent() {
+        return extractedContent != null && !extractedContent.isEmpty();
+    }
+
     public LocalDateTime getPublishedAt() {
         return publishedAt;
     }
@@ -164,6 +211,7 @@ public class Article {
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", link='" + link + '\'' +
+                ", hasContent=" + hasExtractedContent() +
                 ", publishedAt=" + publishedAt +
                 '}';
     }

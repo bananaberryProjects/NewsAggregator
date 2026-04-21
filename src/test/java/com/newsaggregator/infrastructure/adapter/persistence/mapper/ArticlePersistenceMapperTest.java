@@ -51,6 +51,37 @@ class ArticlePersistenceMapperTest {
     }
 
     @Test
+    void toDomain_ShouldConvertEntityWithContentHtml_ToDomain() {
+        // Given
+        FeedJpaEntity feedEntity = new FeedJpaEntity();
+        feedEntity.setId(1L);
+        feedEntity.setName("Test Feed");
+        feedEntity.setUrl("https://example.com/feed");
+        feedEntity.setCreatedAt(LocalDateTime.now());
+        feedEntity.setStatus(FeedJpaEntity.FeedStatus.ACTIVE);
+
+        String contentHtml = "<p>Extracted article content</p>";
+
+        ArticleJpaEntity entity = new ArticleJpaEntity();
+        entity.setId(1L);
+        entity.setTitle("Test Article");
+        entity.setDescription("Description");
+        entity.setLink("https://example.com/article");
+        entity.setContentHtml(contentHtml);
+        entity.setCreatedAt(LocalDateTime.now());
+        entity.setPublishedAt(LocalDateTime.now());
+        entity.setFeed(feedEntity);
+
+        // When
+        Article domain = mapper.toDomain(entity);
+
+        // Then
+        assertNotNull(domain);
+        assertEquals(contentHtml, domain.getExtractedContent());
+        assertTrue(domain.hasExtractedContent());
+    }
+
+    @Test
     void toDomain_ShouldReturnNull_WhenEntityIsNull() {
         assertNull(mapper.toDomain(null));
     }
@@ -81,6 +112,35 @@ class ArticlePersistenceMapperTest {
         assertEquals("Title", entity.getTitle());
         assertEquals("https://example.com/article", entity.getLink());
         assertEquals(feedEntity, entity.getFeed());
+        assertNull(entity.getContentHtml());
+    }
+
+    @Test
+    void toJpaEntity_ShouldConvertDomainWithContent_ToEntity() {
+        // Given
+        FeedJpaEntity feedEntity = new FeedJpaEntity();
+        feedEntity.setId(1L);
+        feedEntity.setName("Test Feed");
+        feedEntity.setUrl("https://example.com/feed");
+        feedEntity.setCreatedAt(LocalDateTime.now());
+        feedEntity.setStatus(FeedJpaEntity.FeedStatus.ACTIVE);
+
+        Feed feed = Feed.of(
+                FeedId.of(1L), "Test Feed", "https://example.com/feed", null,
+                LocalDateTime.now(), null, com.newsaggregator.domain.model.FeedStatus.ACTIVE
+        );
+
+        String contentHtml = "<p>Full article content</p>";
+
+        Article article = Article.createNew("Title", "Desc", "https://example.com/article",
+                "https://example.com/image.jpg", contentHtml, LocalDateTime.now(), feed);
+
+        // When
+        ArticleJpaEntity entity = mapper.toJpaEntity(article, feedEntity);
+
+        // Then
+        assertNotNull(entity);
+        assertEquals(contentHtml, entity.getContentHtml());
     }
 
     @Test
@@ -111,5 +171,30 @@ class ArticlePersistenceMapperTest {
         assertEquals("New Title", entity.getTitle());
         assertEquals("New Desc", entity.getDescription());
         assertEquals("https://example.com/new", entity.getLink());
+    }
+
+    @Test
+    void updateJpaEntity_ShouldUpdateContentHtml() {
+        // Given
+        ArticleJpaEntity entity = new ArticleJpaEntity();
+        entity.setId(1L);
+        entity.setTitle("Title");
+        entity.setDescription("Desc");
+        entity.setLink("https://example.com/article");
+
+        String contentHtml = "<p>Updated content</p>";
+
+        Feed feed = Feed.createNew("Feed", "https://example.com/feed", "Test");
+        Article article = Article.of(
+                com.newsaggregator.domain.model.ArticleId.of(1L),
+                "Title", "Desc", "https://example.com/article",
+                contentHtml, LocalDateTime.now(), feed, LocalDateTime.now()
+        );
+
+        // When
+        mapper.updateJpaEntity(entity, article);
+
+        // Then
+        assertEquals(contentHtml, entity.getContentHtml());
     }
 }

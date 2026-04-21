@@ -32,6 +32,7 @@ public class ArticlePersistenceMapper {
                 entity.getDescription(),
                 entity.getLink(),
                 entity.getImageUrl(),
+                entity.getContentHtml(),
                 entity.getPublishedAt(),
                 feedStub,
                 entity.getCreatedAt()
@@ -58,6 +59,7 @@ public class ArticlePersistenceMapper {
         entity.setDescription(domain.getDescription());
         entity.setLink(domain.getLink());
         entity.setImageUrl(domain.getImageUrl());
+        entity.setContentHtml(domain.getExtractedContent());
         entity.setPublishedAt(domain.getPublishedAt());
         entity.setCreatedAt(domain.getCreatedAt());
         entity.setFeed(feedEntity);
@@ -77,6 +79,7 @@ public class ArticlePersistenceMapper {
         entity.setDescription(domain.getDescription());
         entity.setLink(domain.getLink());
         entity.setImageUrl(domain.getImageUrl());
+        entity.setContentHtml(domain.getExtractedContent());
         entity.setPublishedAt(domain.getPublishedAt());
         // Feed und createdAt werden nicht aktualisiert
     }
