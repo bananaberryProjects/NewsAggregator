@@ -2,19 +2,15 @@ package com.newsaggregator.infrastructure.adapter.content;
 
 import com.newsaggregator.domain.port.out.ArticleContentExtractor;
 import net.dankito.readability4j.Readability4J;
-import net.dankito.readability4j.extended.Readability4JExtended;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.net.URI;
+import java.net.SocketTimeoutException;
 import java.net.URL;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
 
 /**
  * Adapter für die Content-Extraktion mit Readability4J.
@@ -25,24 +21,17 @@ import java.time.Duration;
  *
  * <p>Readability4J ist eine Java-Portierung von Mozilla Readability,
  * die in Firefox für den Reader-Mode verwendet wird.</p>
+ *
+ * <p>Verwendet JSoup für das Laden, da JSoup automatisch mit
+ * GZip- und Deflate-Kompression umgeht.</p>
  */
 @Component
 public class ReadabilityContentExtractorAdapter implements ArticleContentExtractor {
 
     private static final Logger logger = LoggerFactory.getLogger(ReadabilityContentExtractorAdapter.class);
 
-    private static final Duration TIMEOUT = Duration.ofSeconds(30);
-    private static final int MAX_REDIRECTS = 5;
+    private static final int TIMEOUT_MS = 30_000; // 30 Sekunden
     private static final int MAX_CONTENT_LENGTH = 5 * 1024 * 1024; // 5MB max
-
-    private final HttpClient httpClient;
-
-    public ReadabilityContentExtractorAdapter() {
-        this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(TIMEOUT)
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .build();
-    }
 
     @Override
     public String extractContent(String url) throws ContentExtractionException {
@@ -63,7 +52,7 @@ public class ReadabilityContentExtractorAdapter implements ArticleContentExtract
         logger.debug("Extrahiere Content von: {}", url);
 
         try {
-            // HTML von der URL laden
+            // HTML von der URL laden mit JSoup (unterstützt automatisch GZip/Deflate)
             String html = fetchHtml(url);
 
             if (html == null || html.isEmpty()) {
@@ -72,7 +61,7 @@ public class ReadabilityContentExtractorAdapter implements ArticleContentExtract
             }
 
             // Readability-Extraktion durchführen
-            Readability4J readability4J = new Readability4JExtended(url, html);
+            Readability4J readability4J = new Readability4J(url, html);
             var extractedArticle = readability4J.parse();
 
             if (extractedArticle == null) {
@@ -94,13 +83,12 @@ public class ReadabilityContentExtractorAdapter implements ArticleContentExtract
 
             return ExtractionResult.success(content, title, excerpt);
 
+        } catch (SocketTimeoutException e) {
+            logger.error("Timeout beim Laden von {}: {}", url, e.getMessage());
+            throw new ContentExtractionException(url, "Request timeout: " + e.getMessage(), e);
         } catch (IOException e) {
             logger.error("IO-Fehler beim Laden von {}: {}", url, e.getMessage());
             throw new ContentExtractionException(url, "Failed to fetch content: " + e.getMessage(), e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            logger.error("Unterbrechung beim Laden von {}: {}", url, e.getMessage());
-            throw new ContentExtractionException(url, "Request interrupted: " + e.getMessage(), e);
         } catch (Exception e) {
             logger.error("Fehler bei Content-Extraktion von {}: {}", url, e.getMessage(), e);
             throw new ContentExtractionException(url, "Extraction failed: " + e.getMessage(), e);
@@ -119,42 +107,32 @@ public class ReadabilityContentExtractorAdapter implements ArticleContentExtract
     /**
      * Lädt das HTML von der angegebenen URL.
      *
-     * @param url Die URL
+     * <p>Verwendet JSoup, das automatisch mit GZip und Deflate umgeht
+     * und keine manuelle Dekomprimierung erfordert.</p>
+     *
+     * @param urlString Die URL
      * @return Der HTML-Content als String
      * @throws IOException bei Netzwerkfehlern
-     * @throws InterruptedException bei Unterbrechung
      */
-    private String fetchHtml(String url) throws IOException, InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .timeout(TIMEOUT)
-                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
+    private String fetchHtml(String urlString) throws IOException {
+        URL url = new URL(urlString);
+        
+        Document doc = Jsoup.connect(url.toString())
+                .timeout(TIMEOUT_MS)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
                 .header("Accept-Language", "de,en-US;q=0.7,en;q=0.3")
-                .header("Accept-Encoding", "gzip, deflate, br")
-                .GET()
-                .build();
+                .followRedirects(true)
+                .maxBodySize(MAX_CONTENT_LENGTH)
+                .get();
 
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-        if (response.statusCode() != 200) {
-            throw new IOException("HTTP " + response.statusCode() + " for URL: " + url);
-        }
-
-        String body = response.body();
-
-        // Größenlimit prüfen
-        if (body.length() > MAX_CONTENT_LENGTH) {
-            throw new IOException("Content too large: " + body.length() + " bytes");
-        }
-
-        return body;
+        return doc.html();
     }
 
     /**
      * Bereinigt den extrahierten Content von potenziell gefährlichen Elementen.
      *
-     * <p>Entfert Script-Tags, on*-Event-Handler und andere potenziell
+     * <p>Entfernt Script-Tags, on*-Event-Handler und andere potenziell
      * unsichere Elemente aus dem HTML.</p>
      *
      * @param content Der rohe HTML-Content
