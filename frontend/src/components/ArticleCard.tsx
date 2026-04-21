@@ -78,7 +78,7 @@ export function ArticleCard({
               <Tooltip title="Vollständiger Artikel verfügbar">
                 <MenuBookIcon
                   fontSize="small"
-                  color="success"
+                  color="primary"
                   sx={{ ml: 0.5 }}
                 />
               </Tooltip>

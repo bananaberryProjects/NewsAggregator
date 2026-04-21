@@ -107,7 +107,7 @@ export function ArticlesView({
       {/* Header mit Filter-Button */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h5" sx={{ fontWeight: 600 }}>
-          Alle Artikel ({articlesList.length})
+          Artikel ({articlesList.length})
         </Typography>
 
         <IconButton

@@ -1,4 +1,4 @@
-import { Box, Card, Avatar, IconButton, Skeleton, Typography, Alert } from '@mui/material'
+import { Box, Card, Avatar, IconButton, Skeleton, Typography, Alert, Grid } from '@mui/material'
 import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material'
 import {
   Label,
@@ -75,52 +75,54 @@ export function CategoriesView({ categories, loading, onDelete, onEdit }: Catego
       </Typography>
 
       {loading ? (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+        <Grid container spacing={3}>
           {[1, 2, 3, 4].map((i) => (
-            <Card key={i} sx={{ width: 300, height: 120 }}>
-              <Skeleton variant="rectangular" height={120} />
-            </Card>
+            <Grid size={{ xs: 12, sm: 6 }} key={i}>
+              <Card sx={{ height: 120 }}>
+                <Skeleton variant="rectangular" height={120} />
+              </Card>
+            </Grid>
           ))}
-        </Box>
+        </Grid>
       ) : categories.length === 0 ? (
         <Alert severity="info">
           Noch keine Kategorien vorhanden.
         </Alert>
       ) : (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+        <Grid container spacing={3}>
           {categories.map((category) => {
             const IconComponent = getIconComponent(category.icon)
             return (
-              <Card
-                key={category.id}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  p: 2,
-                  width: 300,
-                  borderLeft: `4px solid ${category.color}`,
-                }}
-              >
-                <Avatar sx={{ width: 56, height: 56, mr: 2, bgcolor: category.color }}>
-                  <IconComponent />
-                </Avatar>
-                <Box sx={{ flexGrow: 1 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                    {category.name}
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <IconButton onClick={() => onEdit(category)} color="primary">
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton onClick={() => onDelete(category.id)} color="error">
-                    <DeleteIcon />
-                  </IconButton>
-                </Box>
-              </Card>
+              <Grid size={{ xs: 12, sm: 6 }} key={category.id}>
+                <Card
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    p: 2,
+                    borderLeft: `4px solid ${category.color}`,
+                  }}
+                >
+                  <Avatar sx={{ width: 56, height: 56, mr: 2, bgcolor: category.color }}>
+                    <IconComponent />
+                  </Avatar>
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      {category.name}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <IconButton onClick={() => onEdit(category)} color="primary">
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton onClick={() => onDelete(category.id)} color="error">
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
+                </Card>
+              </Grid>
             )
           })}
-        </Box>
+        </Grid>
       )}
     </Box>
   )
