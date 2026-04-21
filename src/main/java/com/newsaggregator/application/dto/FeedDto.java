@@ -29,5 +29,6 @@ public class FeedDto {
     private String status;
     private int articleCount;
     private List<String> categoryIds;
+    private Boolean extractContent;
 
 }

@@ -17,5 +17,6 @@ public class UpdateFeedCommand {
     private String name;
     private String url;
     private String description;
+    private Boolean extractContent;
 
 }

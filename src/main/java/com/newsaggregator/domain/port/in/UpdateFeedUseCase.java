@@ -14,10 +14,11 @@ public interface UpdateFeedUseCase {
      * @param name        Der neue Name des Feeds
      * @param url         Die neue URL des Feeds
      * @param description Die neue Beschreibung des Feeds
+     * @param extractContent Ob Content extrahiert werden soll
      * @return Der aktualisierte Feed
      * @throws IllegalArgumentException wenn der Feed nicht gefunden wird
      * @throws IllegalArgumentException wenn Name oder URL ungültig sind
      * @throws IllegalArgumentException wenn ein anderer Feed mit dieser URL bereits existiert
      */
-    Feed updateFeed(Long id, String name, String url, String description);
+    Feed updateFeed(Long id, String name, String url, String description, Boolean extractContent);
 }
