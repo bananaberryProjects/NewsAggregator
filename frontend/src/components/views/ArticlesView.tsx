@@ -12,9 +12,11 @@ import {
   Divider,
   Button,
   Badge,
+  CircularProgress,
 } from '@mui/material'
 import { FilterList as FilterIcon, Close as CloseIcon } from '@mui/icons-material'
 import { ArticleCard } from '../ArticleCard'
+import { useInfiniteArticles } from '../../hooks/useInfiniteArticles'
 import type { Article, Category } from '../../api/client'
 
 interface ArticlesViewProps {
@@ -94,6 +96,13 @@ export function ArticlesView({
 
   const articlesList = getFilteredArticles()
 
+  // Infinite Scroll: Initial 18, dann +9 pro Scroll
+  const { displayedArticles, hasMore, loadMoreRef, totalCount } = useInfiniteArticles({
+    articles: [...articlesList].sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()),
+    batchSize: 9,
+    initialCount: 18
+  })
+
   const isRead = (id: string) => articleStatuses[id]?.isRead ?? false
   const isFavorite = (id: string) => articleStatuses[id]?.isFavorite ?? false
 
@@ -107,7 +116,7 @@ export function ArticlesView({
       {/* Header mit Filter-Button */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h5" sx={{ fontWeight: 600 }}>
-          Artikel ({articlesList.length})
+          Artikel ({totalCount})
         </Typography>
 
         <IconButton
@@ -255,7 +264,7 @@ export function ArticlesView({
         </Button>
       </Drawer>
 
-      {/* Articles Grid */}
+      {/* Articles Grid with Infinite Scroll */}
       {loading ? (
         <Grid container spacing={3}>
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -271,10 +280,9 @@ export function ArticlesView({
           Keine Artikel gefunden für den aktuellen Filter.
         </Alert>
       ) : (
-        <Grid container spacing={2}>
-          {[...articlesList]
-            .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
-            .map((article) => (
+        <>
+          <Grid container spacing={2}>
+            {displayedArticles.map((article) => (
               <Grid size={{ xs: 12, sm: 6, md: 4 }} sx={{ mx: 'auto', }} key={article.id}>
                 <ArticleCard
                   article={article}
@@ -288,7 +296,37 @@ export function ArticlesView({
                 />
               </Grid>
             ))}
-        </Grid>
+          </Grid>
+          
+          {/* Load More Trigger Element */}
+          <Box
+            ref={loadMoreRef}
+            sx={{
+              height: 20,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              mt: 3,
+              mb: 3
+            }}
+          >
+            {hasMore && (
+              <CircularProgress size={24} />
+            )}
+          </Box>
+          
+          {/* Status Text */}
+          <Typography 
+            variant="body2" 
+            color="text.secondary" 
+            sx={{ textAlign: 'center', mb: 2 }}
+          >
+            {hasMore 
+              ? `${displayedArticles.length} von ${totalCount} Artikeln geladen`
+              : `${totalCount} Artikel (alle geladen)`
+            }
+          </Typography>
+        </>
       )}
     </Box>
   )
