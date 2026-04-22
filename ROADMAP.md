@@ -80,6 +80,7 @@ Feature-Ideen und zukünftige Entwicklungen für das News Aggregator Projekt.
 - [x] **Comprehensive Tests**
 - [x] **Dashboard Widgets** (Wetter, Börsenkurse, KI-Zusammenfassung)
 - [x] **OPML Import/Export**
+- [x] **PWA Support** - Progressive Web App mit Offline-Cache und App-Installation
 
 ## 📝 Notizen
 

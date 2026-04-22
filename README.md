@@ -109,6 +109,13 @@ npx vite --host 0.0.0.0
 - ✅ **Dashboard-Widgets** - Wetter, Börsenkurse & KI-Zusammenfassung
 - ✅ **NewsWeave Branding** - Eigenes Logo in Sidebar und Favicon
 
+### PWA (Progressive Web App)
+- ✅ **App-Installation** - Als Desktop/Mobile-App installierbar
+- ✅ **Offline-Cache** - Seiten und API-Daten werden gecacht
+- ✅ **Service Worker** - Auto-Update und Background-Sync
+- ✅ **Install-Prompt** - Automatisches Installations-Popup
+- ✅ **Shortcuts** - Direkter Zugriff auf Feeds & Favoriten
+
 ## 🔌 API Endpoints
 
 ### Feeds
@@ -323,7 +330,7 @@ proxy: {
 - [x] 🏷️ **Kategorien** - Feeds organisieren
 - [x] 🎨 **Dark/Light Mode** - Theme-Umschaltung
 - [x] 🧵 **NewsWeave Branding** - Eigenes Logo & Name
-- [ ] 📱 PWA Support
+- [x] 📱 **PWA Support** ✅ App-Installation, Offline-Cache, Service Worker
 - [ ] 🔔 Push-Benachrichtigungen
 - [ ] 🔍 Volltextsuche mit Elasticsearch
 - [ ] 📤 Mobile App (React Native)

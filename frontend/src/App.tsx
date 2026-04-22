@@ -28,7 +28,7 @@ import {
 } from '@mui/material'
 import { Add as AddIcon, Menu as MenuIcon } from '@mui/icons-material'
 import { useTheme, useFeeds, useArticles, useCategories } from './hooks'
-import { Sidebar } from './components'
+import { Sidebar, PWAInstallPrompt } from './components'
 import { DashboardView, FeedsView, ArticlesView, FavoritesView, CategoriesView, StatisticsView, SettingsView } from './components/views'
 import { AddFeedDialog, DeleteFeedDialog, EditFeedDialog, EditCategoryDialog, AddCategoryDialog } from './components/dialogs'
 import { ArticleReaderDialog } from './components/ArticleReaderDialog'
@@ -419,6 +419,8 @@ function App() {
           articlesWithoutContent={articlesWithoutContent}
           onExtractionComplete={loadArticlesWithoutContentCount}
         />
+
+        <PWAInstallPrompt />
       </Box>
     </ThemeProvider>
   )
