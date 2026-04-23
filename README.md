@@ -106,7 +106,8 @@ npx vite --host 0.0.0.0
 - ✅ **Dark/Light Mode** - Theme-Umschaltung in Einstellungen
 - ✅ **Interaktive Icons** - Lesen/Gelesen markieren, Favoriten verwalten
 - ✅ **Datum-Anzeige** - In Artikel-Kacheln mit Kalender-Icon
-- ✅ **Dashboard-Widgets** - Wetter, Börsenkurse & KI-Zusammenfassung
+- ✅ **Infinite Scroll** - Automatisches Nachladen mit IntersectionObserver API (statt Paginierung)
+- ✅ **Dashboard-Widgets** - Wetter, Börsenkurse (NASDAQ), **Live-Kryptopreis-Tracking** (Bitcoin, Ethereum, Solana) & KI-Zusammenfassung
 - ✅ **NewsWeave Branding** - Eigenes Logo in Sidebar und Favicon
 
 ### PWA (Progressive Web App)
@@ -164,7 +165,8 @@ npx vite --host 0.0.0.0
 | GET | `/api/stats` | Lesestatistiken |
 | GET | `/api/opml/export` | Feeds als OPML exportieren |
 | POST | `/api/opml/import` | Feeds aus OPML importieren |
-| GET | `/api/stocks` | Aktuelle Börsenkurse |
+| POST | `/api/stocks` | NASDAQ Preis abrufen (Finnhub) |
+| GET | `/api/crypto/price?symbol=BTC,ETH,SOL` | Live-Kryptopreis-Tracking über CoinGecko API |
 | GET | `/api/weather` | Aktuelle Wetterdaten |
 | GET | `/api/summary` | KI-generierte Tageszusammenfassung |
 
