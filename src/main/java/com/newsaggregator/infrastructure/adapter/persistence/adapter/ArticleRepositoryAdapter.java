@@ -134,4 +134,10 @@ public class ArticleRepositoryAdapter implements ArticleRepository {
     public long countByContentHtmlIsNull() {
         return jpaRepository.countByContentHtmlIsNull();
     }
+
+    @Override
+    @Transactional
+    public int deleteByPublishedAtBefore(LocalDateTime cutoffDate) {
+        return jpaRepository.deleteByPublishedAtBefore(cutoffDate);
+    }
 }

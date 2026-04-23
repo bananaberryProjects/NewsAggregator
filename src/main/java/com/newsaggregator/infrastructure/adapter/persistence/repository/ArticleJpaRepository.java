@@ -3,6 +3,7 @@ package com.newsaggregator.infrastructure.adapter.persistence.repository;
 import com.newsaggregator.infrastructure.adapter.persistence.entity.ArticleJpaEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -83,4 +84,15 @@ public interface ArticleJpaRepository extends JpaRepository<ArticleJpaEntity, Lo
      */
     @Query("SELECT COUNT(a) FROM ArticleJpaEntity a JOIN a.feed f WHERE a.contentHtml IS NULL AND (a.contentExtractionFailed IS NULL OR a.contentExtractionFailed = false) AND f.extractContent = true")
     long countByContentHtmlIsNull();
+
+    /**
+     * Löscht alle Artikel, die älter als das angegebene Datum sind.
+     *
+     * @param cutoffDate Das Grenzdatum
+     * @return Die Anzahl der gelöschten Artikel
+     */
+    @Modifying
+    @Query("DELETE FROM ArticleJpaEntity a WHERE a.publishedAt < :cutoffDate")
+    int deleteByPublishedAtBefore(@Param("cutoffDate") LocalDateTime cutoffDate);
+
 }

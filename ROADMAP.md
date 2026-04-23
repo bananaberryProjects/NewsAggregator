@@ -40,7 +40,7 @@ Feature-Ideen und zukünftige Entwicklungen für das News Aggregator Projekt.
 ### 🤖 KI & Automatisierung
 - [x] **KI-Zusammenfassung** - Tägliche Zusammenfassung mit Ollama
 - [ ] **Smart Fetch** - Häufigkeit pro Feed konfigurierbar
-- [ ] **Auto-Cleanup** - Alte Artikel automatisch löschen (X Tage)
+- [x] **Auto-Cleanup** - Alte Artikel automatisch löschen (X Tage)
 - [ ] **Duplicate Detection** - Doppelte Artikel erkennen und zusammenführen
 - [ ] **Headless Browser** - Für Artikel mit Bot-Schutz (Cloudflare, etc.) via Selenium/Playwright
 

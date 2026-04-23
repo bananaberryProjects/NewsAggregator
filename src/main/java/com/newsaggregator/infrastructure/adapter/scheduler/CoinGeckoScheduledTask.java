@@ -1,16 +1,17 @@
-package com.newsaggregator.infrastructure.adapter.web;
+package com.newsaggregator.infrastructure.adapter.scheduler;
 
+import java.math.BigDecimal;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.client.RestTemplate;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newsaggregator.domain.model.CryptoPrice;
 import com.newsaggregator.domain.port.in.CryptoPriceRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.math.BigDecimal;
-import java.util.Map;
 
 public class CoinGeckoScheduledTask {
 
