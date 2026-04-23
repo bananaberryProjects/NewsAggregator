@@ -35,7 +35,7 @@ public class StockService {
     private static final List<Map<String, String>> SYMBOLS = List.of(
             Map.of("symbol", "^GDAXI", "displayName", "DAX", "shortName", "DAX"),
             Map.of("symbol", "^GSPC", "displayName", "S&P 500", "shortName", "S&P500"),
-            Map.of("symbol", "BTC-USD", "displayName", "Bitcoin", "shortName", "BTC")
+            Map.of("symbol", "^IXIC", "displayName", "NASDAQ", "shortName", "NASDAQ")
     );
 
     public StockService() {
