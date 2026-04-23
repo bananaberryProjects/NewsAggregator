@@ -11,9 +11,16 @@ import com.newsaggregator.infrastructure.adapter.persistence.repository.ArticleJ
 import com.newsaggregator.infrastructure.adapter.persistence.repository.CategoryJpaRepository;
 import com.newsaggregator.infrastructure.adapter.persistence.repository.FeedJpaRepository;
 import com.newsaggregator.infrastructure.adapter.rss.RssFeedReaderAdapter;
+import com.newsaggregator.domain.port.in.CryptoPriceRepository;
+import com.newsaggregator.infrastructure.adapter.persistence.adapter.CryptoPriceRepositoryAdapter;
+import com.newsaggregator.infrastructure.adapter.persistence.repository.CryptoPriceJpaRepository;
+import com.newsaggregator.infrastructure.adapter.web.CoinGeckoScheduledTask;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Spring Configuration für Dependency Injection.
@@ -25,8 +32,29 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class BeanConfig {
 
-    // ==================== Repository Adapters ====================
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
 
+    @Bean
+    public ObjectMapper objectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        return mapper;
+    }
+
+    @Bean
+    public CryptoPriceRepository cryptoPriceRepository(CryptoPriceJpaRepository jpaRepository) {
+        return new CryptoPriceRepositoryAdapter(jpaRepository);
+    }
+
+    @Bean
+    public CoinGeckoScheduledTask coinGeckoScheduledTask(RestTemplate restTemplate, ObjectMapper objectMapper, CryptoPriceRepository cryptoPriceRepository) {
+        return new CoinGeckoScheduledTask(restTemplate, objectMapper, cryptoPriceRepository);
+    }
+
+    // ==================== Repository Adapters ====================
     @Bean
     public FeedRepository feedRepository(
             FeedJpaRepository jpaRepository,
