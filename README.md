@@ -88,6 +88,7 @@ npx vite --host 0.0.0.0
 - ✅ **KI-Zusammenfassung** - Tägliche Zusammenfassung
 - ✅ **Kategorie-Management** - Feeds in Kategorien organisieren
 - ✅ **Feed-Edit** - Name, URL, Beschreibung und Kategorien bearbeiten
+- ✅ **Auto-Cleanup** - Alte Artikel automatisch löschen nach konfigurierbarer Anzahl Tage (Scheduled Task)
 
 ### Frontend
 - ✅ **React 19** mit TypeScript
