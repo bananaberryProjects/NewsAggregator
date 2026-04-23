@@ -26,7 +26,7 @@ const getCurrency = (symbol: string): string => {
     case 'S&P500':
     case 'S&P 500':
       return '$'
-    case 'BTC':
+    case 'NASDAQ':
       return '$'
     default:
       return ''
@@ -235,7 +235,7 @@ export function StockWidget({ refreshIntervalSeconds = 600 }: StockWidgetProps) 
                   </Box>
                   <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                     <Typography variant="body1" component="div" sx={{ fontWeight: 500 }}>
-                      {stock.symbol === 'BTC' ? formatNumber(stock.value, 2) : formatNumber(stock.value, 0)} {getCurrency(stock.symbol)}
+                      {formatNumber(stock.value, 0)} {getCurrency(stock.symbol)}
                     </Typography>
                     <Box
                       sx={{

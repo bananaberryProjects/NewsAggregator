@@ -15,7 +15,7 @@ Feature-Ideen und zukünftige Entwicklungen für das News Aggregator Projekt.
 - [x] **Auto-Refresh** - Artikel automatisch alle X Minuten aktualisieren
 - [x] **Ungelesen-Markierung** - Visueller Indikator für neue Artikel
 - [x] **Bookmarking** - Artikel als "gelesen" oder "favorit" markieren
-- [ ] **Infinite Scroll** - Statt Paginierung
+- [x] **Infinite Scroll** - Automatisches Nachladen mit IntersectionObserver API
 
 ### 🏷️ Organisation
 - [x] **Kategorien/Tags** - Feeds und Artikel kategorisieren
@@ -81,6 +81,7 @@ Feature-Ideen und zukünftige Entwicklungen für das News Aggregator Projekt.
 - [x] **Dashboard Widgets** (Wetter, Börsenkurse, KI-Zusammenfassung)
 - [x] **OPML Import/Export**
 - [x] **PWA Support** - Progressive Web App mit Offline-Cache und App-Installation
+- [x] **Crypto Price Widget** - Live-Kryptopreis-Tracking über CoinGecko API (Bitcoin, Ethereum, Solana)
 
 ## 📝 Notizen
 
