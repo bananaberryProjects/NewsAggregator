@@ -1,26 +1,27 @@
 package com.newsaggregator.infrastructure.config;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.newsaggregator.domain.port.in.CryptoPriceRepository;
 import com.newsaggregator.domain.port.out.ArticleRepository;
 import com.newsaggregator.domain.port.out.FeedRepository;
 import com.newsaggregator.domain.port.out.RssFeedReader;
 import com.newsaggregator.infrastructure.adapter.persistence.adapter.ArticleRepositoryAdapter;
+import com.newsaggregator.infrastructure.adapter.persistence.adapter.CryptoPriceRepositoryAdapter;
 import com.newsaggregator.infrastructure.adapter.persistence.adapter.FeedRepositoryAdapter;
 import com.newsaggregator.infrastructure.adapter.persistence.mapper.ArticlePersistenceMapper;
 import com.newsaggregator.infrastructure.adapter.persistence.mapper.FeedPersistenceMapper;
 import com.newsaggregator.infrastructure.adapter.persistence.repository.ArticleJpaRepository;
 import com.newsaggregator.infrastructure.adapter.persistence.repository.CategoryJpaRepository;
+import com.newsaggregator.infrastructure.adapter.persistence.repository.CryptoPriceJpaRepository;
 import com.newsaggregator.infrastructure.adapter.persistence.repository.FeedJpaRepository;
 import com.newsaggregator.infrastructure.adapter.rss.RssFeedReaderAdapter;
-import com.newsaggregator.domain.port.in.CryptoPriceRepository;
-import com.newsaggregator.infrastructure.adapter.persistence.adapter.CryptoPriceRepositoryAdapter;
-import com.newsaggregator.infrastructure.adapter.persistence.repository.CryptoPriceJpaRepository;
-import com.newsaggregator.infrastructure.adapter.web.CoinGeckoScheduledTask;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.web.client.RestTemplate;
+import com.newsaggregator.infrastructure.adapter.scheduler.CoinGeckoScheduledTask;
 
 /**
  * Spring Configuration für Dependency Injection.
