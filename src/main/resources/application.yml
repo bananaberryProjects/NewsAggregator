@@ -17,6 +17,13 @@ logging:
     com:
       newsaggregator: DEBUG
 
+# Auto-Cleanup Configuration
+cleanup:
+  articles:
+    enabled: true
+    days: 30  # Articles older than N days will be deleted
+    cron: "0 0 2 * * ?"  # Run daily at 2:00 AM
+
 ---
 # Dev-Profil: H2 In-Memory
 spring:

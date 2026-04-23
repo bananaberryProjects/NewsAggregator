@@ -92,4 +92,12 @@ public interface ArticleRepository {
      * @return Anzahl der Artikel ohne Content
      */
     long countByContentHtmlIsNull();
+
+    /**
+     * Löscht alle Artikel, die älter als das angegebene Datum sind.
+     *
+     * @param cutoffDate Das Grenzdatum - Artikel vor diesem Datum werden gelöscht
+     * @return Die Anzahl der gelöschten Artikel
+     */
+    int deleteByPublishedAtBefore(LocalDateTime cutoffDate);
 }
