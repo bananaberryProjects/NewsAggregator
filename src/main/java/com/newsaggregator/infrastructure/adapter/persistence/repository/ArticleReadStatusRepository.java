@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface ArticleReadStatusRepository extends JpaRepository<ArticleReadStatus, Long> {
 
-    Optional<ArticleReadStatus> findByArticleIdAndUserId(String articleId, String userId);
+    Optional<ArticleReadStatus> findByArticleIdAndUserId(Long articleId, String userId);
 
     List<ArticleReadStatus> findByUserId(String userId);
 
@@ -18,5 +18,5 @@ public interface ArticleReadStatusRepository extends JpaRepository<ArticleReadSt
 
     List<ArticleReadStatus> findByUserIdAndIsFavorite(String userId, boolean isFavorite);
 
-    boolean existsByArticleIdAndUserId(String articleId, String userId);
+    boolean existsByArticleIdAndUserId(Long articleId, String userId);
 }

@@ -23,14 +23,14 @@ interface ArticlesViewProps {
   articles: Article[]
   categories: Category[]
   loading: boolean
-  articleStatuses: Record<string, { isRead?: boolean; isFavorite?: boolean }>
-  updatingArticleId: string | null
+  articleStatuses: Record<number, { isRead?: boolean; isFavorite?: boolean }>
+  updatingArticleId: number | null
   articlesFilter: 'all' | 'unread' | 'favorites'
   articlesCategoryFilter: string[]
   onFilterChange: (filter: 'all' | 'unread' | 'favorites') => void
   onCategoryFilterChange: (categories: string[]) => void
-  onToggleRead: (articleId: string) => void
-  onToggleFavorite: (articleId: string) => void
+  onToggleRead: (articleId: number) => void
+  onToggleFavorite: (articleId: number) => void
   onOpenReader: (article: Article) => void
 }
 
@@ -103,8 +103,8 @@ export function ArticlesView({
     initialCount: 18
   })
 
-  const isRead = (id: string) => articleStatuses[id]?.isRead ?? false
-  const isFavorite = (id: string) => articleStatuses[id]?.isFavorite ?? false
+  const isRead = (id: number) => articleStatuses[id]?.isRead ?? false
+  const isFavorite = (id: number) => articleStatuses[id]?.isFavorite ?? false
 
   // Count active filters
   const activeFilterCount =
