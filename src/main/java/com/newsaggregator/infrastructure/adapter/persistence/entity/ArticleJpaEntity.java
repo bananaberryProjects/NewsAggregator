@@ -51,11 +51,4 @@ public class ArticleJpaEntity {
     @Column(name = "content_extraction_failed")
     private Boolean contentExtractionFailed = false;
 
-    /**
-     * PostgreSQL tsvector fuer Full-Text Search.
-     * Wird durch DB-Trigger automatisch gepflegt.
-     */
-    @Column(name = "search_vector", insertable = false, updatable = false, columnDefinition = "tsvector")
-    private String searchVector;
-
 }

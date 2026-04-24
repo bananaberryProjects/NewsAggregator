@@ -6,6 +6,7 @@ import com.newsaggregator.domain.model.Article;
 import com.newsaggregator.domain.port.in.SearchArticlesUseCase;
 import com.newsaggregator.domain.port.out.ArticleRepository;
 import com.newsaggregator.infrastructure.adapter.persistence.entity.ArticleJpaEntity;
+import com.newsaggregator.infrastructure.adapter.persistence.mapper.ArticlePersistenceMapper;
 import com.newsaggregator.infrastructure.adapter.persistence.repository.ArticleJpaRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,17 +28,21 @@ public class ArticleSearchService implements SearchArticlesUseCase {
 
     private static final Logger logger = LoggerFactory.getLogger(ArticleSearchService.class);
     private static final Pattern NON_WORD = Pattern.compile("[^\\w\\s-]");
+    private static final String CURRENT_USER = "user-001";
 
     private final ArticleRepository articleRepository;
     private final ArticleJpaRepository articleJpaRepository;
     private final ArticleMapper articleMapper;
+    private final ArticlePersistenceMapper articlePersistenceMapper;
 
     public ArticleSearchService(ArticleRepository articleRepository,
                                 ArticleJpaRepository articleJpaRepository,
-                                ArticleMapper articleMapper) {
+                                ArticleMapper articleMapper,
+                                ArticlePersistenceMapper articlePersistenceMapper) {
         this.articleRepository = articleRepository;
         this.articleJpaRepository = articleJpaRepository;
         this.articleMapper = articleMapper;
+        this.articlePersistenceMapper = articlePersistenceMapper;
     }
 
     // ==================== Use Case: SearchArticles (legacy LIKE) ====================
@@ -58,15 +63,35 @@ public class ArticleSearchService implements SearchArticlesUseCase {
 
     /**
      * PostgreSQL Full-Text Search mit Ranking.
-     *
-     * @param rawQuery roher Nutzerinput (z.B. "Bundestagswahl 2024")
-     * @param pageable Spring Data Pageable
-     * @return Page von ArticleDto (mit Pagination-Metadaten)
      */
     public Page<ArticleDto> searchFullText(String rawQuery, Pageable pageable) {
         String tsQuery = normalizeToTsQuery(rawQuery);
         logger.info("FTS-Suche mit tsQuery: {}", tsQuery);
         return articleJpaRepository.searchByTextVector(tsQuery, pageable)
+                .map(articlePersistenceMapper::toDomain)
+                .map(articleMapper::toDto);
+    }
+
+    /**
+     * PostgreSQL Full-Text Search mit Feed-Category- und Read-Status-Filtern.
+     *
+     * @param rawQuery        roher Nutzerinput
+     * @param categoryId      UUID-String der Kategorie (null = egal)
+     * @param readFilter     "READ", "UNREAD" oder null
+     * @param favoriteFilter "FAVORITE", "NOT_FAVORITE" oder null
+     * @param pageable       Pageable ohne Sort (native Query sortiert selbst)
+     */
+    public Page<ArticleDto> searchFullTextWithFilters(String rawQuery,
+                                                       String categoryId,
+                                                       String readFilter,
+                                                       String favoriteFilter,
+                                                       Pageable pageable) {
+        String tsQuery = normalizeToTsQuery(rawQuery);
+        logger.info("FTS-Suche mit Filtern: tsQuery={}, categoryId={}, readFilter={}, favoriteFilter={}",
+                tsQuery, categoryId, readFilter, favoriteFilter);
+        return articleJpaRepository.searchByTextVectorWithFilters(
+                        tsQuery, categoryId, CURRENT_USER, readFilter, favoriteFilter, pageable)
+                .map(articlePersistenceMapper::toDomain)
                 .map(articleMapper::toDto);
     }
 

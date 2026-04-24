@@ -24,7 +24,6 @@ import {
   Toolbar,
   IconButton,
   Typography,
-  useMediaQuery,
 } from '@mui/material'
 import { Add as AddIcon, Menu as MenuIcon } from '@mui/icons-material'
 import { useTheme, useFeeds, useArticles, useCategories } from './hooks'
@@ -35,18 +34,23 @@ import { ArticleReaderDialog } from './components/ArticleReaderDialog'
 import { ContentExtractionDialog } from './components/ContentExtractionDialog'
 import type { Feed, Category, Article } from './api/client'
 import { adminApi } from './api/client'
+import { useSearch } from './hooks/useSearch'
 
 const drawerWidth = 280
 
 function App() {
   const { theme, isDark, toggleTheme } = useTheme()
-  const { feeds, loading: feedsLoading, error: feedsError, loadFeeds, addFeed, deleteFeed, refreshFeed, assignCategories, updateFeed } = useFeeds()
+  const { feeds, loading: feedsLoading, loadFeeds, addFeed, deleteFeed, refreshFeed, assignCategories, updateFeed } = useFeeds()
   const { articles, articleStatuses, loadArticles, toggleRead, toggleFavorite, updatingArticleId } = useArticles()
   const { categories, loadCategories, deleteCategory, updateCategory, addCategory } = useCategories()
 
   const [mobileOpen, setMobileOpen] = useState(false)
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
-  const [activeView, setActiveView] = useState<'dashboard' | 'feeds' | 'articles' | 'favorites' | 'categories' | 'statistics' | 'settings'>('dashboard')
+  const [activeView, setActiveView] = useState('dashboard')
+  const [searchResults, setSearchResults] = useState<any[] | null>(null)
+  const [isSearchActive, setIsSearchActive] = useState(false)
+
+  // Such-Hook
+  const { pageData, nextPage: searchNextPage } = useSearch()
 
   // Filter states - initial values from localStorage
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -98,21 +102,19 @@ function App() {
   }, [])
 
   const loadData = async () => {
-    await Promise.all([loadFeeds(), loadArticles(), loadCategories()])
+    await loadFeeds()
+    await loadArticles()
+    await loadCategories()
     await loadArticlesWithoutContentCount()
   }
 
-  const favoriteCount = useMemo(() => {
-    return Object.values(articleStatuses).filter(s => s.isFavorite).length
-  }, [articleStatuses])
-
   const handleAddFeed = async () => {
-    if (!newFeedUrl.trim()) return
-    await addFeed(newFeedUrl, newFeedName, selectedCategories)
-    setAddDialogOpen(false)
+    if (!newFeedUrl.trim() || !newFeedName.trim()) return
+    await addFeed(newFeedUrl.trim(), newFeedName.trim(), [])
     setNewFeedUrl('')
     setNewFeedName('')
     setSelectedCategories([])
+    setAddDialogOpen(false)
   }
 
   const handleDeleteFeed = async () => {
@@ -183,6 +185,27 @@ function App() {
     setSelectedArticle(null)
   }
 
+  // Such-Handler (nur einmal!)
+  const handleSearchResults = (results: any[] | null) => {
+    setSearchResults(results)
+  }
+
+  const handleSearchActive = (active: boolean) => {
+    setIsSearchActive(active)
+    if (active) {
+      setActiveView('articles')
+    }
+  }
+
+  const handleSearchNextPage = async () => {
+    await searchNextPage()
+  }
+
+  const handleSearchReset = () => {
+    setIsSearchActive(false)
+    setSearchResults(null)
+  }
+
   const renderContent = () => {
     const loading = feedsLoading
 
@@ -211,6 +234,13 @@ function App() {
           <ArticlesView
             articles={articles}
             categories={categories}
+            searchResults={searchResults}
+            isSearchActive={isSearchActive}
+            searchTotalElements={pageData?.totalElements}
+            searchTotalPages={pageData?.totalPages}
+            searchPage={pageData?.number}
+            onSearchNextPage={handleSearchNextPage}
+            onSearchReset={handleSearchReset}
             loading={loading}
             articleStatuses={articleStatuses}
             updatingArticleId={updatingArticleId}
@@ -240,12 +270,14 @@ function App() {
           <CategoriesView
             categories={categories}
             loading={loading}
-            onDelete={deleteCategory}
             onEdit={handleOpenEditCategoryDialog}
+            onDelete={deleteCategory}
           />
         )
       case 'statistics':
-        return <StatisticsView />
+        return (
+          <StatisticsView />
+        )
       case 'settings':
         return (
           <SettingsView
@@ -263,33 +295,35 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ display: 'flex' }}>
-        {/* Mobile AppBar */}
-        {isMobile && (
-          <AppBar
-            position="fixed"
-            sx={{
-              display: { md: 'none' },
-              zIndex: (theme) => theme.zIndex.drawer + 1,
-            }}
-          >
-            <Toolbar>
-              <IconButton
-                color="inherit"
-                aria-label="open drawer"
-                edge="start"
-                onClick={() => setMobileOpen(true)}
-                sx={{ mr: 2 }}
-              >
-                <MenuIcon />
-              </IconButton>
-              <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-                NewsWeave
-              </Typography>
-            </Toolbar>
-          </AppBar>
-        )}
+      <Box sx={{ display: 'flex', bgcolor: 'background.default', minHeight: '100vh' }}>
+        {/* App Bar (Mobile) */}
+        <AppBar
+          position="fixed"
+          elevation={0}
+          sx={{
+            display: { md: 'none' },
+            bgcolor: 'background.paper',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            color: 'text.primary',
+          }}
+        >
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              edge="start"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 700, color: 'primary.main' }}>
+              NewsWeave
+            </Typography>
+          </Toolbar>
+        </AppBar>
 
+        {/* Sidebar (Desktop + Mobile Drawer) */}
         <Sidebar
           mobileOpen={mobileOpen}
           setMobileOpen={setMobileOpen}
@@ -298,80 +332,66 @@ function App() {
           feeds={feeds}
           categories={categories}
           articleCount={articles.length}
-          favoriteCount={favoriteCount}
+          favoriteCount={useMemo(() => articles.filter(a => articleStatuses[a.id]?.isFavorite).length, [articles, articleStatuses])}
+          onSearchResults={handleSearchResults}
+          onSearchActive={handleSearchActive}
         />
 
+        {/* Main Content */}
         <Box
           component="main"
           sx={{
             flexGrow: 1,
-            p: { xs: 1, sm: 3 },
+            p: 3,
             width: { md: `calc(100% - ${drawerWidth}px)` },
+            mt: { xs: 8, md: 0 },
             minHeight: '100vh',
             bgcolor: 'background.default',
           }}
         >
-          {/* Spacer for mobile AppBar */}
-          {isMobile && <Toolbar />}
-          <Container maxWidth="xl" sx={{ px: { xs: 0, sm: 3 } }}>
+          <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
             {renderContent()}
           </Container>
         </Box>
 
-        {activeView === 'feeds' && (
-          <Fab
-            color="primary"
-            sx={{ position: 'fixed', bottom: 24, right: 24 }}
-            onClick={() => setAddDialogOpen(true)}
-          >
-            <AddIcon />
-          </Fab>
-        )}
+        {/* Floating Action Button (Add Feed) */}
+        <Fab
+          color="primary"
+          aria-label="add feed"
+          onClick={() => activeView === 'categories' ? handleOpenAddCategoryDialog() : setAddDialogOpen(true)}
+          sx={{
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            display: { md: 'none' },
+          }}
+        >
+          <AddIcon />
+        </Fab>
 
-        {activeView === 'categories' && (
-          <Fab
-            color="primary"
-            sx={{ position: 'fixed', bottom: 24, right: 24 }}
-            onClick={handleOpenAddCategoryDialog}
-          >
-            <AddIcon />
-          </Fab>
-        )}
-
+        {/* Dialogs */}
         <AddFeedDialog
           open={addDialogOpen}
-          onClose={() => {
-            setAddDialogOpen(false)
-            setNewFeedUrl('')
-            setNewFeedName('')
-            setSelectedCategories([])
-          }}
+          onClose={() => setAddDialogOpen(false)}
           onSubmit={handleAddFeed}
           url={newFeedUrl}
           setUrl={setNewFeedUrl}
           name={newFeedName}
           setName={setNewFeedName}
           selectedCategories={selectedCategories}
-          toggleCategory={(id) => {
-            setSelectedCategories(prev =>
-              prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
-            )
-          }}
+          toggleCategory={(id) => setSelectedCategories(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id])}
           categories={categories}
-          loading={feedsLoading}
-          error={feedsError}
+          loading={false}
+          error={null}
         />
 
         <DeleteFeedDialog
           open={deleteDialogOpen}
-          onClose={() => {
-            setDeleteDialogOpen(false)
-            setFeedToDelete(null)
-          }}
+          onClose={() => setDeleteDialogOpen(false)}
           onConfirm={handleDeleteFeed}
           feed={feedToDelete}
-          loading={feedsLoading}
-          error={feedsError}
+          loading={false}
+          error={null}
         />
 
         <EditFeedDialog
@@ -379,14 +399,10 @@ function App() {
           onClose={handleCloseEditDialog}
           onSubmit={handleUpdateFeed}
           feed={feedToEdit}
-          loading={feedsLoading}
+          loading={false}
           categories={categories}
           selectedCategories={editSelectedCategories}
-          onToggleCategory={(id) => {
-            setEditSelectedCategories(prev =>
-              prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
-            )
-          }}
+          onToggleCategory={(id) => setEditSelectedCategories(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id])}
         />
 
         <EditCategoryDialog
@@ -394,32 +410,33 @@ function App() {
           onClose={handleCloseEditCategoryDialog}
           onSubmit={handleUpdateCategory}
           category={categoryToEdit}
-          loading={feedsLoading}
+          loading={false}
         />
 
         <AddCategoryDialog
           open={addCategoryDialogOpen}
           onClose={handleCloseAddCategoryDialog}
           onSubmit={handleAddCategory}
-          loading={feedsLoading}
+          loading={false}
         />
 
         <ArticleReaderDialog
-          article={selectedArticle}
           open={readerDialogOpen}
           onClose={handleCloseReader}
+          article={selectedArticle}
         />
 
         <ContentExtractionDialog
           open={extractionDialogOpen}
-          onClose={() => {
-            setExtractionDialogOpen(false)
-            loadArticlesWithoutContentCount()
-          }}
+          onClose={() => setExtractionDialogOpen(false)}
           articlesWithoutContent={articlesWithoutContent}
-          onExtractionComplete={loadArticlesWithoutContentCount}
+          onExtractionComplete={() => {
+            loadArticlesWithoutContentCount()
+            loadArticles()
+          }}
         />
 
+        {/* PWA Install Prompt */}
         <PWAInstallPrompt />
       </Box>
     </ThemeProvider>

@@ -24,6 +24,16 @@ export interface Article {
   contentHtml?: string | null;
 }
 
+export interface Page<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+  first: boolean;
+  last: boolean;
+}
+
 export interface ArticleReadStatus {
   id: number;
   articleId: number; // Changed from string to number (bigint in DB)
@@ -138,6 +148,8 @@ export const feedsApi = {
 export const articlesApi = {
   getAll: () => fetchApi<Article[]>('/articles'),
   search: (query: string) => fetchApi<Article[]>(`/articles?query=${encodeURIComponent(query)}`),
+  searchFullText: (q: string, page: number = 0, size: number = 20) =>
+    fetchApi<Page<Article>>(`/articles/search?q=${encodeURIComponent(q)}&page=${page}&size=${size}`),
   getById: (id: number) => fetchApi<Article>(`/articles/${id}`),
   getContent: (id: number) => fetchApi<Article>(`/articles/${id}/content`),
   markAsRead: (id: number) => fetchApi<ArticleReadStatus>(`/articles/${id}/read`, { method: 'POST' }),

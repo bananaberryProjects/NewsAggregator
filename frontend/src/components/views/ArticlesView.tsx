@@ -27,6 +27,13 @@ interface ArticlesViewProps {
   updatingArticleId: number | null
   articlesFilter: 'all' | 'unread' | 'favorites'
   articlesCategoryFilter: string[]
+  searchResults?: any[] | null
+  isSearchActive: boolean
+  searchTotalElements?: number
+  searchTotalPages?: number
+  searchPage?: number
+  onSearchNextPage?: () => void
+  onSearchReset?: () => void
   onFilterChange: (filter: 'all' | 'unread' | 'favorites') => void
   onCategoryFilterChange: (categories: string[]) => void
   onToggleRead: (articleId: number) => void
@@ -46,6 +53,13 @@ export function ArticlesView({
   onCategoryFilterChange,
   onToggleRead,
   onToggleFavorite,
+  searchResults,
+  isSearchActive,
+  searchTotalElements,
+  searchTotalPages,
+  searchPage,
+  onSearchNextPage,
+  onSearchReset,
   onOpenReader,
 }: ArticlesViewProps) {
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false)
@@ -94,9 +108,11 @@ export function ArticlesView({
     }
   }
 
-  const articlesList = getFilteredArticles()
+  const articlesList = isSearchActive
+    ? (searchResults ?? [])
+    : getFilteredArticles()
 
-  // Infinite Scroll: Initial 18, dann +9 pro Scroll
+  // Infinite Scroll nur bei normaler Ansicht: Initial 18, dann +9 pro Scroll
   const { displayedArticles, hasMore, loadMoreRef, totalCount } = useInfiniteArticles({
     articles: [...articlesList].sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()),
     batchSize: 9,
@@ -115,9 +131,16 @@ export function ArticlesView({
     <Box>
       {/* Header mit Filter-Button */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 600 }}>
-          Artikel ({totalCount})
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography variant="h5" sx={{ fontWeight: 600 }}>
+            {isSearchActive ? `Suchergebnisse (${searchTotalElements ?? 0})` : `Artikel (${totalCount})`}
+          </Typography>
+          {isSearchActive && (
+            <Button variant="outlined" size="small" onClick={onSearchReset}>
+              Zurücksetzen
+            </Button>
+          )}
+        </Box>
 
         <IconButton
           color="primary"
@@ -282,7 +305,7 @@ export function ArticlesView({
       ) : (
         <>
           <Grid container spacing={2}>
-            {displayedArticles.map((article) => (
+            {(isSearchActive ? articlesList : displayedArticles).map((article) => (
               <Grid size={{ xs: 12, sm: 6, md: 4 }} sx={{ mx: 'auto', }} key={article.id}>
                 <ArticleCard
                   article={article}
@@ -310,7 +333,15 @@ export function ArticlesView({
               mb: 3
             }}
           >
-            {hasMore && (
+            {isSearchActive && searchTotalPages && searchPage !== undefined && searchPage + 1 < searchTotalPages && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}>
+                <Button variant="outlined" onClick={onSearchNextPage} disabled={!onSearchNextPage}>
+                  Mehr laden
+                </Button>
+              </Box>
+            )}
+
+            {!isSearchActive && hasMore && (
               <CircularProgress size={24} />
             )}
           </Box>
@@ -321,9 +352,11 @@ export function ArticlesView({
             color="text.secondary" 
             sx={{ textAlign: 'center', mb: 2 }}
           >
-            {hasMore 
-              ? `${displayedArticles.length} von ${totalCount} Artikeln geladen`
-              : `${totalCount} Artikel (alle geladen)`
+            {isSearchActive
+              ? `${articlesList.length} von ${searchTotalElements ?? 0} Suchergebnissen`
+              : hasMore 
+                ? `${displayedArticles.length} von ${totalCount} Artikeln geladen`
+                : `${totalCount} Artikel (alle geladen)`
             }
           </Typography>
         </>

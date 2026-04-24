@@ -23,6 +23,7 @@ import {
   Close as CloseIcon,
 } from '@mui/icons-material'
 import type { Feed, Category } from '../../api/client'
+import { SearchBar } from '../SearchBar'
 
 const drawerWidth = 280
 
@@ -35,6 +36,8 @@ interface SidebarProps {
   categories: Category[]
   articleCount: number
   favoriteCount: number
+  onSearchResults: (results: any[] | null) => void
+  onSearchActive: (active: boolean) => void
 }
 
 export function Sidebar({
@@ -46,6 +49,8 @@ export function Sidebar({
   categories,
   articleCount,
   favoriteCount,
+  onSearchResults,
+  onSearchActive,
 }: SidebarProps) {
   const handleDrawerClose = () => {
     setMobileOpen(false)
@@ -67,7 +72,7 @@ export function Sidebar({
       {/* Desktop Header */}
       <Box sx={{ px: 2, mb: 3, display: { xs: 'none', md: 'flex' }, alignItems: 'center' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.7 }}>
-          <img  src="/newsweave.png" width="40" height="40"/>
+          <img src="/newsweave.png" width="40" height="40" alt="NewsWeave Logo" />
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main', letterSpacing: '-0.2px', lineHeight: 1.5 }}>
               NewsWeave
@@ -78,6 +83,9 @@ export function Sidebar({
           </Box>
         </Box>
       </Box>
+
+      <SearchBar onResults={onSearchResults} onActive={onSearchActive} />
+      <Divider sx={{ my: 1, mx: 2 }} />
 
       <List>
         <ListItem disablePadding>

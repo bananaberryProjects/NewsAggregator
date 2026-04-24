@@ -59,22 +59,21 @@ public class ArticleController {
      * @param sort     Sortierfeld (publishedAt, createdAt, searchRank)
      * @param direction asc/desc
      */
+    /**
+     * FULL-TEXT SEARCH (PostgreSQL tsvector) mit Feed-Category- und Read-Status-Filtern.
+     */
     @GetMapping("/search")
     public Page<ArticleDto> searchArticles(
             @RequestParam String q,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "searchRank") String sort,
-            @RequestParam(defaultValue = "desc") String direction) {
+            @RequestParam(required = false) String categoryId,
+            @RequestParam(required = false) String readFilter,
+            @RequestParam(required = false) String favoriteFilter) {
 
-        logger.debug("GET /api/articles/search?q={}", q);
-        Pageable pageable = PageRequest.of(page, size,
-                org.springframework.data.domain.Sort.by(
-                        "desc".equalsIgnoreCase(direction) ?
-                                org.springframework.data.domain.Sort.Direction.DESC :
-                                org.springframework.data.domain.Sort.Direction.ASC,
-                        sort));
-        return articleSearchService.searchFullText(q, pageable);
+        logger.debug("GET /api/articles/search?q={}, categoryId={}, readFilter={}, favoriteFilter={}", q, categoryId, readFilter, favoriteFilter);
+        Pageable pageable = PageRequest.of(page, size);
+        return articleSearchService.searchFullTextWithFilters(q, categoryId, readFilter, favoriteFilter, pageable);
     }
 
     /**
