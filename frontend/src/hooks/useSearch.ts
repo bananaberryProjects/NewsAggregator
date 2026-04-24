@@ -7,9 +7,15 @@ interface UseSearchResult {
   query: string
   pageData: Page<Article> | null
   hasMore: boolean
-  search: (q: string) => Promise<void>
+  search: (q: string, filters?: SearchFilters) => Promise<void>
   nextPage: () => Promise<void>
   reset: () => void
+}
+
+interface SearchFilters {
+  categoryId?: string
+  readFilter?: 'READ' | 'UNREAD'
+  favoriteFilter?: 'FAVORITE' | 'NOT_FAVORITE'
 }
 
 export function useSearch(): UseSearchResult {
@@ -17,16 +23,18 @@ export function useSearch(): UseSearchResult {
   const [loading, setLoading] = useState(false)
   const [query, setQuery] = useState('')
   const [pageData, setPageData] = useState<Page<Article> | null>(null)
+  const [filters, setFilters] = useState<SearchFilters>({})
 
-  const search = useCallback(async (q: string) => {
+  const search = useCallback(async (q: string, activeFilters: SearchFilters = {}) => {
     if (!q.trim()) {
       reset()
       return
     }
     setLoading(true)
     setQuery(q)
+    setFilters(activeFilters)
     try {
-      const data = await articlesApi.searchFullText(q.trim(), 0, 20)
+      const data = await articlesApi.searchFullText(q.trim(), 0, 20, activeFilters)
       setPageData(data)
       setResults(data.content)
     } catch (err) {
@@ -42,7 +50,7 @@ export function useSearch(): UseSearchResult {
     if (!pageData || pageData.last || loading || !query) return
     setLoading(true)
     try {
-      const data = await articlesApi.searchFullText(query, pageData.number + 1, 20)
+      const data = await articlesApi.searchFullText(query, pageData.number + 1, 20, filters)
       setPageData(data)
       setResults(prev => [...(prev || []), ...data.content])
     } catch (err) {
@@ -50,12 +58,13 @@ export function useSearch(): UseSearchResult {
     } finally {
       setLoading(false)
     }
-  }, [pageData, loading, query])
+  }, [pageData, loading, query, filters])
 
   const reset = useCallback(() => {
     setResults(null)
     setPageData(null)
     setQuery('')
+    setFilters({})
   }, [])
 
   return {

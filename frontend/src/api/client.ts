@@ -148,8 +148,17 @@ export const feedsApi = {
 export const articlesApi = {
   getAll: () => fetchApi<Article[]>('/articles'),
   search: (query: string) => fetchApi<Article[]>(`/articles?query=${encodeURIComponent(query)}`),
-  searchFullText: (q: string, page: number = 0, size: number = 20) =>
-    fetchApi<Page<Article>>(`/articles/search?q=${encodeURIComponent(q)}&page=${page}&size=${size}`),
+  searchFullText: (q: string, page: number = 0, size: number = 20, filters: {
+    categoryId?: string
+    readFilter?: 'READ' | 'UNREAD'
+    favoriteFilter?: 'FAVORITE' | 'NOT_FAVORITE'
+  } = {}) => {
+    let url = `/articles/search?q=${encodeURIComponent(q)}&page=${page}&size=${size}`
+    if (filters.categoryId) url += `&categoryId=${encodeURIComponent(filters.categoryId)}`
+    if (filters.readFilter) url += `&readFilter=${filters.readFilter}`
+    if (filters.favoriteFilter) url += `&favoriteFilter=${filters.favoriteFilter}`
+    return fetchApi<Page<Article>>(url)
+  },
   getById: (id: number) => fetchApi<Article>(`/articles/${id}`),
   getContent: (id: number) => fetchApi<Article>(`/articles/${id}/content`),
   markAsRead: (id: number) => fetchApi<ArticleReadStatus>(`/articles/${id}/read`, { method: 'POST' }),

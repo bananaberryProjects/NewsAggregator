@@ -34,7 +34,6 @@ import { ArticleReaderDialog } from './components/ArticleReaderDialog'
 import { ContentExtractionDialog } from './components/ContentExtractionDialog'
 import type { Feed, Category, Article } from './api/client'
 import { adminApi } from './api/client'
-import { useSearch } from './hooks/useSearch'
 
 const drawerWidth = 280
 
@@ -48,9 +47,7 @@ function App() {
   const [activeView, setActiveView] = useState('dashboard')
   const [searchResults, setSearchResults] = useState<any[] | null>(null)
   const [isSearchActive, setIsSearchActive] = useState(false)
-
-  // Such-Hook
-  const { pageData, nextPage: searchNextPage } = useSearch()
+  const [searchTotalElements, setSearchTotalElements] = useState<number>(0)
 
   // Filter states - initial values from localStorage
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -197,14 +194,32 @@ function App() {
     }
   }
 
-  const handleSearchNextPage = async () => {
-    await searchNextPage()
+  const handleSearchPageData = (pageData: { totalElements?: number } | null) => {
+    setSearchTotalElements(pageData?.totalElements ?? 0)
   }
 
   const handleSearchReset = () => {
     setIsSearchActive(false)
     setSearchResults(null)
   }
+
+  // Build search filters from current article filters
+  const searchFilters = useMemo(() => {
+    const filters: {
+      categoryId?: string
+      readFilter?: 'READ' | 'UNREAD'
+      favoriteFilter?: 'FAVORITE' | 'NOT_FAVORITE'
+    } = {}
+    if (articlesCategoryFilter.length === 1) {
+      filters.categoryId = articlesCategoryFilter[0]
+    }
+    if (articlesFilter === 'unread') {
+      filters.readFilter = 'UNREAD'
+    } else if (articlesFilter === 'favorites') {
+      filters.favoriteFilter = 'FAVORITE'
+    }
+    return filters
+  }, [articlesFilter, articlesCategoryFilter])
 
   const renderContent = () => {
     const loading = feedsLoading
@@ -236,10 +251,7 @@ function App() {
             categories={categories}
             searchResults={searchResults}
             isSearchActive={isSearchActive}
-            searchTotalElements={pageData?.totalElements}
-            searchTotalPages={pageData?.totalPages}
-            searchPage={pageData?.number}
-            onSearchNextPage={handleSearchNextPage}
+            searchTotalElements={searchTotalElements}
             onSearchReset={handleSearchReset}
             loading={loading}
             articleStatuses={articleStatuses}
@@ -335,6 +347,8 @@ function App() {
           favoriteCount={useMemo(() => articles.filter(a => articleStatuses[a.id]?.isFavorite).length, [articles, articleStatuses])}
           onSearchResults={handleSearchResults}
           onSearchActive={handleSearchActive}
+          onSearchPageData={handleSearchPageData}
+          filters={searchFilters}
         />
 
         {/* Main Content */}

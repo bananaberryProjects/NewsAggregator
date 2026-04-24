@@ -3,16 +3,24 @@ import { Box, InputBase, IconButton, Tooltip, CircularProgress } from '@mui/mate
 import { Search as SearchIcon, Clear as ClearIcon } from '@mui/icons-material'
 import { useSearch } from '../hooks/useSearch'
 
+interface SearchFilters {
+  categoryId?: string
+  readFilter?: 'READ' | 'UNREAD'
+  favoriteFilter?: 'FAVORITE' | 'NOT_FAVORITE'
+}
+
 interface SearchBarProps {
   onResults: (results: any[] | null) => void
   onActive: (active: boolean) => void
+  onPageData?: (pageData: { totalElements?: number } | null) => void
+  filters?: SearchFilters
 }
 
-export function SearchBar({ onResults, onActive }: SearchBarProps) {
+export function SearchBar({ onResults, onActive, onPageData, filters = {} }: SearchBarProps) {
   const [inputValue, setInputValue] = useState('')
   const [debounced, setDebounced] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
-  const { results, loading, search, reset } = useSearch()
+  const { results, loading, search, reset, pageData } = useSearch()
 
   // Debounce input (300ms)
   useEffect(() => {
@@ -22,17 +30,19 @@ export function SearchBar({ onResults, onActive }: SearchBarProps) {
 
   useEffect(() => {
     if (debounced) {
-      search(debounced)
+      search(debounced, filters)
     } else {
       reset()
       onResults(null)
+      onPageData?.(null)
     }
   }, [debounced])
 
   useEffect(() => {
     onResults(results)
+    onPageData?.(pageData)
     onActive(results !== null || inputValue !== '')
-  }, [results, inputValue])
+  }, [results, pageData, inputValue])
 
   const handleClear = () => {
     setInputValue('')
