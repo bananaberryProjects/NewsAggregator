@@ -1,0 +1,3 @@
+-- V2: Platzhalter
+-- Schema wurde bisher iterativ via Hibernate erweitert.
+-- Erst ab V3 gibt es explizite Flyway-Migrationen für neue Features.

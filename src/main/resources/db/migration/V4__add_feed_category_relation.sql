@@ -1,6 +1,6 @@
 -- Verknüpfungstabelle für Feed-Kategorien (Many-to-Many)
 CREATE TABLE IF NOT EXISTS feed_categories (
-    feed_id UUID NOT NULL REFERENCES feeds(id) ON DELETE CASCADE,
+    feed_id BIGINT NOT NULL REFERENCES feeds(id) ON DELETE CASCADE,
     category_id UUID NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (feed_id, category_id)
