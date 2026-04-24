@@ -3,8 +3,8 @@ import { articlesApi, type Article } from '../api/client'
 
 export function useArticles() {
   const [articles, setArticles] = useState<Article[]>([])
-  const [articleStatuses, setArticleStatuses] = useState<Record<string, { isRead?: boolean; isFavorite?: boolean }>>({})
-  const [updatingArticleId, setUpdatingArticleId] = useState<string | null>(null)
+  const [articleStatuses, setArticleStatuses] = useState<Record<number, { isRead?: boolean; isFavorite?: boolean }>>({})
+  const [updatingArticleId, setUpdatingArticleId] = useState<number | null>(null)
 
   const loadArticles = useCallback(async () => {
     const [articlesData, readStatuses, favoriteStatuses] = await Promise.all([
@@ -15,7 +15,7 @@ export function useArticles() {
     
     setArticles(articlesData)
     
-    const statusMap: Record<string, { isRead?: boolean; isFavorite?: boolean }> = {}
+    const statusMap: Record<number, { isRead?: boolean; isFavorite?: boolean }> = {}
     readStatuses.forEach((status) => {
       statusMap[status.articleId] = { ...statusMap[status.articleId], isRead: true }
     })
@@ -25,7 +25,7 @@ export function useArticles() {
     setArticleStatuses(statusMap)
   }, [])
 
-  const toggleRead = async (articleId: string) => {
+  const toggleRead = async (articleId: number) => {
     setUpdatingArticleId(articleId)
     try {
       const isCurrentlyRead = articleStatuses[articleId]?.isRead
@@ -36,61 +36,50 @@ export function useArticles() {
       }
       setArticleStatuses(prev => ({
         ...prev,
-        [articleId]: {
-          ...prev[articleId],
-          isRead: !prev[articleId]?.isRead
-        }
+        [articleId]: { ...prev[articleId], isRead: !isCurrentlyRead }
       }))
-    } catch (err) {
-      console.error('Error toggling read status:', err)
     } finally {
       setUpdatingArticleId(null)
     }
   }
 
-  const toggleFavorite = async (articleId: string) => {
+  const toggleFavorite = async (articleId: number) => {
     setUpdatingArticleId(articleId)
     try {
+      const isCurrentlyFavorite = articleStatuses[articleId]?.isFavorite
       await articlesApi.toggleFavorite(articleId)
       setArticleStatuses(prev => ({
         ...prev,
-        [articleId]: {
-          ...prev[articleId],
-          isFavorite: !prev[articleId]?.isFavorite
-        }
+        [articleId]: { ...prev[articleId], isFavorite: !isCurrentlyFavorite }
       }))
-    } catch (err) {
-      console.error('Error toggling favorite:', err)
     } finally {
       setUpdatingArticleId(null)
     }
   }
 
-  const isRead = (articleId: string) => articleStatuses[articleId]?.isRead ?? false
-  const isFavorite = (articleId: string) => articleStatuses[articleId]?.isFavorite ?? false
+  const isRead = (articleId: number) => articleStatuses[articleId]?.isRead ?? false
+  const isFavorite = (articleId: number) => articleStatuses[articleId]?.isFavorite ?? false
 
-  const getFilteredArticles = (
-    articlesList: Article[],
-    filter: 'all' | 'unread' | 'favorites',
-    categoryFilter?: string[]
-  ) => {
-    let result = articlesList
+  const getFilteredArticles = useCallback((filter: string, searchQuery?: string) => {
+    let result = articles
 
-    if (categoryFilter && categoryFilter.length > 0) {
-      result = result.filter(a => 
-        a.categoryIds?.some(catId => categoryFilter.includes(catId))
+    if (searchQuery && searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      result = result.filter(a =>
+        a.title.toLowerCase().includes(query) ||
+        (a.description ?? '').toLowerCase().includes(query) ||
+        a.feedName.toLowerCase().includes(query)
       )
     }
 
-    switch (filter) {
-      case 'unread':
-        return result.filter(a => !articleStatuses[a.id]?.isRead)
-      case 'favorites':
-        return result.filter(a => articleStatuses[a.id]?.isFavorite)
-      default:
-        return result
+    if (filter === 'unread') {
+      return result.filter(a => !articleStatuses[a.id]?.isRead)
+    } else if (filter === 'favorites') {
+      return result.filter(a => articleStatuses[a.id]?.isFavorite)
     }
-  }
+
+    return result
+  }, [articles, articleStatuses])
 
   return {
     articles,

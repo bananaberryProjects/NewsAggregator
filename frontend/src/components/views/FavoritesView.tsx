@@ -5,10 +5,10 @@ import type { Article } from '../../api/client'
 interface FavoritesViewProps {
   articles: Article[]
   loading: boolean
-  articleStatuses: Record<string, { isRead?: boolean; isFavorite?: boolean }>
-  updatingArticleId: string | null
-  onToggleRead: (articleId: string) => void
-  onToggleFavorite: (articleId: string) => void
+  articleStatuses: Record<number, { isRead?: boolean; isFavorite?: boolean }>
+  updatingArticleId: number | null
+  onToggleRead: (articleId: number) => void
+  onToggleFavorite: (articleId: number) => void
   onOpenReader: (article: Article) => void
 }
 
@@ -23,8 +23,8 @@ export function FavoritesView({
 }: FavoritesViewProps) {
   const favoriteArticles = articles.filter(a => articleStatuses[a.id]?.isFavorite)
 
-  const isRead = (id: string) => articleStatuses[id]?.isRead ?? false
-  const isFavorite = (id: string) => articleStatuses[id]?.isFavorite ?? false
+  const isRead = (id: number) => articleStatuses[id]?.isRead ?? false
+  const isFavorite = (id: number) => articleStatuses[id]?.isFavorite ?? false
 
   return (
     <Box>

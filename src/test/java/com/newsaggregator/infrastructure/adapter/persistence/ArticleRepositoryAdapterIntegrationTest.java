@@ -1,5 +1,17 @@
 package com.newsaggregator.infrastructure.adapter.persistence;
 
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.newsaggregator.domain.model.Article;
 import com.newsaggregator.domain.model.ArticleId;
 import com.newsaggregator.domain.model.Feed;
@@ -8,16 +20,6 @@ import com.newsaggregator.infrastructure.adapter.persistence.entity.ArticleJpaEn
 import com.newsaggregator.infrastructure.adapter.persistence.entity.FeedJpaEntity;
 import com.newsaggregator.infrastructure.adapter.persistence.repository.ArticleJpaRepository;
 import com.newsaggregator.infrastructure.adapter.persistence.repository.FeedJpaRepository;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Integrationstest für ArticleRepositoryAdapter.
@@ -47,7 +49,6 @@ class ArticleRepositoryAdapterIntegrationTest {
         return feedJpaRepository.save(feed);
     }
 
-    @SuppressWarnings("null")
     @Test
     void save_ShouldPersistNewArticle() {
         // Given

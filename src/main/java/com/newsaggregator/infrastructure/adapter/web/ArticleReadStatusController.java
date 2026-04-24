@@ -29,17 +29,17 @@ public class ArticleReadStatusController {
     }
 
     @PostMapping("/{articleId}/read")
-    public ResponseEntity<ArticleReadStatus> markAsRead(@PathVariable String articleId) {
+    public ResponseEntity<ArticleReadStatus> markAsRead(@PathVariable Long articleId) {
         return ResponseEntity.ok(service.markAsRead(articleId));
     }
 
     @PostMapping("/{articleId}/unread")
-    public ResponseEntity<ArticleReadStatus> markAsUnread(@PathVariable String articleId) {
+    public ResponseEntity<ArticleReadStatus> markAsUnread(@PathVariable Long articleId) {
         return ResponseEntity.ok(service.markAsUnread(articleId));
     }
 
     @PostMapping("/{articleId}/favorite")
-    public ResponseEntity<ArticleReadStatus> toggleFavorite(@PathVariable String articleId) {
+    public ResponseEntity<ArticleReadStatus> toggleFavorite(@PathVariable Long articleId) {
         return ResponseEntity.ok(service.toggleFavorite(articleId));
     }
 
@@ -54,7 +54,7 @@ public class ArticleReadStatusController {
     }
 
     @GetMapping("/{articleId}/status")
-    public ResponseEntity<Map<String, Boolean>> getStatus(@PathVariable String articleId) {
+    public ResponseEntity<Map<String, Boolean>> getStatus(@PathVariable Long articleId) {
         Map<String, Boolean> status = new HashMap<>();
         status.put("isRead", service.isRead(articleId));
         status.put("isFavorite", service.isFavorite(articleId));

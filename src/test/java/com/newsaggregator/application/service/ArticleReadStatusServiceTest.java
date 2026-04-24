@@ -51,7 +51,7 @@ class ArticleReadStatusServiceTest {
     @Test
     void markAsRead_WhenStatusExists_ShouldUpdateAndSave() {
         // Given
-        String articleId = "article-1";
+        Long articleId = 1L;
         ArticleReadStatus existing = new ArticleReadStatus(articleId, "user-001");
         existing.setRead(false);
 
@@ -71,7 +71,7 @@ class ArticleReadStatusServiceTest {
     @Test
     void markAsRead_WhenStatusNotExists_ShouldCreateNew() {
         // Given
-        String articleId = "article-1";
+        Long articleId = 1L;
         when(repository.findByArticleIdAndUserId(articleId, "user-001"))
                 .thenReturn(Optional.empty());
         when(repository.save(any(ArticleReadStatus.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -90,7 +90,7 @@ class ArticleReadStatusServiceTest {
     @Test
     void markAsUnread_WhenStatusExists_ShouldUpdateAndSave() {
         // Given
-        String articleId = "article-1";
+        Long articleId = 1L;
         ArticleReadStatus existing = new ArticleReadStatus(articleId, "user-001");
         existing.setRead(true);
 
@@ -110,7 +110,7 @@ class ArticleReadStatusServiceTest {
     @Test
     void markAsUnread_WhenStatusNotExists_ShouldReturnNull() {
         // Given
-        String articleId = "article-1";
+        Long articleId = 1L;
         when(repository.findByArticleIdAndUserId(articleId, "user-001"))
                 .thenReturn(Optional.empty());
 
@@ -126,7 +126,7 @@ class ArticleReadStatusServiceTest {
     @Test
     void toggleFavorite_WhenStatusExists_ShouldToggleAndSave() {
         // Given
-        String articleId = "article-1";
+        Long articleId = 1L;
         ArticleReadStatus existing = new ArticleReadStatus(articleId, "user-001");
         existing.setFavorite(false);
 
@@ -146,7 +146,7 @@ class ArticleReadStatusServiceTest {
     @Test
     void toggleFavorite_WhenStatusNotExists_ShouldCreateNewFavorite() {
         // Given
-        String articleId = "article-1";
+        Long articleId = 1L;
         when(repository.findByArticleIdAndUserId(articleId, "user-001"))
                 .thenReturn(Optional.empty());
         when(repository.save(any(ArticleReadStatus.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -163,8 +163,8 @@ class ArticleReadStatusServiceTest {
     @Test
     void getAllByUser_ShouldReturnAllStatuses() {
         // Given
-        ArticleReadStatus status1 = new ArticleReadStatus("article-1", "user-001");
-        ArticleReadStatus status2 = new ArticleReadStatus("article-2", "user-001");
+        ArticleReadStatus status1 = new ArticleReadStatus(1L, "user-001");
+        ArticleReadStatus status2 = new ArticleReadStatus(2L, "user-001");
         when(repository.findByUserId("user-001")).thenReturn(List.of(status1, status2));
 
         // When
@@ -177,7 +177,7 @@ class ArticleReadStatusServiceTest {
     @Test
     void getReadArticles_ShouldReturnOnlyRead() {
         // Given
-        ArticleReadStatus status1 = new ArticleReadStatus("article-1", "user-001");
+        ArticleReadStatus status1 = new ArticleReadStatus(1L, "user-001");
         status1.setRead(true);
         when(repository.findByUserIdAndIsRead("user-001", true)).thenReturn(List.of(status1));
 
@@ -192,7 +192,7 @@ class ArticleReadStatusServiceTest {
     @Test
     void getFavoriteArticles_ShouldReturnOnlyFavorites() {
         // Given
-        ArticleReadStatus status1 = new ArticleReadStatus("article-1", "user-001");
+        ArticleReadStatus status1 = new ArticleReadStatus(1L, "user-001");
         status1.setFavorite(true);
         when(repository.findByUserIdAndIsFavorite("user-001", true)).thenReturn(List.of(status1));
 
@@ -207,13 +207,13 @@ class ArticleReadStatusServiceTest {
     @Test
     void isRead_WhenStatusExistsAndRead_ShouldReturnTrue() {
         // Given
-        ArticleReadStatus status = new ArticleReadStatus("article-1", "user-001");
+        ArticleReadStatus status = new ArticleReadStatus(1L, "user-001");
         status.setRead(true);
-        when(repository.findByArticleIdAndUserId("article-1", "user-001"))
+        when(repository.findByArticleIdAndUserId(1L, "user-001"))
                 .thenReturn(Optional.of(status));
 
         // When
-        boolean result = service.isRead("article-1");
+        boolean result = service.isRead(1L);
 
         // Then
         assertTrue(result);
@@ -222,11 +222,11 @@ class ArticleReadStatusServiceTest {
     @Test
     void isRead_WhenStatusNotExists_ShouldReturnFalse() {
         // Given
-        when(repository.findByArticleIdAndUserId("article-1", "user-001"))
+        when(repository.findByArticleIdAndUserId(1L, "user-001"))
                 .thenReturn(Optional.empty());
 
         // When
-        boolean result = service.isRead("article-1");
+        boolean result = service.isRead(1L);
 
         // Then
         assertFalse(result);
@@ -235,13 +235,13 @@ class ArticleReadStatusServiceTest {
     @Test
     void isFavorite_WhenStatusExistsAndFavorite_ShouldReturnTrue() {
         // Given
-        ArticleReadStatus status = new ArticleReadStatus("article-1", "user-001");
+        ArticleReadStatus status = new ArticleReadStatus(1L, "user-001");
         status.setFavorite(true);
-        when(repository.findByArticleIdAndUserId("article-1", "user-001"))
+        when(repository.findByArticleIdAndUserId(1L, "user-001"))
                 .thenReturn(Optional.of(status));
 
         // When
-        boolean result = service.isFavorite("article-1");
+        boolean result = service.isFavorite(1L);
 
         // Then
         assertTrue(result);
@@ -250,11 +250,11 @@ class ArticleReadStatusServiceTest {
     @Test
     void isFavorite_WhenStatusNotExists_ShouldReturnFalse() {
         // Given
-        when(repository.findByArticleIdAndUserId("article-1", "user-001"))
+        when(repository.findByArticleIdAndUserId(1L, "user-001"))
                 .thenReturn(Optional.empty());
 
         // When
-        boolean result = service.isFavorite("article-1");
+        boolean result = service.isFavorite(1L);
 
         // Then
         assertFalse(result);

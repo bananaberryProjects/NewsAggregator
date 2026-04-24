@@ -50,13 +50,13 @@ class ArticleReadStatusControllerTest {
     @Test
     void markAsRead_ShouldReturnStatus() throws Exception {
         // Given
-        ArticleReadStatus status = new ArticleReadStatus("article-1", "user-001");
+        ArticleReadStatus status = new ArticleReadStatus(1L, "user-001");
         status.setRead(true);
-        when(service.markAsRead("article-1")).thenReturn(status);
+        when(service.markAsRead(1L)).thenReturn(status);
 
         // When
         @SuppressWarnings("null")
-        MvcResult result = mockMvc.perform(post("/api/articles/article-1/read")
+        MvcResult result = mockMvc.perform(post("/api/articles/1/read")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
 
@@ -64,20 +64,20 @@ class ArticleReadStatusControllerTest {
         assertThat(result.getResponse().getStatus()).isEqualTo(200);
         ArticleReadStatus responseBody = objectMapper.readValue(
                 result.getResponse().getContentAsString(), ArticleReadStatus.class);
-        assertThat(responseBody.getArticleId()).isEqualTo("article-1");
+        assertThat(responseBody.getArticleId()).isEqualTo(1L);
         assertThat(responseBody.isRead()).isTrue();
     }
 
     @Test
     void markAsUnread_ShouldReturnStatus() throws Exception {
         // Given
-        ArticleReadStatus status = new ArticleReadStatus("article-1", "user-001");
+        ArticleReadStatus status = new ArticleReadStatus(1L, "user-001");
         status.setRead(false);
-        when(service.markAsUnread("article-1")).thenReturn(status);
+        when(service.markAsUnread(1L)).thenReturn(status);
 
         // When
         @SuppressWarnings("null")
-        MvcResult result = mockMvc.perform(post("/api/articles/article-1/unread")
+        MvcResult result = mockMvc.perform(post("/api/articles/1/unread")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
 
@@ -85,20 +85,20 @@ class ArticleReadStatusControllerTest {
         assertThat(result.getResponse().getStatus()).isEqualTo(200);
         ArticleReadStatus responseBody = objectMapper.readValue(
                 result.getResponse().getContentAsString(), ArticleReadStatus.class);
-        assertThat(responseBody.getArticleId()).isEqualTo("article-1");
+        assertThat(responseBody.getArticleId()).isEqualTo(1L);
         assertThat(responseBody.isRead()).isFalse();
     }
 
     @Test
     void toggleFavorite_ShouldReturnStatus() throws Exception {
         // Given
-        ArticleReadStatus status = new ArticleReadStatus("article-1", "user-001");
+        ArticleReadStatus status = new ArticleReadStatus(1L, "user-001");
         status.setFavorite(true);
-        when(service.toggleFavorite("article-1")).thenReturn(status);
+        when(service.toggleFavorite(1L)).thenReturn(status);
 
         // When
         @SuppressWarnings("null")
-        MvcResult result = mockMvc.perform(post("/api/articles/article-1/favorite")
+        MvcResult result = mockMvc.perform(post("/api/articles/1/favorite")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
 
@@ -106,16 +106,16 @@ class ArticleReadStatusControllerTest {
         assertThat(result.getResponse().getStatus()).isEqualTo(200);
         ArticleReadStatus responseBody = objectMapper.readValue(
                 result.getResponse().getContentAsString(), ArticleReadStatus.class);
-        assertThat(responseBody.getArticleId()).isEqualTo("article-1");
+        assertThat(responseBody.getArticleId()).isEqualTo(1L);
         assertThat(responseBody.isFavorite()).isTrue();
     }
 
     @Test
     void getReadArticles_ShouldReturnList() throws Exception {
         // Given
-        ArticleReadStatus status1 = new ArticleReadStatus("article-1", "user-001");
+        ArticleReadStatus status1 = new ArticleReadStatus(1L, "user-001");
         status1.setRead(true);
-        ArticleReadStatus status2 = new ArticleReadStatus("article-2", "user-001");
+        ArticleReadStatus status2 = new ArticleReadStatus(2L, "user-001");
         status2.setRead(true);
         when(service.getReadArticles()).thenReturn(List.of(status1, status2));
 
@@ -130,14 +130,14 @@ class ArticleReadStatusControllerTest {
         List<ArticleReadStatus> responseBody = objectMapper.readValue(
                 result.getResponse().getContentAsString(), new TypeReference<>() {});
         assertThat(responseBody).hasSize(2);
-        assertThat(responseBody.get(0).getArticleId()).isEqualTo("article-1");
-        assertThat(responseBody.get(1).getArticleId()).isEqualTo("article-2");
+        assertThat(responseBody.get(0).getArticleId()).isEqualTo(1L);
+        assertThat(responseBody.get(1).getArticleId()).isEqualTo(2L);
     }
 
     @Test
     void getFavoriteArticles_ShouldReturnList() throws Exception {
         // Given
-        ArticleReadStatus status1 = new ArticleReadStatus("article-1", "user-001");
+        ArticleReadStatus status1 = new ArticleReadStatus(1L, "user-001");
         status1.setFavorite(true);
         when(service.getFavoriteArticles()).thenReturn(List.of(status1));
 
@@ -152,19 +152,19 @@ class ArticleReadStatusControllerTest {
         List<ArticleReadStatus> responseBody = objectMapper.readValue(
                 result.getResponse().getContentAsString(), new TypeReference<>() {});
         assertThat(responseBody).hasSize(1);
-        assertThat(responseBody.get(0).getArticleId()).isEqualTo("article-1");
+        assertThat(responseBody.get(0).getArticleId()).isEqualTo(1L);
         assertThat(responseBody.get(0).isFavorite()).isTrue();
     }
 
     @Test
     void getStatus_ShouldReturnReadAndFavoriteStatus() throws Exception {
         // Given
-        when(service.isRead("article-1")).thenReturn(true);
-        when(service.isFavorite("article-1")).thenReturn(false);
+        when(service.isRead(1L)).thenReturn(true);
+        when(service.isFavorite(1L)).thenReturn(false);
 
         // When
         @SuppressWarnings("null")
-        MvcResult result = mockMvc.perform(get("/api/articles/article-1/status")
+        MvcResult result = mockMvc.perform(get("/api/articles/1/status")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
 
@@ -179,12 +179,12 @@ class ArticleReadStatusControllerTest {
     @Test
     void getStatus_WhenFavorite_ShouldReturnFavoriteTrue() throws Exception {
         // Given
-        when(service.isRead("article-1")).thenReturn(false);
-        when(service.isFavorite("article-1")).thenReturn(true);
+        when(service.isRead(1L)).thenReturn(false);
+        when(service.isFavorite(1L)).thenReturn(true);
 
         // When
         @SuppressWarnings("null")
-        MvcResult result = mockMvc.perform(get("/api/articles/article-1/status")
+        MvcResult result = mockMvc.perform(get("/api/articles/1/status")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
 

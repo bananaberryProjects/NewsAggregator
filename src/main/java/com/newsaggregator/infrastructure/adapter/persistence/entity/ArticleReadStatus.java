@@ -12,7 +12,7 @@ public class ArticleReadStatus {
     private Long id;
 
     @Column(name = "article_id", nullable = false)
-    private String articleId;
+    private Long articleId;
 
     @Column(name = "user_id", nullable = false)
     private String userId;
@@ -32,7 +32,7 @@ public class ArticleReadStatus {
     // Default constructor
     public ArticleReadStatus() {}
 
-    public ArticleReadStatus(String articleId, String userId) {
+    public ArticleReadStatus(Long articleId, String userId) {
         this.articleId = articleId;
         this.userId = userId;
     }
@@ -46,11 +46,11 @@ public class ArticleReadStatus {
         this.id = id;
     }
 
-    public String getArticleId() {
+    public Long getArticleId() {
         return articleId;
     }
 
-    public void setArticleId(String articleId) {
+    public void setArticleId(Long articleId) {
         this.articleId = articleId;
     }
 

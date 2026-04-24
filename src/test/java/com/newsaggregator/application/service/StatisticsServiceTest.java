@@ -46,11 +46,11 @@ class StatisticsServiceTest {
         Article article2 = Article.of(ArticleId.of(2L), "Title 2", "Desc 2", "http://example.com/2", null,
             LocalDateTime.now().minusDays(2), feed, LocalDateTime.now());
         
-        ArticleReadStatus status1 = new ArticleReadStatus("1", "user-001");
+        ArticleReadStatus status1 = new ArticleReadStatus(1L, "user-001");
         status1.setRead(true);
         status1.setFavorite(true);
         
-        ArticleReadStatus status2 = new ArticleReadStatus("2", "user-001");
+        ArticleReadStatus status2 = new ArticleReadStatus(2L, "user-001");
         status2.setRead(false);
         status2.setFavorite(false);
         

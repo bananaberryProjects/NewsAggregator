@@ -13,7 +13,7 @@ export interface Feed {
 }
 
 export interface Article {
-  id: string;
+  id: number; // Changed from string to number (bigint in DB)
   title: string;
   description: string | null;
   link: string;
@@ -26,7 +26,7 @@ export interface Article {
 
 export interface ArticleReadStatus {
   id: number;
-  articleId: string;
+  articleId: number; // Changed from string to number (bigint in DB)
   userId: string;
   isRead: boolean;
   isFavorite: boolean;
@@ -138,12 +138,12 @@ export const feedsApi = {
 export const articlesApi = {
   getAll: () => fetchApi<Article[]>('/articles'),
   search: (query: string) => fetchApi<Article[]>(`/articles?query=${encodeURIComponent(query)}`),
-  getById: (id: string) => fetchApi<Article>(`/articles/${id}`),
-  getContent: (id: string) => fetchApi<Article>(`/articles/${id}/content`),
-  markAsRead: (id: string) => fetchApi<ArticleReadStatus>(`/articles/${id}/read`, { method: 'POST' }),
-  markAsUnread: (id: string) => fetchApi<ArticleReadStatus>(`/articles/${id}/unread`, { method: 'POST' }),
-  toggleFavorite: (id: string) => fetchApi<ArticleReadStatus>(`/articles/${id}/favorite`, { method: 'POST' }),
-  getStatus: (id: string) => fetchApi<ArticleStatus>(`/articles/${id}/status`),
+  getById: (id: number) => fetchApi<Article>(`/articles/${id}`),
+  getContent: (id: number) => fetchApi<Article>(`/articles/${id}/content`),
+  markAsRead: (id: number) => fetchApi<ArticleReadStatus>(`/articles/${id}/read`, { method: 'POST' }),
+  markAsUnread: (id: number) => fetchApi<ArticleReadStatus>(`/articles/${id}/unread`, { method: 'POST' }),
+  toggleFavorite: (id: number) => fetchApi<ArticleReadStatus>(`/articles/${id}/favorite`, { method: 'POST' }),
+  getStatus: (id: number) => fetchApi<ArticleStatus>(`/articles/${id}/status`),
   getReadArticles: () => fetchApi<ArticleReadStatus[]>('/articles/read'),
   getFavoriteArticles: () => fetchApi<ArticleReadStatus[]>('/articles/favorites'),
 };

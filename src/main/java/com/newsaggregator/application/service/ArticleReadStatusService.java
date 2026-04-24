@@ -17,7 +17,7 @@ public class ArticleReadStatusService {
     // User ID aus dem Request (später durch Auth)
     private static final String CURRENT_USER = "user-001";
 
-    public ArticleReadStatus markAsRead(String articleId) {
+    public ArticleReadStatus markAsRead(Long articleId) {
         Optional<ArticleReadStatus> existing = repository.findByArticleIdAndUserId(articleId, CURRENT_USER);
         
         if (existing.isPresent()) {
@@ -31,7 +31,7 @@ public class ArticleReadStatusService {
         }
     }
 
-    public ArticleReadStatus markAsUnread(String articleId) {
+    public ArticleReadStatus markAsUnread(Long articleId) {
         Optional<ArticleReadStatus> existing = repository.findByArticleIdAndUserId(articleId, CURRENT_USER);
         
         if (existing.isPresent()) {
@@ -42,7 +42,7 @@ public class ArticleReadStatusService {
         return null;
     }
 
-    public ArticleReadStatus toggleFavorite(String articleId) {
+    public ArticleReadStatus toggleFavorite(Long articleId) {
         Optional<ArticleReadStatus> existing = repository.findByArticleIdAndUserId(articleId, CURRENT_USER);
         
         if (existing.isPresent()) {
@@ -68,13 +68,13 @@ public class ArticleReadStatusService {
         return repository.findByUserIdAndIsFavorite(CURRENT_USER, true);
     }
 
-    public boolean isRead(String articleId) {
+    public boolean isRead(Long articleId) {
         return repository.findByArticleIdAndUserId(articleId, CURRENT_USER)
                 .map(ArticleReadStatus::isRead)
                 .orElse(false);
     }
 
-    public boolean isFavorite(String articleId) {
+    public boolean isFavorite(Long articleId) {
         return repository.findByArticleIdAndUserId(articleId, CURRENT_USER)
                 .map(ArticleReadStatus::isFavorite)
                 .orElse(false);
