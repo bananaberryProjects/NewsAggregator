@@ -145,7 +145,7 @@ export function ArticlesView({
         <IconButton
           color="primary"
           onClick={() => setFilterDrawerOpen(true)}
-          sx={{ flexShrink: 0,
+          sx={{ flexShrink: 0, mr: 1, mt: 1,
             bgcolor: 'background.paper',
             boxShadow: 1,
             '&:hover': { bgcolor: 'background.paper', boxShadow: 2 },
