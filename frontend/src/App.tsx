@@ -348,6 +348,7 @@ function App() {
           onSearchResults={handleSearchResults}
           onSearchActive={handleSearchActive}
           onSearchPageData={handleSearchPageData}
+          isSearchActive={isSearchActive}
           filters={searchFilters}
         />
 
@@ -356,14 +357,14 @@ function App() {
           component="main"
           sx={{
             flexGrow: 1,
-            p: 3,
+            p: { xs: 0.5, sm: 2, md: 3 },
             width: { md: `calc(100% - ${drawerWidth}px)` },
             mt: { xs: 8, md: 0 },
             minHeight: '100vh',
             bgcolor: 'background.default',
           }}
         >
-          <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
+          <Container maxWidth="xl" sx={{ px: { xs: 0, sm: 2, md: 3 } }}>
             {renderContent()}
           </Container>
         </Box>

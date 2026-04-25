@@ -68,12 +68,12 @@ export function ArticleCard({
         height={200}
         image={article.imageUrl || PLACEHOLDER_IMAGE}
         alt={article.title}
-        sx={{ objectFit: 'cover' }}
+        sx={{ objectFit: 'cover', width: '100%', display: 'block' }}
       />
       <CardContent sx={{ flexGrow: 1, overflow: 'hidden' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, minWidth: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Chip size="small" label={article.feedName || 'News'} color="primary" />
+            <Chip size="small" label={article.feedName || 'News'} color="primary" sx={{ maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis' }} />
             {hasContentHtml && (
               <Tooltip title="Vollständiger Artikel verfügbar">
                 <MenuBookIcon
@@ -104,7 +104,8 @@ export function ArticleCard({
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            maxHeight: '3.9em'
+            maxHeight: '3.9em',
+            wordBreak: 'break-word',
           }}
         >
           {isRead && (

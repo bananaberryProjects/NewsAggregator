@@ -14,13 +14,15 @@ interface SearchBarProps {
   onActive: (active: boolean) => void
   onPageData?: (pageData: { totalElements?: number } | null) => void
   filters?: SearchFilters
+  isSearchActive?: boolean
 }
 
-export function SearchBar({ onResults, onActive, onPageData, filters = {} }: SearchBarProps) {
+export function SearchBar({ onResults, onActive, onPageData, filters = {}, isSearchActive }: SearchBarProps) {
   const [inputValue, setInputValue] = useState('')
   const [debounced, setDebounced] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const { results, loading, search, reset, pageData } = useSearch()
+  const prevIsActiveRef = useRef(isSearchActive)
 
   // Debounce input (300ms)
   useEffect(() => {
@@ -36,13 +38,23 @@ export function SearchBar({ onResults, onActive, onPageData, filters = {} }: Sea
       onResults(null)
       onPageData?.(null)
     }
-  }, [debounced])
+  }, [debounced, filters])
 
   useEffect(() => {
     onResults(results)
     onPageData?.(pageData)
     onActive(results !== null || inputValue !== '')
   }, [results, pageData, inputValue])
+
+  // Wenn von aussen zurueckgesetzt wird (Zuruecksetzen-Button in ArticlesView)
+  useEffect(() => {
+    if (prevIsActiveRef.current && !isSearchActive) {
+      setInputValue('')
+      setDebounced('')
+      reset()
+    }
+    prevIsActiveRef.current = isSearchActive
+  }, [isSearchActive, reset])
 
   const handleClear = () => {
     setInputValue('')
@@ -76,7 +88,7 @@ export function SearchBar({ onResults, onActive, onPageData, filters = {} }: Sea
           placeholder="Volltextsuche..."
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          sx={{ flex: 1, fontSize: '0.95rem' }}
+          sx={{ flex: 1, fontSize: '1rem' }}
         />
         {inputValue && (
           <Tooltip title="Löschen">

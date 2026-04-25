@@ -38,6 +38,7 @@ interface SidebarProps {
   favoriteCount: number
   onSearchResults: (results: any[] | null) => void
   onSearchActive: (active: boolean) => void
+  isSearchActive?: boolean
   onSearchPageData?: (pageData: { totalElements?: number } | null) => void
   filters?: {
     categoryId?: string
@@ -58,6 +59,7 @@ export function Sidebar({
   onSearchResults,
   onSearchActive,
   onSearchPageData,
+  isSearchActive,
   filters,
 }: SidebarProps) {
   const handleDrawerClose = () => {
@@ -92,7 +94,7 @@ export function Sidebar({
         </Box>
       </Box>
 
-      <SearchBar onResults={onSearchResults} onActive={onSearchActive} onPageData={onSearchPageData} filters={filters} />
+      <SearchBar onResults={onSearchResults} onActive={onSearchActive} onPageData={onSearchPageData} filters={filters} isSearchActive={isSearchActive} />
       <Divider sx={{ my: 1, mx: 2 }} />
 
       <List>

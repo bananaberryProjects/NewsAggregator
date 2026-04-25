@@ -128,12 +128,12 @@ export function ArticlesView({
     (articlesCategoryFilter.length > 0 ? 1 : 0)
 
   return (
-    <Box>
+    <Box sx={{ flexShrink: 0, width: '100%', overflowX: 'hidden' }}>
       {/* Header mit Filter-Button */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant="h5" sx={{ fontWeight: 600 }}>
-            {isSearchActive ? `Suchergebnisse (${searchTotalElements ?? 0})` : `Artikel (${totalCount})`}
+      <Box sx={{ flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 1 }}>
+        <Box sx={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 1, minWidth: 0, flex: 1, overflow: 'hidden' }}>
+          <Typography variant="h5" sx={{ flexShrink: 0, fontWeight: 600, minWidth: 0 }} noWrap>
+            {isSearchActive ? `Ergebnisse (${searchTotalElements ?? 0})` : `Artikel (${totalCount})`}
           </Typography>
           {isSearchActive && (
             <Button variant="outlined" size="small" onClick={onSearchReset}>
@@ -145,7 +145,7 @@ export function ArticlesView({
         <IconButton
           color="primary"
           onClick={() => setFilterDrawerOpen(true)}
-          sx={{
+          sx={{ flexShrink: 0,
             bgcolor: 'background.paper',
             boxShadow: 1,
             '&:hover': { bgcolor: 'background.paper', boxShadow: 2 },
@@ -162,7 +162,7 @@ export function ArticlesView({
         anchor="right"
         open={filterDrawerOpen}
         onClose={() => setFilterDrawerOpen(false)}
-        sx={{
+        sx={{ flexShrink: 0,
           '& .MuiDrawer-paper': {
             width: { xs: '85%', sm: 360 },
             p: 3,
@@ -172,7 +172,7 @@ export function ArticlesView({
       >
         {/* Swipe Handle für Mobile */}
         <Box
-          sx={{
+          sx={{ flexShrink: 0,
             display: { xs: 'flex', sm: 'none' },
             justifyContent: 'center',
             mb: 2,
@@ -181,7 +181,7 @@ export function ArticlesView({
           onClick={() => setFilterDrawerOpen(false)}
         >
           <Box
-            sx={{
+            sx={{ flexShrink: 0,
               width: 40,
               height: 4,
               bgcolor: 'grey.400',
@@ -190,8 +190,8 @@ export function ArticlesView({
           />
         </Box>
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+        <Box sx={{ flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 1 }}>
+          <Typography variant="h6" sx={{ flexShrink: 0, fontWeight: 600 }}>
             Filter
           </Typography>
           <IconButton onClick={() => setFilterDrawerOpen(false)}>
@@ -199,13 +199,13 @@ export function ArticlesView({
           </IconButton>
         </Box>
 
-        <Divider sx={{ mb: 3 }} />
+        <Divider sx={{ flexShrink: 0, mb: 3 }} />
 
         {/* Status Filter */}
-        <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
+        <Typography variant="subtitle2" sx={{ flexShrink: 0, mb: 2, fontWeight: 600 }}>
           Status
         </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 4 }}>
+        <Box sx={{ flexShrink: 0, display: 'flex', flexWrap: 'wrap', gap: 1, mb: 4 }}>
           <Chip
             label="Alle"
             onClick={() => onFilterChange('all')}
@@ -229,10 +229,10 @@ export function ArticlesView({
         {/* Category Filter */}
         {categories.length > 0 && (
           <>
-            <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
+            <Typography variant="subtitle2" sx={{ flexShrink: 0, mb: 2, fontWeight: 600 }}>
               Kategorien
             </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            <Box sx={{ flexShrink: 0, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
               <Chip
                 label="Alle"
                 onClick={() => onCategoryFilterChange([])}
@@ -250,7 +250,7 @@ export function ArticlesView({
                         : [...articlesCategoryFilter, category.id]
                     )
                   }}
-                  sx={{
+                  sx={{ flexShrink: 0,
                     backgroundColor: articlesCategoryFilter.includes(category.id) ? category.color : 'transparent',
                     color: articlesCategoryFilter.includes(category.id) ? '#fff' : 'inherit',
                     borderColor: category.color,
@@ -262,7 +262,7 @@ export function ArticlesView({
           </>
         )}
 
-        <Box sx={{ flexGrow: 1 }} />
+        <Box sx={{ flexShrink: 0, flexGrow: 1 }} />
 
         {/* Reset Button */}
         <Button
@@ -272,7 +272,7 @@ export function ArticlesView({
             onFilterChange('all')
             onCategoryFilterChange([])
           }}
-          sx={{ mt: 2 }}
+          sx={{ flexShrink: 0, mt: 2 }}
         >
           Filter zurücksetzen
         </Button>
@@ -281,7 +281,7 @@ export function ArticlesView({
           variant="contained"
           fullWidth
           onClick={() => setFilterDrawerOpen(false)}
-          sx={{ mt: 2, display: { xs: 'flex', sm: 'none' } }}
+          sx={{ flexShrink: 0, mt: 2, display: { xs: 'flex', sm: 'none' } }}
         >
           Fertig
         </Button>
@@ -291,8 +291,8 @@ export function ArticlesView({
       {loading ? (
         <Grid container spacing={3}>
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} sx={{ mx: 'auto', }} key={i}>
-              <Card sx={{ height: 430 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={i}>
+              <Card sx={{ flexShrink: 0, height: 430 }}>
                 <Skeleton variant="rectangular" height={200} />
               </Card>
             </Grid>
@@ -306,7 +306,7 @@ export function ArticlesView({
         <>
           <Grid container spacing={2}>
             {(isSearchActive ? articlesList : displayedArticles).map((article) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} sx={{ mx: 'auto', }} key={article.id}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={article.id}>
                 <ArticleCard
                   article={article}
                   isRead={isRead(article.id)}
@@ -324,7 +324,7 @@ export function ArticlesView({
           {/* Load More Trigger Element */}
           <Box
             ref={loadMoreRef}
-            sx={{
+            sx={{ flexShrink: 0,
               height: 20,
               display: 'flex',
               justifyContent: 'center',
@@ -334,7 +334,7 @@ export function ArticlesView({
             }}
           >
             {isSearchActive && searchTotalPages && searchPage !== undefined && searchPage + 1 < searchTotalPages && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}>
+              <Box sx={{ flexShrink: 0, display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}>
                 <Button variant="outlined" onClick={onSearchNextPage} disabled={!onSearchNextPage}>
                   Mehr laden
                 </Button>
@@ -350,10 +350,10 @@ export function ArticlesView({
           <Typography 
             variant="body2" 
             color="text.secondary" 
-            sx={{ textAlign: 'center', mb: 2 }}
+            sx={{ flexShrink: 0, textAlign: 'center', mb: 2 }}
           >
             {isSearchActive
-              ? `${articlesList.length} von ${searchTotalElements ?? 0} Suchergebnissen`
+              ? `${articlesList.length} von ${searchTotalElements ?? 0} Ergebnissen`
               : hasMore 
                 ? `${displayedArticles.length} von ${totalCount} Artikeln geladen`
                 : `${totalCount} Artikel (alle geladen)`
