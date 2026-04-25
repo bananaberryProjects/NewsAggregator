@@ -9,11 +9,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /**
- * JPA Entity für Article.
- *
- * <p>Diese Klasse repräsentiert einen Artikel in der Datenbank.
- * Sie enthält JPA-Annotationen und hat keine Business-Logik.
- * Die Umwandlung zu/von Domain-Objekten erfolgt durch Mapper.</p>
+ * JPA Entity fuer Article.
  */
 @Entity
 @Table(name = "articles")

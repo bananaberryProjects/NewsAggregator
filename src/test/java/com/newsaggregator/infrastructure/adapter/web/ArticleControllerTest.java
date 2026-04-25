@@ -10,6 +10,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -17,6 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newsaggregator.application.dto.ArticleDto;
 import com.newsaggregator.application.service.ArticleSearchService;
@@ -171,41 +176,47 @@ class ArticleControllerTest {
                 .feedName("Tech Feed")
                 .build();
 
-        when(articleSearchService.searchArticlesDto("Java")).thenReturn(List.of(article));
+        when(articleSearchService.searchFullTextWithFilters("Java", null, null, null, PageRequest.of(0, 20)))
+                .thenReturn(new PageImpl<>(List.of(article), PageRequest.of(0, 20), 1));
 
         // When
         @SuppressWarnings("null")
         MvcResult result = mockMvc.perform(get("/api/articles/search")
-                .param("query", "Java")
+                .param("q", "Java")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
 
         // Then
         assertThat(result.getResponse().getStatus()).isEqualTo(200);
-        List<ArticleDto> responseBody = objectMapper.readValue(
-                result.getResponse().getContentAsString(), new TypeReference<>() {});
-        assertThat(responseBody).hasSize(1);
-        assertThat(responseBody.get(0).getTitle()).isEqualTo("Java News");
-        assertThat(responseBody.get(0).getDescription()).isEqualTo("Latest Java updates");
+        String responseJson = result.getResponse().getContentAsString();
+        JsonNode rootNode = objectMapper.readTree(responseJson);
+        JsonNode contentNode = rootNode.path("content");
+        List<ArticleDto> articles = objectMapper.readValue(contentNode.traverse(), new TypeReference<List<ArticleDto>>() {});
+        assertThat(articles).hasSize(1);
+        assertThat(articles.get(0).getTitle()).isEqualTo("Java News");
+        assertThat(articles.get(0).getDescription()).isEqualTo("Latest Java updates");
     }
 
     @Test
     void searchArticles_WithEmptyResult_ShouldReturnEmptyList() throws Exception {
         // Given
-        when(articleSearchService.searchArticlesDto("nonexistent")).thenReturn(List.of());
+        when(articleSearchService.searchFullTextWithFilters("nonexistent", null, null, null, PageRequest.of(0, 20)))
+                .thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 20), 0));
 
         // When
         @SuppressWarnings("null")
         MvcResult result = mockMvc.perform(get("/api/articles/search")
-                .param("query", "nonexistent")
+                .param("q", "nonexistent")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
 
         // Then
         assertThat(result.getResponse().getStatus()).isEqualTo(200);
-        List<ArticleDto> responseBody = objectMapper.readValue(
-                result.getResponse().getContentAsString(), new TypeReference<>() {});
-        assertThat(responseBody).isEmpty();
+        String responseJson = result.getResponse().getContentAsString();
+        JsonNode rootNode = objectMapper.readTree(responseJson);
+        JsonNode contentNode = rootNode.path("content");
+        List<ArticleDto> articles = objectMapper.readValue(contentNode.traverse(), new TypeReference<List<ArticleDto>>() {});
+        assertThat(articles).isEmpty();
     }
 
     @Test

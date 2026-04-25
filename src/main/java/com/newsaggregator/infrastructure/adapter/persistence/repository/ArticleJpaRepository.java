@@ -1,6 +1,9 @@
 package com.newsaggregator.infrastructure.adapter.persistence.repository;
 
-import com.newsaggregator.infrastructure.adapter.persistence.entity.ArticleJpaEntity;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -8,89 +11,103 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import com.newsaggregator.infrastructure.adapter.persistence.entity.ArticleJpaEntity;
 
 /**
- * Spring Data JPA Repository für ArticleJpaEntity.
+ * Spring Data JPA Repository fuer ArticleJpaEntity.
  */
 @Repository
 public interface ArticleJpaRepository extends JpaRepository<ArticleJpaEntity, Long> {
 
-    /**
-     * Prüft, ob ein Artikel mit diesem Link existiert.
-     *
-     * @param link Der zu prüfende Link
-     * @return true, falls existiert
-     */
     boolean existsByLink(String link);
 
     /**
-     * Sucht Artikel anhand eines Suchbegriffs.
+     * Full-Text Search via PostgreSQL tsvector (Performance: GIN-Index).
      *
-     * @param query Der Suchbegriff
-     * @return Liste der passenden Artikel
+     * @param tsQuery normalisierte tsquery (z.B. "Bundestag")
      */
+    @Query(value = """
+        SELECT a.* FROM articles a
+        WHERE a.search_vector @@ to_tsquery('german', :tsQuery)
+        ORDER BY ts_rank(a.search_vector, to_tsquery('german', :tsQuery)) DESC
+        """, nativeQuery = true)
+    Page<ArticleJpaEntity> searchByTextVector(@Param("tsQuery") String tsQuery, Pageable pageable);
+
+    /**
+     * Full-Text Search mit optionalem Feed-Category- und Read-Status-Filter.
+     */
+    @Query(value = """
+        SELECT DISTINCT a.* FROM articles a
+        JOIN feeds f ON a.feed_id = f.id
+        LEFT JOIN feed_categories fc ON f.id = fc.feed_id
+        LEFT JOIN article_read_status ars ON ars.article_id = a.id AND ars.user_id = :userId
+        WHERE a.search_vector @@ to_tsquery('german', :tsQuery)
+          AND (:categoryId IS NULL OR CAST(fc.category_id AS VARCHAR) = :categoryId)
+          AND (:readFilter IS NULL OR
+               (:readFilter = 'READ'    AND ars.is_read = true) OR
+               (:readFilter = 'UNREAD'  AND (ars.is_read IS NULL OR ars.is_read = false)))
+          AND (:favoriteFilter IS NULL OR
+               (:favoriteFilter = 'FAVORITE'     AND ars.is_favorite = true) OR
+               (:favoriteFilter = 'NOT_FAVORITE' AND (ars.is_favorite IS NULL OR ars.is_favorite = false)))
+        ORDER BY ts_rank(a.search_vector, to_tsquery('german', :tsQuery)) DESC
+        """,
+        countQuery = """
+        SELECT COUNT(DISTINCT a.id) FROM articles a
+        JOIN feeds f ON a.feed_id = f.id
+        LEFT JOIN feed_categories fc ON f.id = fc.feed_id
+        LEFT JOIN article_read_status ars ON ars.article_id = a.id AND ars.user_id = :userId
+        WHERE a.search_vector @@ to_tsquery('german', :tsQuery)
+          AND (:categoryId IS NULL OR CAST(fc.category_id AS VARCHAR) = :categoryId)
+          AND (:readFilter IS NULL OR
+               (:readFilter = 'READ'    AND ars.is_read = true) OR
+               (:readFilter = 'UNREAD'  AND (ars.is_read IS NULL OR ars.is_read = false)))
+          AND (:favoriteFilter IS NULL OR
+               (:favoriteFilter = 'FAVORITE'     AND ars.is_favorite = true) OR
+               (:favoriteFilter = 'NOT_FAVORITE' AND (ars.is_favorite IS NULL OR ars.is_favorite = false)))
+        """,
+        nativeQuery = true)
+    Page<ArticleJpaEntity> searchByTextVectorWithFilters(
+            @Param("tsQuery") String tsQuery,
+            @Param("categoryId") String categoryId,
+            @Param("userId") String userId,
+            @Param("readFilter") String readFilter,
+            @Param("favoriteFilter") String favoriteFilter,
+            Pageable pageable);
+
+    /**
+     * Headline-Preview: Artikel mit ts_headline-Snippet zurueckgeben.
+     * (fuer spaetere Highlighting-Phase)
+     */
+    @Query(value = """
+        SELECT a.id, a.title, a.description, a.link, a.image_url, a.published_at, a.created_at,
+               a.feed_id, a.content_html, a.content_extraction_failed,
+               ts_headline('german', COALESCE(a.content_html, a.description, a.title),
+                         to_tsquery('german', :tsQuery)) AS search_snippet,
+               ts_rank(a.search_vector, to_tsquery('german', :tsQuery)) AS search_rank
+        FROM articles a
+        WHERE a.search_vector @@ to_tsquery('german', :tsQuery)
+        ORDER BY search_rank DESC
+        """, nativeQuery = true)
+    List<Object[]> searchWithSnippet(@Param("tsQuery") String tsQuery, Pageable pageable);
+
     @Query("SELECT a FROM ArticleJpaEntity a WHERE " +
            "LOWER(a.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
            "LOWER(a.description) LIKE LOWER(CONCAT('%', :query, '%'))")
     List<ArticleJpaEntity> searchByQuery(@Param("query") String query);
 
-    /**
-     * Gibt alle Artikel eines bestimmten Feeds zurück.
-     *
-     * @param feedId Die ID des Feeds
-     * @return Liste der Artikel
-     */
     List<ArticleJpaEntity> findByFeedId(Long feedId);
-    /**
-     * Zählt die Artikel eines bestimmten Feeds.
-     *
-     * @param feedId Die ID des Feeds
-     * @return Anzahl der Artikel
-     */
     long countByFeedId(Long feedId);
-
-    /**
-     * Findet alle Artikel nach einem bestimmten Veröffentlichungsdatum.
-     *
-     * @param date Das Datum, nach dem gesucht wird
-     * @return Liste der Artikel
-     */
     List<ArticleJpaEntity> findByPublishedAtAfter(LocalDateTime date);
 
-    /**
-     * Lädt alle Artikel mit Feed und Kategorien (Eager Loading).
-     *
-     * @return Liste aller Artikel mit Feed und Kategorien
-     */
     @Query("SELECT DISTINCT a FROM ArticleJpaEntity a LEFT JOIN FETCH a.feed f LEFT JOIN FETCH f.categories")
     List<ArticleJpaEntity> findAllWithFeedAndCategories();
 
-    /**
-     * Findet Artikel ohne Content (contentHtml IS NULL) und ohne Fehler-Flag
-     * von Feeds mit extractContent=true. Sortiert nach createdAt DESC.
-     *
-     * @param pageable Pageable mit Limit
-     * @return Liste der Artikel ohne Content von Feeds mit aktivierter Extraktion
-     */
     @Query("SELECT a FROM ArticleJpaEntity a JOIN FETCH a.feed f WHERE a.contentHtml IS NULL AND (a.contentExtractionFailed IS NULL OR a.contentExtractionFailed = false) AND f.extractContent = true ORDER BY a.createdAt DESC")
     List<ArticleJpaEntity> findByContentHtmlIsNull(Pageable pageable);
 
-    /**
-     * Zählt Artikel ohne Content und ohne Fehler-Flag von Feeds mit extractContent=true.
-     *
-     * @return Anzahl der Artikel
-     */
     @Query("SELECT COUNT(a) FROM ArticleJpaEntity a JOIN a.feed f WHERE a.contentHtml IS NULL AND (a.contentExtractionFailed IS NULL OR a.contentExtractionFailed = false) AND f.extractContent = true")
     long countByContentHtmlIsNull();
 
-    /**
-     * Löscht alle Artikel, die älter als das angegebene Datum sind.
-     *
-     * @param cutoffDate Das Grenzdatum
-     * @return Die Anzahl der gelöschten Artikel
-     */
     @Modifying
     @Query("DELETE FROM ArticleJpaEntity a WHERE a.publishedAt < :cutoffDate")
     int deleteByPublishedAtBefore(@Param("cutoffDate") LocalDateTime cutoffDate);

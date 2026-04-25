@@ -5,6 +5,7 @@ import com.newsaggregator.application.mapper.ArticleMapper;
 import com.newsaggregator.domain.model.Article;
 import com.newsaggregator.domain.model.Feed;
 import com.newsaggregator.domain.port.out.ArticleRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +16,11 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
+import com.newsaggregator.infrastructure.adapter.persistence.mapper.ArticlePersistenceMapper;
+import com.newsaggregator.infrastructure.adapter.persistence.repository.ArticleJpaRepository;
 
 /**
  * Unit-Test für ArticleSearchService.
@@ -28,13 +33,20 @@ class ArticleSearchServiceTest {
     @Mock
     private ArticleRepository articleRepository;
 
+    @Mock
+    private ArticleJpaRepository articleJpaRepository;
+
     private ArticleMapper articleMapper;
+
+    @Mock
+    private ArticlePersistenceMapper articlePersistenceMapper;
+
     private ArticleSearchService service;
 
     @BeforeEach
     void setUp() {
         articleMapper = new ArticleMapper();
-        service = new ArticleSearchService(articleRepository, articleMapper);
+        service = new ArticleSearchService(articleRepository, articleJpaRepository, articleMapper, articlePersistenceMapper);
     }
 
     @Test

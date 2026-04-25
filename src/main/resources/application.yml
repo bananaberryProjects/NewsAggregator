@@ -1,22 +1,15 @@
 spring:
   application:
     name: news-aggregator
-  
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:prod}
-  
-  thymeleaf:
-    cache: false
-
 server:
   port: 8080
   forward-headers-strategy: framework
-
 logging:
   level:
     com:
       newsaggregator: DEBUG
-
 # Auto-Cleanup Configuration
 cleanup:
   articles:
@@ -29,14 +22,12 @@ cleanup:
 spring:
   config:
     activate:
-      on-profile: dev
-  
+      on-profile: dev  
   datasource:
     url: jdbc:h2:mem:newsdb
     driver-class-name: org.h2.Driver
     username: sa
-    password: 
-  
+    password:  
   jpa:
     hibernate:
       ddl-auto: update
@@ -45,7 +36,6 @@ spring:
       hibernate:
         format_sql: true
     database-platform: org.hibernate.dialect.H2Dialect
-  
   h2:
     console:
       enabled: true
@@ -57,13 +47,11 @@ spring:
   config:
     activate:
       on-profile: docker
-
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:db}:${POSTGRES_PORT:5432}/${POSTGRES_DB:newsdb}
     driver-class-name: org.postgresql.Driver
     username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:postgres}
-
   jpa:
     hibernate:
       ddl-auto: validate
@@ -72,17 +60,14 @@ spring:
       hibernate:
         format_sql: false
         dialect: org.hibernate.dialect.PostgreSQLDialect
-
   flyway:
     enabled: true
     baseline-on-migrate: true
     baseline-version: 8
     locations: classpath:db/migration
-
   web:
     resources:
       static-locations: classpath:/static/,file:/app/static/
-
   mvc:
     static-path-pattern: /**
 
@@ -92,13 +77,11 @@ spring:
   config:
     activate:
       on-profile: prod
-  
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:host.docker.internal}:${POSTGRES_PORT:5432}/${POSTGRES_DB:newsdb}
     driver-class-name: org.postgresql.Driver
     username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:postgres}
-  
   jpa:
     hibernate:
       ddl-auto: validate
@@ -107,7 +90,6 @@ spring:
       hibernate:
         format_sql: false
         dialect: org.hibernate.dialect.PostgreSQLDialect
-  
   flyway:
     enabled: true
     baseline-on-migrate: true

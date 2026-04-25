@@ -24,7 +24,7 @@ Feature-Ideen und zukünftige Entwicklungen für das News Aggregator Projekt.
 - [ ] **Priorisierung** - Wichtige Feeds hervorheben
 
 ### 🔍 Suche & Filter
-- [ ] **Erweiterte Suche** - Mit Filtern (Datum, Feed, Kategorie)
+- [x] **Erweiterte Suche** - PostgreSQL Full-Text-Search mit tsvector-GIN-Index, Ranking, Filtern (Kategorie, Lese-/Favoriten-Status) und Paginierung
 - [ ] **Such-Historie** - Letzte Suchen speichern
 - [ ] **Gespeicherte Suchanfragen** - "Smarte Ordner"
 
@@ -65,7 +65,7 @@ Feature-Ideen und zukünftige Entwicklungen für das News Aggregator Projekt.
 - [ ] **GitHub Actions** - CI/CD Pipeline
 - [ ] **Automatische Updates** - Für Abhängigkeiten
 
-## ✅ Bereits Implementiert
+--
 
 - [x] **Hexagonale Architektur**
 - [x] **PostgreSQL Datenbank**
