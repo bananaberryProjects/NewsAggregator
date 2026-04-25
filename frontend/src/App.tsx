@@ -159,9 +159,6 @@ function App() {
     setCategoryToEdit(null)
   }
 
-  const handleOpenAddCategoryDialog = () => {
-    setAddCategoryDialogOpen(true)
-  }
 
   const handleCloseAddCategoryDialog = () => {
     setAddCategoryDialogOpen(false)
@@ -369,20 +366,25 @@ function App() {
           </Container>
         </Box>
 
-        {/* Floating Action Button (Add Feed) */}
-        <Fab
-          color="primary"
-          aria-label="add feed"
-          onClick={() => activeView === 'categories' ? handleOpenAddCategoryDialog() : setAddDialogOpen(true)}
-          sx={{
-            position: 'fixed',
-            bottom: 24,
-            right: 24,
-            display: { md: 'none' },
-          }}
-        >
-          <AddIcon />
-        </Fab>
+        {activeView === 'feeds' && (
+          <Fab
+            color="primary"
+            sx={{ position: 'fixed', bottom: 24, right: 24 }}
+            onClick={() => setAddDialogOpen(true)}
+          >
+            <AddIcon />
+          </Fab>
+        )}
+
+        {activeView === 'categories' && (
+          <Fab
+            color="primary"
+            sx={{ position: 'fixed', bottom: 24, right: 24 }}
+            onClick={() => setAddCategoryDialogOpen(true)}
+          >
+            <AddIcon />
+          </Fab>
+        )}
 
         {/* Dialogs */}
         <AddFeedDialog
