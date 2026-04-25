@@ -101,7 +101,7 @@ npx vite --host 0.0.0.0
 - ✅ **Feed Management** - Hinzufügen, Löschen, Bearbeiten mit Kategorien
 - ✅ **Category Management** - Kategorien mit Icons und Farben
 - ✅ **Artikel-Übersicht** - Einheitliche Karten mit Content-Indikator
-- ✅ **Suche** - Artikel durchsuchen
+- ✅ **PostgreSQL Volltextsuche** - Mit tsvector-GIN-Index, Ranking, Filtern (Kategorie, Lese-/Favoriten-Status) und Paginierung
 - ✅ **Filter** - Alle / Ungelesen / Favoriten + Kategorie-Filter
 - ✅ **Alphabetische Sortierung** - Feeds automatisch sortiert
 - ✅ **Dark/Light Mode** - Theme-Umschaltung in Einstellungen

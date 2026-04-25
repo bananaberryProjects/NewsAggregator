@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Box,
   Card,
@@ -30,8 +30,7 @@ interface ArticlesViewProps {
   searchResults?: any[] | null
   isSearchActive: boolean
   searchTotalElements?: number
-  searchTotalPages?: number
-  searchPage?: number
+  searchHasMore?: boolean
   onSearchNextPage?: () => void
   onSearchReset?: () => void
   onFilterChange: (filter: 'all' | 'unread' | 'favorites') => void
@@ -56,8 +55,7 @@ export function ArticlesView({
   searchResults,
   isSearchActive,
   searchTotalElements,
-  searchTotalPages,
-  searchPage,
+  searchHasMore,
   onSearchNextPage,
   onSearchReset,
   onOpenReader,
@@ -118,6 +116,34 @@ export function ArticlesView({
     batchSize: 9,
     initialCount: 18
   })
+
+  // Search infinite scroll via IntersectionObserver
+  const searchLoadMoreRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!isSearchActive || !searchHasMore || !onSearchNextPage) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries
+        if (entry.isIntersecting && searchHasMore) {
+          onSearchNextPage()
+        }
+      },
+      { root: null, rootMargin: '300px', threshold: 0.1 }
+    )
+
+    const currentRef = searchLoadMoreRef.current
+    if (currentRef) {
+      observer.observe(currentRef)
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef)
+      }
+    }
+  }, [isSearchActive, searchHasMore, onSearchNextPage])
 
   const isRead = (id: number) => articleStatuses[id]?.isRead ?? false
   const isFavorite = (id: number) => articleStatuses[id]?.isFavorite ?? false
@@ -323,7 +349,7 @@ export function ArticlesView({
           
           {/* Load More Trigger Element */}
           <Box
-            ref={loadMoreRef}
+            ref={isSearchActive ? searchLoadMoreRef : loadMoreRef}
             sx={{ flexShrink: 0,
               height: 20,
               display: 'flex',
@@ -333,12 +359,13 @@ export function ArticlesView({
               mb: 3
             }}
           >
-            {isSearchActive && searchTotalPages && searchPage !== undefined && searchPage + 1 < searchTotalPages && (
-              <Box sx={{ flexShrink: 0, display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}>
+            {isSearchActive && searchHasMore && (
+              <>
+                <CircularProgress size={24} sx={{ mr: 2 }} />
                 <Button variant="outlined" onClick={onSearchNextPage} disabled={!onSearchNextPage}>
                   Mehr laden
                 </Button>
-              </Box>
+              </>
             )}
 
             {!isSearchActive && hasMore && (

@@ -36,15 +36,18 @@ interface SidebarProps {
   categories: Category[]
   articleCount: number
   favoriteCount: number
-  onSearchResults: (results: any[] | null) => void
-  onSearchActive: (active: boolean) => void
   isSearchActive?: boolean
-  onSearchPageData?: (pageData: { totalElements?: number } | null) => void
   filters?: {
     categoryId?: string
     readFilter?: 'READ' | 'UNREAD'
     favoriteFilter?: 'FAVORITE' | 'NOT_FAVORITE'
   }
+  // Controlled search state (lifted from SearchBar)
+  searchQuery: string
+  onSearchQueryChange: (q: string) => void
+  searchLoading: boolean
+  onSearch: (q: string, filters?: { categoryId?: string; readFilter?: 'READ' | 'UNREAD'; favoriteFilter?: 'FAVORITE' | 'NOT_FAVORITE' }) => void
+  onSearchReset: () => void
 }
 
 export function Sidebar({
@@ -56,11 +59,13 @@ export function Sidebar({
   categories,
   articleCount,
   favoriteCount,
-  onSearchResults,
-  onSearchActive,
-  onSearchPageData,
   isSearchActive,
   filters,
+  searchQuery,
+  onSearchQueryChange,
+  searchLoading,
+  onSearch,
+  onSearchReset,
 }: SidebarProps) {
   const handleDrawerClose = () => {
     setMobileOpen(false)
@@ -94,7 +99,15 @@ export function Sidebar({
         </Box>
       </Box>
 
-      <SearchBar onResults={onSearchResults} onActive={onSearchActive} onPageData={onSearchPageData} filters={filters} isSearchActive={isSearchActive} />
+      <SearchBar
+        loading={searchLoading}
+        query={searchQuery}
+        onQueryChange={onSearchQueryChange}
+        onSearch={onSearch}
+        onReset={onSearchReset}
+        filters={filters}
+        isSearchActive={isSearchActive}
+      />
       <Divider sx={{ my: 1, mx: 2 }} />
 
       <List>

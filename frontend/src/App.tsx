@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useSearch } from './hooks/useSearch'
 
 function getInitialFilterState(storageKey: string): 'all' | 'unread' | 'favorites' {
   try {
@@ -43,11 +44,24 @@ function App() {
   const { articles, articleStatuses, loadArticles, toggleRead, toggleFavorite, updatingArticleId } = useArticles()
   const { categories, loadCategories, deleteCategory, updateCategory, addCategory } = useCategories()
 
+  // === Search state (lifted from SearchBar into App) ===
+  const {
+    results: searchResults,
+    loading: searchLoading,
+    query: searchQuery,
+    pageData: searchPageData,
+    hasMore: searchHasMore,
+    search,
+    nextPage: searchNextPage,
+    reset: searchReset,
+  } = useSearch()
+
+  const isSearchActive = searchResults !== null || searchQuery !== ''
+  const searchTotalElements = searchPageData?.totalElements ?? 0
+
+
   const [mobileOpen, setMobileOpen] = useState(false)
   const [activeView, setActiveView] = useState('dashboard')
-  const [searchResults, setSearchResults] = useState<any[] | null>(null)
-  const [isSearchActive, setIsSearchActive] = useState(false)
-  const [searchTotalElements, setSearchTotalElements] = useState<number>(0)
 
   // Filter states - initial values from localStorage
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -159,7 +173,6 @@ function App() {
     setCategoryToEdit(null)
   }
 
-
   const handleCloseAddCategoryDialog = () => {
     setAddCategoryDialogOpen(false)
   }
@@ -179,25 +192,8 @@ function App() {
     setSelectedArticle(null)
   }
 
-  // Such-Handler (nur einmal!)
-  const handleSearchResults = (results: any[] | null) => {
-    setSearchResults(results)
-  }
-
-  const handleSearchActive = (active: boolean) => {
-    setIsSearchActive(active)
-    if (active) {
-      setActiveView('articles')
-    }
-  }
-
-  const handleSearchPageData = (pageData: { totalElements?: number } | null) => {
-    setSearchTotalElements(pageData?.totalElements ?? 0)
-  }
-
   const handleSearchReset = () => {
-    setIsSearchActive(false)
-    setSearchResults(null)
+    searchReset()
   }
 
   // Build search filters from current article filters
@@ -250,6 +246,8 @@ function App() {
             isSearchActive={isSearchActive}
             searchTotalElements={searchTotalElements}
             onSearchReset={handleSearchReset}
+            onSearchNextPage={searchNextPage}
+            searchHasMore={searchHasMore}
             loading={loading}
             articleStatuses={articleStatuses}
             updatingArticleId={updatingArticleId}
@@ -342,11 +340,20 @@ function App() {
           categories={categories}
           articleCount={articles.length}
           favoriteCount={useMemo(() => articles.filter(a => articleStatuses[a.id]?.isFavorite).length, [articles, articleStatuses])}
-          onSearchResults={handleSearchResults}
-          onSearchActive={handleSearchActive}
-          onSearchPageData={handleSearchPageData}
           isSearchActive={isSearchActive}
           filters={searchFilters}
+          searchQuery={searchQuery}
+          onSearchQueryChange={(q) => {
+            if (q.trim()) {
+              search(q.trim(), searchFilters)
+              setActiveView('articles')
+            } else {
+              searchReset()
+            }
+          }}
+          searchLoading={searchLoading}
+          onSearch={search}
+          onSearchReset={searchReset}
         />
 
         {/* Main Content */}
@@ -355,7 +362,7 @@ function App() {
           sx={{
             flexGrow: 1,
             p: { xs: 0.5, sm: 2, md: 3 },
-            width: { md: `calc(100% - ${drawerWidth}px)` },
+            width: { md: 'calc(100% - ' + drawerWidth + 'px)' },
             mt: { xs: 8, md: 0 },
             minHeight: '100vh',
             bgcolor: 'background.default',

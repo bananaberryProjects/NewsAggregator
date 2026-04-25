@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Box, InputBase, IconButton, Tooltip, CircularProgress } from '@mui/material'
 import { Search as SearchIcon, Clear as ClearIcon } from '@mui/icons-material'
-import { useSearch } from '../hooks/useSearch'
 
 interface SearchFilters {
   categoryId?: string
@@ -10,57 +9,59 @@ interface SearchFilters {
 }
 
 interface SearchBarProps {
-  onResults: (results: any[] | null) => void
-  onActive: (active: boolean) => void
-  onPageData?: (pageData: { totalElements?: number } | null) => void
+  loading: boolean
+  query: string
+  onQueryChange: (q: string) => void
+  onSearch: (q: string, filters?: SearchFilters) => void
+  onReset: () => void
   filters?: SearchFilters
   isSearchActive?: boolean
 }
 
-export function SearchBar({ onResults, onActive, onPageData, filters = {}, isSearchActive }: SearchBarProps) {
-  const [inputValue, setInputValue] = useState('')
-  const [debounced, setDebounced] = useState('')
+export function SearchBar({
+  loading,
+  query,
+  onQueryChange,
+  onSearch,
+  onReset,
+  filters = {},
+  isSearchActive,
+}: SearchBarProps) {
+  const [inputValue, setInputValue] = useState(query)
   const inputRef = useRef<HTMLInputElement>(null)
-  const { results, loading, search, reset, pageData } = useSearch()
   const prevIsActiveRef = useRef(isSearchActive)
+
+  // Sync external query → local input
+  useEffect(() => {
+    setInputValue(query)
+  }, [query])
 
   // Debounce input (300ms)
   useEffect(() => {
-    const timer = setTimeout(() => setDebounced(inputValue), 300)
+    const timer = setTimeout(() => {
+      if (inputValue.trim()) {
+        onSearch(inputValue.trim(), filters)
+      } else {
+        onReset()
+      }
+    }, 300)
     return () => clearTimeout(timer)
-  }, [inputValue])
+  }, [inputValue, filters])
 
-  useEffect(() => {
-    if (debounced) {
-      search(debounced, filters)
-    } else {
-      reset()
-      onResults(null)
-      onPageData?.(null)
-    }
-  }, [debounced, filters])
-
-  useEffect(() => {
-    onResults(results)
-    onPageData?.(pageData)
-    onActive(results !== null || inputValue !== '')
-  }, [results, pageData, inputValue])
-
-  // Wenn von aussen zurueckgesetzt wird (Zuruecksetzen-Button in ArticlesView)
+  // Wenn von aussen zurueckgesetzt wird
   useEffect(() => {
     if (prevIsActiveRef.current && !isSearchActive) {
       setInputValue('')
-      setDebounced('')
-      reset()
+      onQueryChange('')
+      onReset()
     }
     prevIsActiveRef.current = isSearchActive
-  }, [isSearchActive, reset])
+  }, [isSearchActive, onReset, onQueryChange])
 
   const handleClear = () => {
     setInputValue('')
-    setDebounced('')
-    reset()
-    onResults(null)
+    onQueryChange('')
+    onReset()
     inputRef.current?.focus()
   }
 
@@ -87,7 +88,10 @@ export function SearchBar({ onResults, onActive, onPageData, filters = {}, isSea
           inputRef={inputRef}
           placeholder="Volltextsuche..."
           value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
+          onChange={(e) => {
+            setInputValue(e.target.value)
+            onQueryChange(e.target.value)
+          }}
           sx={{ flex: 1, fontSize: '1rem' }}
         />
         {inputValue && (
