@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import { useSearch } from './hooks/useSearch'
 
 function getInitialFilterState(storageKey: string): 'all' | 'unread' | 'favorites' {
@@ -61,7 +62,18 @@ function App() {
 
 
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [activeView, setActiveView] = useState('dashboard')
+  const location = useLocation()
+  const navigate = useNavigate()
+  const activeView = useMemo(() => {
+    const path = location.pathname
+    if (path === '/feeds') return 'feeds'
+    if (path === '/articles') return 'articles'
+    if (path === '/favorites') return 'favorites'
+    if (path === '/categories') return 'categories'
+    if (path === '/statistics') return 'statistics'
+    if (path === '/settings') return 'settings'
+    return 'dashboard'
+  }, [location.pathname])
 
   // Filter states - initial values from localStorage
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -214,91 +226,6 @@ function App() {
     return filters
   }, [articlesFilter, articlesCategoryFilter])
 
-  const renderContent = () => {
-    const loading = feedsLoading
-
-    switch (activeView) {
-      case 'dashboard':
-        return (
-          <DashboardView />
-        )
-      case 'feeds':
-        return (
-          <FeedsView
-            feeds={feeds}
-            loading={loading}
-            refreshingFeedId={null}
-            onRefresh={refreshFeed}
-            onDelete={(feed) => {
-              setFeedToDelete(feed)
-              setDeleteDialogOpen(true)
-            }}
-            onEdit={handleOpenEditDialog}
-            onImportSuccess={loadFeeds}
-          />
-        )
-      case 'articles':
-        return (
-          <ArticlesView
-            articles={articles}
-            categories={categories}
-            searchResults={searchResults}
-            isSearchActive={isSearchActive}
-            searchTotalElements={searchTotalElements}
-            onSearchReset={handleSearchReset}
-            onSearchNextPage={searchNextPage}
-            searchHasMore={searchHasMore}
-            loading={loading}
-            articleStatuses={articleStatuses}
-            updatingArticleId={updatingArticleId}
-            articlesFilter={articlesFilter}
-            articlesCategoryFilter={articlesCategoryFilter}
-            onFilterChange={setArticlesFilter}
-            onCategoryFilterChange={setArticlesCategoryFilter}
-            onToggleRead={toggleRead}
-            onToggleFavorite={toggleFavorite}
-            onOpenReader={handleOpenReader}
-          />
-        )
-      case 'favorites':
-        return (
-          <FavoritesView
-            articles={articles}
-            loading={loading}
-            articleStatuses={articleStatuses}
-            updatingArticleId={updatingArticleId}
-            onToggleRead={toggleRead}
-            onToggleFavorite={toggleFavorite}
-            onOpenReader={handleOpenReader}
-          />
-        )
-      case 'categories':
-        return (
-          <CategoriesView
-            categories={categories}
-            loading={loading}
-            onEdit={handleOpenEditCategoryDialog}
-            onDelete={deleteCategory}
-          />
-        )
-      case 'statistics':
-        return (
-          <StatisticsView />
-        )
-      case 'settings':
-        return (
-          <SettingsView
-            articlesWithoutContent={articlesWithoutContent}
-            onOpenExtractionDialog={() => setExtractionDialogOpen(true)}
-            isDark={isDark}
-            onToggleTheme={toggleTheme}
-          />
-        )
-      default:
-        return null
-    }
-  }
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -330,12 +257,10 @@ function App() {
           </Toolbar>
         </AppBar>
 
-        {/* Sidebar (Desktop + Mobile Drawer) */}
         <Sidebar
           mobileOpen={mobileOpen}
           setMobileOpen={setMobileOpen}
           activeView={activeView}
-          setActiveView={setActiveView}
           feeds={feeds}
           categories={categories}
           articleCount={articles.length}
@@ -346,7 +271,7 @@ function App() {
           onSearchQueryChange={(q) => {
             if (q.trim()) {
               search(q.trim(), searchFilters)
-              setActiveView('articles')
+              navigate('/articles')
             } else {
               searchReset()
             }
@@ -369,7 +294,74 @@ function App() {
           }}
         >
           <Container maxWidth="xl" sx={{ px: { xs: 0, sm: 2, md: 3 } }}>
-            {renderContent()}
+            <Routes>
+              <Route path="/" element={<DashboardView />} />
+              <Route path="/feeds" element={
+                <FeedsView
+                  feeds={feeds}
+                  loading={feedsLoading}
+                  refreshingFeedId={null}
+                  onRefresh={refreshFeed}
+                  onDelete={(feed: Feed) => {
+                    setFeedToDelete(feed)
+                    setDeleteDialogOpen(true)
+                  }}
+                  onEdit={handleOpenEditDialog}
+                  onImportSuccess={loadFeeds}
+                />
+              } />
+              <Route path="/articles" element={
+                <ArticlesView
+                  articles={articles}
+                  categories={categories}
+                  searchResults={searchResults}
+                  isSearchActive={isSearchActive}
+                  searchTotalElements={searchTotalElements}
+                  onSearchReset={handleSearchReset}
+                  onSearchNextPage={searchNextPage}
+                  searchHasMore={searchHasMore}
+                  loading={feedsLoading}
+                  articleStatuses={articleStatuses}
+                  updatingArticleId={updatingArticleId}
+                  articlesFilter={articlesFilter}
+                  articlesCategoryFilter={articlesCategoryFilter}
+                  onFilterChange={setArticlesFilter}
+                  onCategoryFilterChange={setArticlesCategoryFilter}
+                  onToggleRead={toggleRead}
+                  onToggleFavorite={toggleFavorite}
+                  onOpenReader={handleOpenReader}
+                />
+              } />
+              <Route path="/favorites" element={
+                <FavoritesView
+                  articles={articles}
+                  loading={feedsLoading}
+                  articleStatuses={articleStatuses}
+                  updatingArticleId={updatingArticleId}
+                  onToggleRead={toggleRead}
+                  onToggleFavorite={toggleFavorite}
+                  onOpenReader={handleOpenReader}
+                />
+              } />
+              <Route path="/categories" element={
+                <CategoriesView
+                  categories={categories}
+                  loading={feedsLoading}
+                  onEdit={handleOpenEditCategoryDialog}
+                  onDelete={deleteCategory}
+                />
+              } />
+              <Route path="/statistics" element={<StatisticsView />} />
+              <Route path="/settings" element={
+                <SettingsView
+                  articlesWithoutContent={articlesWithoutContent}
+                  onOpenExtractionDialog={() => setExtractionDialogOpen(true)}
+                  isDark={isDark}
+                  onToggleTheme={toggleTheme}
+                />
+              } />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
           </Container>
         </Box>
 
