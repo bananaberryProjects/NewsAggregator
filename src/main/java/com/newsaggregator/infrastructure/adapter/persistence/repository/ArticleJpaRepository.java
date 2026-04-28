@@ -37,7 +37,7 @@ public interface ArticleJpaRepository extends JpaRepository<ArticleJpaEntity, Lo
      * Full-Text Search mit optionalem Feed-Category- und Read-Status-Filter.
      */
     @Query(value = """
-        SELECT DISTINCT a.* FROM articles a
+        SELECT DISTINCT ts_rank(a.search_vector, to_tsquery('german', :tsQuery)), a.* FROM articles a
         JOIN feeds f ON a.feed_id = f.id
         LEFT JOIN feed_categories fc ON f.id = fc.feed_id
         LEFT JOIN article_read_status ars ON ars.article_id = a.id AND ars.user_id = :userId
@@ -49,7 +49,7 @@ public interface ArticleJpaRepository extends JpaRepository<ArticleJpaEntity, Lo
           AND (:favoriteFilter IS NULL OR
                (:favoriteFilter = 'FAVORITE'     AND ars.is_favorite = true) OR
                (:favoriteFilter = 'NOT_FAVORITE' AND (ars.is_favorite IS NULL OR ars.is_favorite = false)))
-        ORDER BY ts_rank(a.search_vector, to_tsquery('german', :tsQuery)) DESC
+        ORDER BY ts_rank DESC
         """,
         countQuery = """
         SELECT COUNT(DISTINCT a.id) FROM articles a
