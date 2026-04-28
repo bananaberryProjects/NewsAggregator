@@ -22,6 +22,7 @@ import {
   Settings as SettingsIcon,
   Close as CloseIcon,
 } from '@mui/icons-material'
+import { Link } from 'react-router-dom'
 import type { Feed, Category } from '../../api/client'
 import { SearchBar } from '../SearchBar'
 
@@ -31,7 +32,6 @@ interface SidebarProps {
   mobileOpen: boolean
   setMobileOpen: (open: boolean) => void
   activeView: string
-  setActiveView: (view: 'dashboard' | 'feeds' | 'articles' | 'favorites' | 'categories' | 'statistics' | 'settings') => void
   feeds: Feed[]
   categories: Category[]
   articleCount: number
@@ -54,7 +54,6 @@ export function Sidebar({
   mobileOpen,
   setMobileOpen,
   activeView,
-  setActiveView,
   feeds,
   categories,
   articleCount,
@@ -112,7 +111,7 @@ export function Sidebar({
 
       <List>
         <ListItem disablePadding>
-          <ListItemButton selected={activeView === 'dashboard'} onClick={() => { setActiveView('dashboard'); handleDrawerClose(); }}>
+          <ListItemButton component={Link} to="/" selected={activeView === 'dashboard'} onClick={handleDrawerClose}>
             <ListItemIcon>
               <NewspaperIcon color="primary" />
             </ListItemIcon>
@@ -121,7 +120,7 @@ export function Sidebar({
         </ListItem>
 
         <ListItem disablePadding>
-          <ListItemButton selected={activeView === 'feeds'} onClick={() => { setActiveView('feeds'); handleDrawerClose(); }}>
+          <ListItemButton component={Link} to="/feeds" selected={activeView === 'feeds'} onClick={handleDrawerClose}>
             <ListItemIcon>
               <FeedIcon />
             </ListItemIcon>
@@ -131,7 +130,7 @@ export function Sidebar({
         </ListItem>
 
         <ListItem disablePadding>
-          <ListItemButton selected={activeView === 'articles'} onClick={() => { setActiveView('articles'); handleDrawerClose(); }}>
+          <ListItemButton component={Link} to="/articles" selected={activeView === 'articles'} onClick={handleDrawerClose}>
             <ListItemIcon>
               <ArticleIcon />
             </ListItemIcon>
@@ -141,7 +140,7 @@ export function Sidebar({
         </ListItem>
 
         <ListItem disablePadding>
-          <ListItemButton selected={activeView === 'favorites'} onClick={() => { setActiveView('favorites'); handleDrawerClose(); }}>
+          <ListItemButton component={Link} to="/favorites" selected={activeView === 'favorites'} onClick={handleDrawerClose}>
             <ListItemIcon>
               <FavoriteIcon />
             </ListItemIcon>
@@ -151,7 +150,7 @@ export function Sidebar({
         </ListItem>
 
         <ListItem disablePadding>
-          <ListItemButton selected={activeView === 'categories'} onClick={() => { setActiveView('categories'); handleDrawerClose(); }}>
+          <ListItemButton component={Link} to="/categories" selected={activeView === 'categories'} onClick={handleDrawerClose}>
             <ListItemIcon>
               <LabelIcon />
             </ListItemIcon>
@@ -161,7 +160,7 @@ export function Sidebar({
         </ListItem>
 
         <ListItem disablePadding>
-          <ListItemButton selected={activeView === 'statistics'} onClick={() => { setActiveView('statistics'); handleDrawerClose(); }}>
+          <ListItemButton component={Link} to="/statistics" selected={activeView === 'statistics'} onClick={handleDrawerClose}>
             <ListItemIcon>
               <AssessmentIcon />
             </ListItemIcon>
@@ -170,7 +169,7 @@ export function Sidebar({
         </ListItem>
 
         <ListItem disablePadding>
-          <ListItemButton selected={activeView === 'settings'} onClick={() => { setActiveView('settings'); handleDrawerClose(); }}>
+          <ListItemButton component={Link} to="/settings" selected={activeView === 'settings'} onClick={handleDrawerClose}>
             <ListItemIcon>
               <SettingsIcon />
             </ListItemIcon>
