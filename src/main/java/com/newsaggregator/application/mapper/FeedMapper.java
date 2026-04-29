@@ -52,6 +52,7 @@ public class FeedMapper {
                 .articleCount(articleCount)
                 .categoryIds(categoryIds)
                 .extractContent(feed.isExtractContent())
+                .blockedKeywords(feed.getBlockedKeywords())
                 .build();
     }
 }

@@ -119,6 +119,7 @@ function App() {
   const [newFeedUrl, setNewFeedUrl] = useState('')
   const [newFeedName, setNewFeedName] = useState('')
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [newFeedBlockedKeywords, setNewFeedBlockedKeywords] = useState<string[]>([])
 
   useEffect(() => {
     loadData()
@@ -133,10 +134,11 @@ function App() {
 
   const handleAddFeed = async () => {
     if (!newFeedUrl.trim() || !newFeedName.trim()) return
-    await addFeed(newFeedUrl.trim(), newFeedName.trim(), [])
+    await addFeed(newFeedUrl.trim(), newFeedName.trim(), selectedCategories, newFeedBlockedKeywords)
     setNewFeedUrl('')
     setNewFeedName('')
     setSelectedCategories([])
+    setNewFeedBlockedKeywords([])
     setAddDialogOpen(false)
   }
 
@@ -159,9 +161,9 @@ function App() {
     setEditSelectedCategories([])
   }
 
-  const handleUpdateFeed = async (name: string, url: string, description: string, categoryIds: string[], extractContent: boolean) => {
+  const handleUpdateFeed = async (name: string, url: string, description: string, categoryIds: string[], extractContent: boolean, blockedKeywords: string[]) => {
     if (!feedToEdit) return
-    await updateFeed(feedToEdit.id, name, url, description, extractContent)
+    await updateFeed(feedToEdit.id, name, url, description, extractContent, blockedKeywords)
     await assignCategories(feedToEdit.id, categoryIds)
     setEditDialogOpen(false)
     setFeedToEdit(null)
@@ -394,6 +396,8 @@ function App() {
           setUrl={setNewFeedUrl}
           name={newFeedName}
           setName={setNewFeedName}
+          blockedKeywords={newFeedBlockedKeywords}
+          setBlockedKeywords={setNewFeedBlockedKeywords}
           selectedCategories={selectedCategories}
           toggleCategory={(id) => setSelectedCategories(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id])}
           categories={categories}

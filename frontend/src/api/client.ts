@@ -10,6 +10,7 @@ export interface Feed {
   lastFetchedAt: string | null;
   categoryIds?: string[];
   extractContent?: boolean;
+  blockedKeywords?: string[];
 }
 
 export interface Article {
@@ -132,9 +133,9 @@ export function downloadBlob(blob: Blob, filename: string) {
 
 export const feedsApi = {
   getAll: () => fetchApi<Feed[]>('/feeds'),
-  add: (feed: { name: string; url: string }) => 
+  add: (feed: { name: string; url: string; blockedKeywords?: string[] }) => 
     fetchApi<Feed>('/feeds', { method: 'POST', body: JSON.stringify(feed) }),
-  update: (id: string, feed: { name: string; url: string; description?: string; extractContent?: boolean }) => 
+  update: (id: string, feed: { name: string; url: string; description?: string; extractContent?: boolean; blockedKeywords?: string[] }) => 
     fetchApi<Feed>(`/feeds/${id}`, { method: 'PUT', body: JSON.stringify(feed) }),
   delete: (id: string) => 
     fetchApi<void>(`/feeds/${id}`, { method: 'DELETE' }),

@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class FeedPersistenceMapperTest {
 
-    private final FeedPersistenceMapper mapper = new FeedPersistenceMapper();
+    private final FeedPersistenceMapper mapper = new FeedPersistenceMapper(new com.fasterxml.jackson.databind.ObjectMapper());
 
     @Test
     void toDomain_ShouldConvertEntityToDomain() {

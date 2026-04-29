@@ -41,7 +41,8 @@ Feature-Ideen und zukünftige Entwicklungen für das News Aggregator Projekt.
 - [x] **KI-Zusammenfassung** - Tägliche Zusammenfassung mit Ollama
 - [ ] **Smart Fetch** - Häufigkeit pro Feed konfigurierbar
 - [x] **Auto-Cleanup** - Alte Artikel automatisch löschen (X Tage)
-- [ ] **Duplicate Detection** - Doppelte Artikel erkennen und zusammenführen
+- [x] **Keyword-Filter pro Feed** - Blockierte Keywords pro Feed konfigurieren (Frontend & Backend)
+- [x] **Duplicate Detection** - Titel-basierte Deduplizierung mit Normalisierung & Wortstamm-Matching
 - [ ] **Headless Browser** - Für Artikel mit Bot-Schutz (Cloudflare, etc.) via Selenium/Playwright
 
 ### 🔐 Authentifizierung & Multi-User
@@ -82,6 +83,8 @@ Feature-Ideen und zukünftige Entwicklungen für das News Aggregator Projekt.
 - [x] **OPML Import/Export**
 - [x] **PWA Support** - Progressive Web App mit Offline-Cache und App-Installation
 - [x] **Crypto Price Widget** - Live-Kryptopreis-Tracking über CoinGecko API (Bitcoin, Ethereum, Solana)
+- [x] **Keyword-Filter pro Feed** - Blockierte Keywords pro Feed konfigurieren (Frontend & Backend)
+- [x] **Duplicate Detection** - Titel-basierte Deduplizierung mit Normalisierung & Wortstamm-Matching
 
 ## 📝 Notizen
 
@@ -99,4 +102,4 @@ Für neue Feature-Vorschläge:
 
 ---
 
-*Letzte Aktualisierung: 2026-04-21*
+*Letzte Aktualisierung: 2026-04-29*

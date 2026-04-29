@@ -26,6 +26,7 @@ import com.newsaggregator.domain.model.Article;
 import com.newsaggregator.domain.model.ArticleId;
 import com.newsaggregator.domain.model.Feed;
 import com.newsaggregator.domain.model.FeedId;
+import com.newsaggregator.domain.service.TitleSimilarityService;
 import com.newsaggregator.domain.model.FeedStatus;
 import com.newsaggregator.infrastructure.adapter.persistence.entity.ArticleJpaEntity;
 import com.newsaggregator.infrastructure.adapter.persistence.entity.FeedJpaEntity;
@@ -50,12 +51,15 @@ class ArticleRepositoryAdapterTest {
     @Mock
     private ArticlePersistenceMapper mapper;
 
+    @Mock
+    private TitleSimilarityService titleSimilarityService;
+
     private ArticleRepositoryAdapter adapter;
 
     @BeforeEach
     @SuppressWarnings("unused")
     void setUp() {
-        adapter = new ArticleRepositoryAdapter(jpaRepository, feedJpaRepository, mapper);
+        adapter = new ArticleRepositoryAdapter(jpaRepository, feedJpaRepository, mapper, titleSimilarityService);
     }
 
     @Test

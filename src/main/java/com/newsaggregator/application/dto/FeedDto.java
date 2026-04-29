@@ -30,5 +30,6 @@ public class FeedDto {
     private int articleCount;
     private List<String> categoryIds;
     private Boolean extractContent;
+    private List<String> blockedKeywords;
 
 }

@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * Command-DTO für das Aktualisieren eines bestehenden Feeds.
  */
@@ -18,5 +20,6 @@ public class UpdateFeedCommand {
     private String url;
     private String description;
     private Boolean extractContent;
+    private List<String> blockedKeywords;
 
 }

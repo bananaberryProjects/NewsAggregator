@@ -113,23 +113,44 @@ public class FeedFetchingService implements FetchFeedUseCase {
         try {
             List<Article> newArticles = rssFeedReader.readFeed(feed);
             int savedCount = 0;
+            int blockedCount = 0;
+            int duplicateCount = 0;
 
-            // Neue Artikel speichern (Duplikate überspringen) mit Content-Extraktion
             for (Article article : newArticles) {
-                if (!articleRepository.existsByLink(article.getLink())) {
-                    // Content-Extraktion für neue Artikel durchführen (nur wenn Feed.extractContent true)
-                    Article articleWithContent = extractContentForArticle(article, feed.shouldExtractContent());
-                    articleRepository.save(articleWithContent);
-                    savedCount++;
+                // 1. Keyword-Filter: Titel enthält geblocktes Keyword?
+                if (feed.isTitleBlocked(article.getTitle())) {
+                    logger.info("Artikel '{}' wird blockiert (Keyword-Filter)", article.getTitle());
+                    blockedCount++;
+                    continue;
                 }
+
+                // 2. Link-basierte Duplikat-Erkennung
+                if (articleRepository.existsByLink(article.getLink())) {
+                    logger.debug("Artikel '{}' existiert bereits (Link-Duplikat)", article.getTitle());
+                    duplicateCount++;
+                    continue;
+                }
+
+                // 3. Titel-basierte Duplikat-Erkennung
+                if (articleRepository.existsByTitle(article.getTitle())) {
+                    logger.debug("Artikel '{}' existiert bereits (Titel-Duplikat)", article.getTitle());
+                    duplicateCount++;
+                    continue;
+                }
+
+                // Content-Extraktion für neue Artikel durchführen (nur wenn Feed.extractContent true)
+                Article articleWithContent = extractContentForArticle(article, feed.shouldExtractContent());
+                articleRepository.save(articleWithContent);
+                savedCount++;
             }
 
             // Feed als erfolgreich abgerufen markieren
             feed.markAsFetched();
             feedRepository.save(feed);
 
-            logger.info("Feed '{}' abgerufen: {} neue Artikel ({} bereits vorhanden)",
-                    feed.getName(), savedCount, newArticles.size() - savedCount);
+            logger.info("Feed '{}' abgerufen: {} neue Artikel ({} blockiert, {} Duplikate, {} bereits vorhanden)",
+                    feed.getName(), savedCount, blockedCount, duplicateCount,
+                    newArticles.size() - savedCount - blockedCount - duplicateCount);
 
         } catch (RssFeedReader.RssReadException e) {
             // Feed als fehlerhaft markieren

@@ -51,6 +51,9 @@ public class FeedJpaEntity {
     @Column(name = "extract_content")
     private Boolean extractContent = true;
 
+    @Column(name = "blocked_keywords")
+    private String blockedKeywords;
+
     @OneToMany(mappedBy = "feed", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ArticleJpaEntity> articles = new ArrayList<>();
 

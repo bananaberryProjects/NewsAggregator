@@ -3,6 +3,7 @@ package com.newsaggregator.infrastructure.adapter.persistence.adapter;
 import com.newsaggregator.domain.model.Article;
 import com.newsaggregator.domain.model.ArticleId;
 import com.newsaggregator.domain.port.out.ArticleRepository;
+import com.newsaggregator.domain.service.TitleSimilarityService;
 import com.newsaggregator.infrastructure.adapter.persistence.entity.ArticleJpaEntity;
 import com.newsaggregator.infrastructure.adapter.persistence.entity.FeedJpaEntity;
 import com.newsaggregator.infrastructure.adapter.persistence.mapper.ArticlePersistenceMapper;
@@ -31,13 +32,16 @@ public class ArticleRepositoryAdapter implements ArticleRepository {
     private final ArticleJpaRepository jpaRepository;
     private final FeedJpaRepository feedJpaRepository;
     private final ArticlePersistenceMapper mapper;
+    private final TitleSimilarityService titleSimilarityService;
 
     public ArticleRepositoryAdapter(ArticleJpaRepository jpaRepository,
                                      FeedJpaRepository feedJpaRepository,
-                                     ArticlePersistenceMapper mapper) {
+                                     ArticlePersistenceMapper mapper,
+                                     TitleSimilarityService titleSimilarityService) {
         this.jpaRepository = jpaRepository;
         this.feedJpaRepository = feedJpaRepository;
         this.mapper = mapper;
+        this.titleSimilarityService = titleSimilarityService;
     }
 
     @SuppressWarnings("null")
@@ -133,6 +137,23 @@ public class ArticleRepositoryAdapter implements ArticleRepository {
     @Transactional(readOnly = true)
     public long countByContentHtmlIsNull() {
         return jpaRepository.countByContentHtmlIsNull();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsByTitle(String title) {
+        return jpaRepository.existsByTitle(title);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Article> findPotentialDuplicatesByTitle(String title, double threshold) {
+        // Letzte 7 Tage holen – praktischer Zeitfenster für Duplikat-Prüfung
+        LocalDateTime since = LocalDateTime.now().minusDays(7);
+        return jpaRepository.findRecentForDuplicateCheck(since).stream()
+                .filter(entity -> titleSimilarityService.isSimilar(title, entity.getTitle(), threshold))
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
     }
 
     @Override

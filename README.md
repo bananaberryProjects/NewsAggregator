@@ -88,6 +88,8 @@ npx vite --host 0.0.0.0
 - ✅ **KI-Zusammenfassung** - Tägliche Zusammenfassung
 - ✅ **Kategorie-Management** - Feeds in Kategorien organisieren
 - ✅ **Feed-Edit** - Name, URL, Beschreibung und Kategorien bearbeiten
+- ✅ **Keyword-Filter pro Feed** - Blockierte Keywords pro Feed konfigurieren
+- ✅ **Titel-basierte Deduplizierung** - Duplicate Detection mit Normalisierung & Wortstamm-Matching
 - ✅ **Auto-Cleanup** - Alte Artikel automatisch löschen nach konfigurierbarer Anzahl Tage (Scheduled Task)
 
 ### Frontend
@@ -110,6 +112,7 @@ npx vite --host 0.0.0.0
 - ✅ **Infinite Scroll** - Automatisches Nachladen mit IntersectionObserver API (statt Paginierung)
 - ✅ **Dashboard-Widgets** - Wetter, Börsenkurse (NASDAQ), **Live-Kryptopreis-Tracking** (Bitcoin, Ethereum, Solana) & KI-Zusammenfassung
 - ✅ **NewsWeave Branding** - Eigenes Logo in Sidebar und Favicon
+- ✅ **Feed-Level Keyword-Filter** - Blockierte Keywords per Feed im Add/Edit-Dialog verwalten
 
 ### PWA (Progressive Web App)
 - ✅ **App-Installation** - Als Desktop/Mobile-App installierbar
@@ -125,8 +128,8 @@ npx vite --host 0.0.0.0
 |---------|----------|--------------|
 | GET | `/api/feeds` | Alle Feeds anzeigen |
 | GET | `/api/feeds/{id}` | Einzelnen Feed anzeigen |
-| POST | `/api/feeds` | Neuen Feed hinzufügen |
-| PUT | `/api/feeds/{id}` | Feed bearbeiten (inkl. extractContent) |
+| POST  | `/api/feeds`          | Neuen Feed hinzufügen (inkl. blockedKeywords)     |
+| PUT   | `/api/feeds/{id}`     | Feed bearbeiten (inkl. extractContent, blockedKeywords) |
 | POST | `/api/feeds/{id}/fetch` | Feed manuell abrufen |
 | DELETE | `/api/feeds/{id}` | Feed löschen (inkl. Artikel) |
 | POST | `/api/feeds/{id}/categories` | Kategorien zuweisen |
