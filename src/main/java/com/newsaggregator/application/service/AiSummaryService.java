@@ -1,0 +1,271 @@
+package com.newsaggregator.application.service;
+
+import com.newsaggregator.application.dto.AiSummaryDto;
+import com.newsaggregator.domain.model.Article;
+import com.newsaggregator.domain.port.out.ArticleRepository;
+import com.newsaggregator.domain.port.out.CategoryRepository;
+import com.newsaggregator.domain.model.Category;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * Service für strukturierte KI-Tageszusammenfassung v2.
+ * Liefert kategorisierte Übersichten mit Sentiment und Top-Themen statt Fließtext.
+ */
+@Service
+public class AiSummaryService {
+
+    private static final Logger log = LoggerFactory.getLogger(AiSummaryService.class);
+
+    private final ArticleRepository articleRepository;
+    private final CategoryRepository categoryRepository;
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
+
+    @Value("${ollama.base-url:http://host.docker.internal:11434}")
+    private String ollamaBaseUrl;
+
+    @Value("${ollama.model:kimi-k2.5:cloud}")
+    private String ollamaModel;
+
+    public AiSummaryService(ArticleRepository articleRepository,
+                            CategoryRepository categoryRepository) {
+        this.articleRepository = articleRepository;
+        this.categoryRepository = categoryRepository;
+        this.restTemplate = new RestTemplate();
+        this.objectMapper = new ObjectMapper();
+    }
+
+    /**
+     * Generiert eine strukturierte Zusammenfassung der Artikel von heute.
+     */
+    public AiSummaryDto generateStructuredSummary() {
+        LocalDateTime todayStart = LocalDate.now().atStartOfDay();
+        List<Article> articles = articleRepository.findByPublishedAtAfter(todayStart);
+
+        // Fallback: wenn keine heutigen Artikel, nimm die neuesten 20
+        if (articles.isEmpty()) {
+            articles = articleRepository.findAll().stream()
+                    .sorted(Comparator.comparing(Article::getPublishedAt).reversed())
+                    .limit(20)
+                    .toList();
+        }
+
+        if (articles.isEmpty()) {
+            return emptySummary();
+        }
+
+        // Kategorien laden (Feed-Kategorien als Grundlage)
+        List<Category> allCategories = categoryRepository.findAll();
+        String categoryNames = allCategories.stream()
+                .map(Category::getName)
+                .collect(Collectors.joining(", "));
+
+        try {
+            String jsonResponse = callOllamaStructured(articles, categoryNames);
+            return parseAiResponse(jsonResponse, articles.size());
+        } catch (Exception e) {
+            log.warn("Strukturierte Zusammenfassung fehlgeschlagen, Fallback wird verwendet: {}", e.getMessage());
+            return fallbackSummary(articles);
+        }
+    }
+
+    private String callOllamaStructured(List<Article> articles, String categoryNames) throws Exception {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        StringBuilder prompt = new StringBuilder();
+        prompt.append("Du bist ein Nachrichten-Assistent. Analysiere die folgenden Artikel und erstelle eine strukturierte Zusammenfassung im JSON-Format.\n\n");
+        prompt.append("Verfügbare Kategorien: ").append(categoryNames.isEmpty() ? "Allgemein" : categoryNames).append("\n\n");
+        prompt.append("Artikel (Titel + Kurzbeschreibung):\n");
+
+        for (Article article : articles.stream().limit(15).toList()) {
+            prompt.append("- ").append(article.getTitle());
+            if (article.getDescription() != null && !article.getDescription().isEmpty()) {
+                String desc = article.getDescription().substring(0, Math.min(article.getDescription().length(), 150));
+                prompt.append(" | ").append(desc);
+            }
+            if (article.getFeed() != null && article.getFeed().getName() != null) {
+                prompt.append(" [Feed: ").append(article.getFeed().getName()).append("]");
+            }
+            prompt.append("\n");
+        }
+
+        prompt.append("\n---\n");
+        prompt.append("Antworte AUSSCHLIESSLICH mit gültigem JSON (kein Markdown, keine Erklärungen). Das Format:\n");
+        prompt.append("{\n");
+        prompt.append("  \"categories\": [\n");
+        prompt.append("    {\n");
+        prompt.append("      \"name\": \"Kategorie-Name\",\n");
+        prompt.append("      \"summary\": \"2-3 Sätze Zusammenfassung\",\n");
+        prompt.append("      \"articleCount\": 5,\n");
+        prompt.append("      \"sentiment\": \"positive\" // oder \"neutral\" oder \"negative\"\n");
+        prompt.append("    }\n");
+        prompt.append("  ],\n");
+        prompt.append("  \"topTopics\": [\n");
+        prompt.append("    {\n");
+        prompt.append("      \"name\": \"Themen-Name\",\n");
+        prompt.append("      \"articleCount\": 3,\n");
+        prompt.append("      \"trending\": true // oder false\n");
+        prompt.append("    }\n");
+        prompt.append("  ]\n");
+        prompt.append("}\n");
+        prompt.append("Wähle 3-5 Kategorien und 3 Top-Themen. 'trending' = true wenn das Thema besonders viele Artikel hat oder kontrovers ist.\n");
+
+        Map<String, Object> options = new HashMap<>();
+        options.put("temperature", 0.5);
+        options.put("num_predict", 500);
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("model", ollamaModel);
+        requestBody.put("prompt", prompt.toString());
+        requestBody.put("stream", false);
+        requestBody.put("format", "json"); // enforce JSON output (Ollama >= 0.1.24)
+        requestBody.put("options", options);
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+        String url = ollamaBaseUrl + "/api/generate";
+        String response = restTemplate.postForObject(url, request, String.class);
+
+        JsonNode jsonNode = objectMapper.readTree(response);
+        return jsonNode.get("response").asText();
+    }
+
+    /**
+     * Parst die JSON-Antwort von Ollama und baut das DTO.
+     */
+    private AiSummaryDto parseAiResponse(String jsonResponse, int totalArticles) throws Exception {
+        // Ollama's `format: "json"` guarantees valid JSON, but may wrap in markdown
+        jsonResponse = jsonResponse.trim();
+        if (jsonResponse.startsWith("```json")) {
+            jsonResponse = jsonResponse.substring(7);
+        }
+        if (jsonResponse.startsWith("```")) {
+            jsonResponse = jsonResponse.substring(3);
+        }
+        if (jsonResponse.endsWith("```")) {
+            jsonResponse = jsonResponse.substring(0, jsonResponse.length() - 3);
+        }
+        jsonResponse = jsonResponse.trim();
+
+        JsonNode root = objectMapper.readTree(jsonResponse);
+
+        List<AiSummaryDto.AiCategory> categories = new ArrayList<>();
+        JsonNode cats = root.path("categories");
+        if (cats.isArray()) {
+            for (JsonNode cat : cats) {
+                String name = cat.path("name").asText("Allgemein");
+                String summary = cat.path("summary").asText("Keine Zusammenfassung verfügbar.");
+                int count = cat.path("articleCount").asInt(0);
+                String sentiment = cat.path("sentiment").asText("neutral");
+                categories.add(new AiSummaryDto.AiCategory(name, summary, count, sentiment));
+            }
+        }
+
+        // Fallback: wenn keine Kategorien zurückkamen
+        if (categories.isEmpty() && totalArticles > 0) {
+            categories.add(new AiSummaryDto.AiCategory(
+                    "Allgemein",
+                    "Heute gibt es " + totalArticles + " neue Artikel in deinen Feeds.",
+                    totalArticles,
+                    "neutral"
+            ));
+        }
+
+        List<AiSummaryDto.AiTopic> topics = new ArrayList<>();
+        JsonNode tops = root.path("topTopics");
+        if (tops.isArray()) {
+            for (JsonNode top : tops) {
+                String name = top.path("name").asText("Unbekannt");
+                int count = top.path("articleCount").asInt(0);
+                boolean trending = top.path("trending").asBoolean(false);
+                topics.add(new AiSummaryDto.AiTopic(name, count, trending));
+            }
+        }
+
+        String generatedAt = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        return new AiSummaryDto(categories, topics, generatedAt);
+    }
+
+    /**
+     * Fallback wenn Ollama nicht antwortet.
+     */
+    private AiSummaryDto fallbackSummary(List<Article> articles) {
+        List<AiSummaryDto.AiCategory> categories = List.of(
+            new AiSummaryDto.AiCategory(
+                "Allgemein",
+                "Heute gibt es " + articles.size() + " neue Artikel in deinen Feeds.",
+                articles.size(),
+                "neutral"
+            )
+        );
+
+        // Simple Top-Themen über Wort-Frequenz aus Titeln
+        List<AiSummaryDto.AiTopic> topics = extractTopicsFromTitles(articles);
+
+        String generatedAt = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        return new AiSummaryDto(categories, topics, generatedAt);
+    }
+
+    /**
+     * Extrahiert Topics aus Artikel-Titeln (einfache Word-Frequency-Heuristik).
+     */
+    private List<AiSummaryDto.AiTopic> extractTopicsFromTitles(List<Article> articles) {
+        Map<String, Integer> wordFreq = new HashMap<>();
+        Set<String> stopWords = new HashSet<>(Set.of(
+            "der", "die", "das", "ein", "eine", "und", "oder", "mit", "für",
+            "von", "in", "zu", "auf", "ist", "sind", "war", "wurde", "wird", "nicht",
+            "bei", "nach", "wie", "als", "um", "über", "aus", "an", "durch", "vor", "zum", "zur",
+            "the", "a", "to", "of", "and", "for", "on", "is", "are", "new", "more",
+            "this", "that", "it", "with", "at", "from", "by"
+        ));
+
+        for (Article a : articles) {
+            if (a.getTitle() == null) continue;
+            String[] words = a.getTitle().toLowerCase()
+                    .replaceAll("[^a-zäöüß0-9\\s]", " ")
+                    .split("\\s+");
+            for (String word : words) {
+                if (word.length() < 3 || stopWords.contains(word)) continue;
+                wordFreq.merge(word, 1, Integer::sum);
+            }
+        }
+
+        return wordFreq.entrySet().stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                .limit(3)
+                .map(e -> new AiSummaryDto.AiTopic(
+                        capitalize(e.getKey()),
+                        e.getValue(),
+                        e.getValue() >= 3
+                ))
+                .collect(Collectors.toList());
+    }
+
+    private String capitalize(String str) {
+        if (str == null || str.isEmpty()) return str;
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
+    }
+
+    private AiSummaryDto emptySummary() {
+        return new AiSummaryDto(
+            List.of(new AiSummaryDto.AiCategory("Allgemein", "Keine neuen Artikel vorhanden.", 0, "neutral")),
+            List.of(),
+            LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+        );
+    }
+}

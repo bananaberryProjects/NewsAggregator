@@ -1,5 +1,5 @@
 import { Box, Grid } from '@mui/material'
-import { WeatherWidget, StockWidget, SummaryWidget, CryptoPriceWidget, MorningBriefingWidget } from '../widgets'
+import { WeatherWidget, StockWidget, AiSummaryWidget, CryptoPriceWidget, MorningBriefingWidget } from '../widgets'
 
 export function DashboardView() {
   return (
@@ -21,7 +21,7 @@ export function DashboardView() {
 
         {/* KI Summary Widget */}
         <Grid size={{ xs: 12 }}>
-          <SummaryWidget />
+          <AiSummaryWidget />
         </Grid>
       </Grid>
     </Box>

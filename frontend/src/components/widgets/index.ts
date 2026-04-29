@@ -1,5 +1,5 @@
 export { WeatherWidget } from './WeatherWidget'
 export { StockWidget } from './StockWidget'
-export { SummaryWidget } from './SummaryWidget'
+export { AiSummaryWidget } from './AiSummaryWidget'
 export { CryptoPriceWidget } from './CryptoPriceWidget'
 export { MorningBriefingWidget } from './MorningBriefingWidget'

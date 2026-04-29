@@ -40,6 +40,7 @@ Feature-Ideen und zukünftige Entwicklungen für das News Aggregator Projekt.
 
 ### 🤖 KI & Automatisierung
 - [x] **KI-Zusammenfassung** - Tägliche Zusammenfassung mit Ollama
+- [x] **KI-Zusammenfassung 2.0** - Strukturierte Kategorien-Summary mit Sentiment, Accordion, TTS und Top-Themen
 - [ ] **Smart Fetch** - Häufigkeit pro Feed konfigurierbar
 - [x] **Auto-Cleanup** - Alte Artikel automatisch löschen (X Tage)
 - [x] **Keyword-Filter pro Feed** - Blockierte Keywords pro Feed konfigurieren (Frontend & Backend)
@@ -82,6 +83,7 @@ Feature-Ideen und zukünftige Entwicklungen für das News Aggregator Projekt.
 - [x] **Comprehensive Tests**
 - [x] **Dashboard Widgets** (Wetter, Börsenkurse, KI-Zusammenfassung)
 - [x] **Morning Briefing Dashboard Widget** - Zeitabhängiger Begrüßungs-Header mit Lesestats, Count-Up Animationen und Quick-Actions
+- [x] **KI-Zusammenfassung 2.0** - Strukturierte Kategorien-Summary mit Sentiment, Accordion, TTS und Top-Themen
 - [x] **OPML Import/Export**
 - [x] **PWA Support** - Progressive Web App mit Offline-Cache und App-Installation
 - [x] **Crypto Price Widget** - Live-Kryptopreis-Tracking über CoinGecko API (Bitcoin, Ethereum, Solana)
