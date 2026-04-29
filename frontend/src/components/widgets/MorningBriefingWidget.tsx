@@ -267,7 +267,7 @@ export function MorningBriefingWidget() {
                   <StatCard label="Ungelesen" value={stats.unreadCount} icon={ArticleIcon} color="#F57C00" />
                 </Grid>
                 <Grid size={{ xs: 6, sm: 3 }}>
-                  <StatCard label="Feeds mit Neuem" value={stats.feedsWithNewArticles} icon={RssFeed} color="#388E3C" />
+                  <StatCard label="offene Feeds" value={stats.feedsWithNewArticles} icon={RssFeed} color="#388E3C" />
                 </Grid>
                 <Grid size={{ xs: 6, sm: 3 }}>
                   <StatCard label="Favoriten" value={stats.favoriteCount} icon={Star} color="#FBC02D" />
@@ -297,7 +297,7 @@ export function MorningBriefingWidget() {
                 }}
                 endIcon={<ArrowForward />}
               >
-                Ungelesene
+                Artikel
               </Button>
               <Button
                 variant="outlined"
