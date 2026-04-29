@@ -12,6 +12,7 @@ Feature-Ideen und zukünftige Entwicklungen für das News Aggregator Projekt.
 ### 🎨 UI/UX Verbesserungen
 - [x] **Dark Mode** - Für die Web-UI (automatisch/optional)
 - [x] **Dashboard Widgets** - Wetter, Börsenkurse, KI-Zusammenfassung
+- [x] **Morning Briefing Dashboard Widget** - Zeitabhängiger Begrüßungs-Header mit personalisierten Lesestats (Count-Up Animationen, Lesestreak-Badge, Quick-Actions)
 - [x] **Auto-Refresh** - Artikel automatisch alle X Minuten aktualisieren
 - [x] **Ungelesen-Markierung** - Visueller Indikator für neue Artikel
 - [x] **Bookmarking** - Artikel als "gelesen" oder "favorit" markieren
@@ -80,6 +81,7 @@ Feature-Ideen und zukünftige Entwicklungen für das News Aggregator Projekt.
 - [x] **Reverse-Proxy Support**
 - [x] **Comprehensive Tests**
 - [x] **Dashboard Widgets** (Wetter, Börsenkurse, KI-Zusammenfassung)
+- [x] **Morning Briefing Dashboard Widget** - Zeitabhängiger Begrüßungs-Header mit Lesestats, Count-Up Animationen und Quick-Actions
 - [x] **OPML Import/Export**
 - [x] **PWA Support** - Progressive Web App mit Offline-Cache und App-Installation
 - [x] **Crypto Price Widget** - Live-Kryptopreis-Tracking über CoinGecko API (Bitcoin, Ethereum, Solana)

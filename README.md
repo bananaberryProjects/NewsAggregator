@@ -113,6 +113,7 @@ npx vite --host 0.0.0.0
 - ✅ **Dashboard-Widgets** - Wetter, Börsenkurse (NASDAQ), **Live-Kryptopreis-Tracking** (Bitcoin, Ethereum, Solana) & KI-Zusammenfassung
 - ✅ **NewsWeave Branding** - Eigenes Logo in Sidebar und Favicon
 - ✅ **Feed-Level Keyword-Filter** - Blockierte Keywords per Feed im Add/Edit-Dialog verwalten
+- ✅ **Morning Briefing Dashboard Widget** - Zeitabhängiger Begrüßungs-Header mit personalisierten Lesestats (Count-Up Animationen, Lesestreak-Badge, Quick-Actions)
 
 ### PWA (Progressive Web App)
 - ✅ **App-Installation** - Als Desktop/Mobile-App installierbar
