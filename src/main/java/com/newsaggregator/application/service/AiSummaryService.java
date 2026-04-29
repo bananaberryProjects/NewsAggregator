@@ -281,11 +281,11 @@ public class AiSummaryService {
      */
     private String computeSentiment(List<Article> articles) {
         Set<String> positive = Set.of("gut", "erfolg", "gewinn", "wachstum", "stark", "positiv", "boom",
-                "rekord", "plus", "steigt", "rallye", "rally", "bullish", "optimismus", "fortschritt",
+                "rekord", "plus", "steigt", "rallye", "bullish", "optimismus", "fortschritt",
                 "success", "growth", "strong", "gain", "surge", "rally", "boost", "breakthrough");
         Set<String> negative = Set.of("schlecht", "verlust", "krise", "crash", "schwach", "negativ",
                 "minus", "fällt", "panik", "bearish", "rezession", "problem", "warnung", "gefahr",
-                "loss", "crisis", "crash", "weak", "decline", "fall", "bearish", "recession", "fear");
+                "loss", "crisis", "weak", "decline", "fall", "recession", "fear");
 
         int pos = 0, neg = 0;
         for (Article a : articles) {
