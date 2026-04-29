@@ -114,6 +114,7 @@ npx vite --host 0.0.0.0
 - ✅ **NewsWeave Branding** - Eigenes Logo in Sidebar und Favicon
 - ✅ **Feed-Level Keyword-Filter** - Blockierte Keywords per Feed im Add/Edit-Dialog verwalten
 - ✅ **Morning Briefing Dashboard Widget** - Zeitabhängiger Begrüßungs-Header mit personalisierten Lesestats (Count-Up Animationen, Lesestreak-Badge, Quick-Actions)
+- ✅ **KI-Zusammenfassung 2.0** - Strukturierte Kategorien-Summary mit Sentiment-Balken, Accordion, TTS-Vorlesen, Top-Themen und Click-Through Filter
 
 ### PWA (Progressive Web App)
 - ✅ **App-Installation** - Als Desktop/Mobile-App installierbar
