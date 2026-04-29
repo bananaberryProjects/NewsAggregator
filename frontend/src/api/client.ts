@@ -209,8 +209,23 @@ export interface ReadingStatistics {
   articlesPerFeed: FeedStats[];
 }
 
+export interface DashboardStats {
+  unreadCount: number;
+  totalFeeds: number;
+  feedsWithNewArticles: number;
+  favoriteCount: number;
+  newFavoritesToday: number;
+  readStreakDays: number;
+  articlesReadToday: number;
+  lastReadAt: string | null;
+}
+
 export const statisticsApi = {
   getStatistics: () => fetchApi<ReadingStatistics>('/stats'),
+};
+
+export const dashboardApi = {
+  getDashboardStats: () => fetchApi<DashboardStats>('/dashboard/stats'),
 };
 
 export interface ExtractionResponse {
