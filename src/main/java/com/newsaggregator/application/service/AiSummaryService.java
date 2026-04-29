@@ -87,7 +87,7 @@ public class AiSummaryService {
 
         try {
             String jsonResponse = callOllamaStructured(articles, categoryNames);
-            return parseAiResponse(jsonResponse, articles.size());
+            return parseAiResponse(jsonResponse, articles);
         } catch (Exception e) {
             log.warn("Strukturierte Zusammenfassung fehlgeschlagen, Fallback wird verwendet: {}", e.getMessage());
             return fallbackSummary(articles);
