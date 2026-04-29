@@ -7,6 +7,8 @@ import com.newsaggregator.domain.model.CategoryId;
 import com.newsaggregator.domain.model.Feed;
 import com.newsaggregator.domain.port.out.ArticleRepository;
 import com.newsaggregator.domain.port.out.CategoryRepository;
+import com.newsaggregator.infrastructure.adapter.persistence.entity.AiSummaryCacheJpaEntity;
+import com.newsaggregator.infrastructure.adapter.persistence.repository.AiSummaryCacheJpaRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -26,16 +29,22 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Service für strukturierte KI-Tageszusammenfassung v2.
- * Liefert kategorisierte Übersichten mit Sentiment und Top-Themen statt Fließtext.
+ * Service fuer strukturierte KI-Tageszusammenfassung v2.
+ * Liefert kategorisierte Uebersichten mit Sentiment und Top-Themen.
+ *
+ * <p>Caching: Ergebnisse werden in ai_summary_cache gespeichert.
+ * Bei Cache-Miss wird Ollama aufgerufen und das Ergebnis gecacht.
+ * Der Cache wird nach jedem Feed-Import invalidiert.</p>
  */
 @Service
 public class AiSummaryService {
 
     private static final Logger log = LoggerFactory.getLogger(AiSummaryService.class);
+    private static final Duration CACHE_TTL = Duration.ofMinutes(90); // 1,5 Stunden statt 1 Stunde (etwas Puffer)
 
     private final ArticleRepository articleRepository;
     private final CategoryRepository categoryRepository;
+    private final AiSummaryCacheJpaRepository cacheRepository;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
@@ -46,9 +55,11 @@ public class AiSummaryService {
     private String ollamaModel;
 
     public AiSummaryService(ArticleRepository articleRepository,
-                            CategoryRepository categoryRepository) {
+                            CategoryRepository categoryRepository,
+                            AiSummaryCacheJpaRepository cacheRepository) {
         this.articleRepository = articleRepository;
         this.categoryRepository = categoryRepository;
+        this.cacheRepository = cacheRepository;
         this.restTemplate = createRestTemplate();
         this.objectMapper = new ObjectMapper();
     }
@@ -56,15 +67,36 @@ public class AiSummaryService {
     private RestTemplate createRestTemplate() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(3000); // 3s connect
-        factory.setReadTimeout(10000);  // 10s read
+        factory.setReadTimeout(180000);  // 180s read (Ollama braucht viel Zeit)
         return new RestTemplate(factory);
     }
 
     /**
      * Generiert eine strukturierte Zusammenfassung der Artikel von heute.
+     * Prueft zuerst den Cache, bei Cache-Miss wird Ollama aufgerufen.
      */
     public AiSummaryDto generateStructuredSummary() {
-        LocalDateTime todayStart = LocalDate.now().atStartOfDay();
+        LocalDate today = LocalDate.now();
+        LocalDateTime now = LocalDateTime.now();
+
+        // 1. Cache pruefen
+        Optional<AiSummaryCacheJpaEntity> cached = cacheRepository.findByForDate(today);
+        if (cached.isPresent()) {
+            AiSummaryCacheJpaEntity entry = cached.get();
+            if (entry.getExpiresAt().isAfter(now)) {
+                log.debug("Cache-Hit fuer {}", today);
+                try {
+                    return objectMapper.readValue(entry.getSummaryJson(), AiSummaryDto.class);
+                } catch (Exception e) {
+                    log.warn("Cache-Inhalt kaputt, wird neu generiert: {}", e.getMessage());
+                }
+            } else {
+                log.debug("Cache abgelaufen fuer {}", today);
+            }
+        }
+
+        // 2. Artikel laden
+        LocalDateTime todayStart = today.atStartOfDay();
         List<Article> articles = articleRepository.findByPublishedAtAfter(todayStart);
 
         // Fallback: wenn keine heutigen Artikel, nimm die neuesten 20
@@ -79,19 +111,74 @@ public class AiSummaryService {
             return emptySummary();
         }
 
-        // Kategorien laden (Feed-Kategorien als Grundlage)
-        List<Category> allCategories = categoryRepository.findAll();
-        String categoryNames = allCategories.stream()
-                .map(Category::getName)
-                .collect(Collectors.joining(", "));
-
+        // 3. Ollama aufrufen (oder Fallback)
+        AiSummaryDto result;
+        boolean isFallback = false;
         try {
+            List<Category> allCategories = categoryRepository.findAll();
+            String categoryNames = allCategories.stream()
+                    .map(Category::getName)
+                    .collect(Collectors.joining(", "));
             String jsonResponse = callOllamaStructured(articles, categoryNames);
-            return parseAiResponse(jsonResponse, articles);
+            result = parseAiResponse(jsonResponse, articles);
         } catch (Exception e) {
             log.warn("Strukturierte Zusammenfassung fehlgeschlagen, Fallback wird verwendet: {}", e.getMessage());
-            return fallbackSummary(articles);
+            result = fallbackSummary(articles);
+            isFallback = true;
         }
+
+        // 4. Ergebnis cachen
+        saveToCache(today, result, isFallback);
+
+        return result;
+    }
+
+    /**
+     * Speichert ein generiertes AiSummaryDto in den Cache.
+     */
+    private void saveToCache(LocalDate forDate, AiSummaryDto summary, boolean isFallback) {
+        try {
+            String json = objectMapper.writeValueAsString(summary);
+            AiSummaryCacheJpaEntity entry = new AiSummaryCacheJpaEntity();
+            entry.setForDate(forDate);
+            entry.setSummaryJson(json);
+            entry.setFallback(isFallback);
+            entry.setCreatedAt(LocalDateTime.now());
+            entry.setExpiresAt(LocalDateTime.now().plus(CACHE_TTL));
+
+            cacheRepository.findByForDate(forDate).ifPresent(existing -> {
+                entry.setId(existing.getId());
+            });
+
+            cacheRepository.save(entry);
+            if (isFallback) {
+                log.debug("Fallback-Summary fuer {} gecacht", forDate);
+            } else {
+                log.info("KI-Summary fuer {} gecacht (TTL: {} Min)", forDate, CACHE_TTL.toMinutes());
+            }
+        } catch (Exception e) {
+            log.warn("Konnte Summary nicht cachen: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Invalidiert den Cache fuer einen bestimmten Tag.
+     * Wird nach Feed-Import aufgerufen.
+     */
+    public void invalidateCache(LocalDate date) {
+        try {
+            cacheRepository.deleteByForDate(date);
+            log.info("KI-Summary-Cache fuer {} invalidiert", date);
+        } catch (Exception e) {
+            log.warn("Cache-Invalidierung fehlgeschlagen fuer {}: {}", date, e.getMessage());
+        }
+    }
+
+    /**
+     * Invalidiert den Cache fuer heute.
+     */
+    public void invalidateTodayCache() {
+        invalidateCache(LocalDate.now());
     }
 
     private String callOllamaStructured(List<Article> articles, String categoryNames) throws Exception {
@@ -106,7 +193,7 @@ public class AiSummaryService {
 
         StringBuilder prompt = new StringBuilder();
         prompt.append("Du bist ein Nachrichten-Assistent. Analysiere die folgenden Artikel und erstelle eine strukturierte Zusammenfassung im JSON-Format.\n\n");
-        prompt.append("Verfügbare Kategorien: ").append(categoryNames.isEmpty() ? "Allgemein" : categoryNames).append("\n\n");
+        prompt.append("Verfuegbare Kategorien: ").append(categoryNames.isEmpty() ? "Allgemein" : categoryNames).append("\n\n");
         prompt.append("Artikel (Titel + Kurzbeschreibung):\n");
 
         for (Article article : articles.stream().limit(15).toList()) {
@@ -122,12 +209,12 @@ public class AiSummaryService {
         }
 
         prompt.append("\n---\n");
-        prompt.append("Antworte AUSSCHLIESSLICH mit gültigem JSON (kein Markdown, keine Erklärungen). Das Format:\n");
+        prompt.append("Antworte AUSSCHLIESSLICH mit gueltigem JSON (kein Markdown, keine Erklaerungen). Das Format:\n");
         prompt.append("{\n");
         prompt.append("  \"categories\": [\n");
         prompt.append("    {\n");
         prompt.append("      \"name\": \"Kategorie-Name\",\n");
-        prompt.append("      \"summary\": \"2-3 Sätze Zusammenfassung\",\n");
+        prompt.append("      \"summary\": \"2-3 Saetze Zusammenfassung\",\n");
         prompt.append("      \"articleCount\": 5,\n");
         prompt.append("      \"sentiment\": \"positive\" // oder \"neutral\" oder \"negative\"\n");
         prompt.append("    }\n");
@@ -140,11 +227,11 @@ public class AiSummaryService {
         prompt.append("    }\n");
         prompt.append("  ]\n");
         prompt.append("}\n");
-        prompt.append("Wähle 3-5 Kategorien und 3 Top-Themen. 'trending' = true wenn das Thema besonders viele Artikel hat oder kontrovers ist.\n");
+        prompt.append("Waehle 3-5 Kategorien und 3 Top-Themen. 'trending' = true wenn das Thema besonders viele Artikel hat oder kontrovers ist.\n");
 
         Map<String, Object> options = new HashMap<>();
         options.put("temperature", 0.5);
-        options.put("num_predict", 500);
+        options.put("num_predict", 4096);
 
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("model", ollamaModel);
@@ -186,14 +273,14 @@ public class AiSummaryService {
         if (cats.isArray()) {
             for (JsonNode cat : cats) {
                 String name = cat.path("name").asText("Allgemein");
-                String summary = cat.path("summary").asText("Keine Zusammenfassung verfügbar.");
+                String summary = cat.path("summary").asText("Keine Zusammenfassung verfuegbar.");
                 int count = cat.path("articleCount").asInt(0);
                 String sentiment = cat.path("sentiment").asText("neutral");
                 categories.add(new AiSummaryDto.AiCategory(name, summary, count, sentiment));
             }
         }
 
-        // Wenn keine Kategorien zurückkamen → wirf Exception für Fallback
+        // Wenn keine Kategorien zurueckkamen -> wirf Exception fuer Fallback
         if (categories.isEmpty() && totalArticles > 0) {
             throw new RuntimeException("No categories in AI response");
         }
@@ -273,14 +360,14 @@ public class AiSummaryService {
     }
 
     /**
-     * Simple Sentiment-Analyse über Wort-Listen.
+     * Simple Sentiment-Analyse ueber Wort-Listen.
      */
     private String computeSentiment(List<Article> articles) {
         Set<String> positive = Set.of("gut", "erfolg", "gewinn", "wachstum", "stark", "positiv", "boom",
                 "rekord", "plus", "steigt", "rallye", "bullish", "optimismus", "fortschritt",
                 "success", "growth", "strong", "gain", "surge", "rally", "boost", "breakthrough");
         Set<String> negative = Set.of("schlecht", "verlust", "krise", "crash", "schwach", "negativ",
-                "minus", "fällt", "panik", "bearish", "rezession", "problem", "warnung", "gefahr",
+                "minus", "faellt", "panik", "bearish", "rezession", "problem", "warnung", "gefahr",
                 "loss", "crisis", "weak", "decline", "fall", "recession", "fear");
 
         int pos = 0, neg = 0;
@@ -288,7 +375,7 @@ public class AiSummaryService {
             if (a.getTitle() == null) continue;
             String[] words = a.getTitle().toLowerCase().split("\\s+");
             for (String w : words) {
-                w = w.replaceAll("[^a-zäöüß]", "");
+                w = w.replaceAll("[^a-zaeoeueß]", "");
                 if (positive.contains(w)) pos++;
                 if (negative.contains(w)) neg++;
             }
@@ -304,9 +391,9 @@ public class AiSummaryService {
     private List<AiSummaryDto.AiTopic> extractTopicsFromTitles(List<Article> articles) {
         Map<String, Integer> wordFreq = new HashMap<>();
         Set<String> stopWords = new HashSet<>(Set.of(
-            "der", "die", "das", "ein", "eine", "und", "oder", "mit", "für",
+            "der", "die", "das", "ein", "eine", "und", "oder", "mit", "fuer",
             "von", "in", "zu", "auf", "ist", "sind", "war", "wurde", "wird", "nicht",
-            "bei", "nach", "wie", "als", "um", "über", "aus", "an", "durch", "vor", "zum", "zur",
+            "bei", "nach", "wie", "als", "um", "ueber", "aus", "an", "durch", "vor", "zum", "zur",
             "the", "a", "to", "of", "and", "for", "on", "is", "are", "new", "more",
             "this", "that", "it", "with", "at", "from", "by"
         ));
@@ -314,7 +401,7 @@ public class AiSummaryService {
         for (Article a : articles) {
             if (a.getTitle() == null) continue;
             String[] words = a.getTitle().toLowerCase()
-                    .replaceAll("[^a-zäöüß0-9\\s]", " ")
+                    .replaceAll("[^a-zaeoeueß0-9\\s]", " ")
                     .split("\\s+");
             for (String word : words) {
                 if (word.length() < 3 || stopWords.contains(word)) continue;

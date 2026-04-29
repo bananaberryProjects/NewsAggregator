@@ -37,17 +37,20 @@ public class FeedFetchingService implements FetchFeedUseCase {
     private final RssFeedReader rssFeedReader;
     private final ArticleContentExtractor contentExtractor;
     private final ArticleMapper articleMapper;
+    private final AiSummaryService aiSummaryService;
 
     public FeedFetchingService(FeedRepository feedRepository,
                                 ArticleRepository articleRepository,
                                 RssFeedReader rssFeedReader,
                                 ArticleContentExtractor contentExtractor,
-                                ArticleMapper articleMapper) {
+                                ArticleMapper articleMapper,
+                                AiSummaryService aiSummaryService) {
         this.feedRepository = feedRepository;
         this.articleRepository = articleRepository;
         this.rssFeedReader = rssFeedReader;
         this.contentExtractor = contentExtractor;
         this.articleMapper = articleMapper;
+        this.aiSummaryService = aiSummaryService;
     }
 
     // ==================== Content Extraction ====================
@@ -201,5 +204,10 @@ public class FeedFetchingService implements FetchFeedUseCase {
 
         logger.info("Automatischer Abruf abgeschlossen: {} erfolgreich, {} fehlgeschlagen",
                 successCount, errorCount);
+
+        // KI-Summary-Cache invalidieren wenn neue Artikel importiert wurden
+        if (successCount > 0) {
+            aiSummaryService.invalidateTodayCache();
+        }
     }
 }

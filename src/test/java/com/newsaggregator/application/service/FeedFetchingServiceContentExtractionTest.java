@@ -54,7 +54,8 @@ class FeedFetchingServiceContentExtractionTest {
                 articleRepository,
                 rssFeedReader,
                 contentExtractor,
-                articleMapper
+                articleMapper,
+                mock(AiSummaryService.class)
         );
     }
 

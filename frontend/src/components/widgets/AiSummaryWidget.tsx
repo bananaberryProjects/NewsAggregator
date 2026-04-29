@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import {
-  Paper, CardContent, Typography, Box, Skeleton, Alert, IconButton, Button,
-  Fade, Tooltip, Avatar, List, ListItem, ListItemAvatar, ListItemText, Divider
+  Paper, CardContent, Typography, Box, Skeleton, Alert, IconButton, Tooltip,
+  Fade, List, ListItem, ListItemText, Divider
 } from '@mui/material'
 import {
-  Refresh, SmartToy, VolumeUp, Stop,
+  Refresh, SmartToy,
   SentimentSatisfiedAlt, SentimentNeutral, SentimentVeryDissatisfied,
-  ArrowForward, PlayArrow
+  ArrowForward
 } from '@mui/icons-material'
 
 interface AiCategory {
@@ -29,57 +29,22 @@ interface AiSummaryData {
 }
 
 const SENTIMENT_CONFIG = {
-  positive: { color: '#66BB6A', iconColor: '#4CAF50', icon: SentimentSatisfiedAlt, trackColor: '#E8F5E9', label: 'Positiv' },
-  neutral:  { color: '#FFA726', iconColor: '#FF9800', icon: SentimentNeutral,       trackColor: '#FFF3E0', label: 'Neutral' },
-  negative: { color: '#EF5350', iconColor: '#F44336', icon: SentimentVeryDissatisfied, trackColor: '#FFEBEE', label: 'Negativ' }
+  positive: { color: '#66BB6A', icon: SentimentSatisfiedAlt, label: 'Positiv' },
+  neutral:  { color: '#FFA726', icon: SentimentNeutral,       label: 'Neutral' },
+  negative: { color: '#EF5350', icon: SentimentVeryDissatisfied, label: 'Negativ' }
 }
 
-/** Sentiment-Balken als 10-Segment-Visualisierung (wie im Sketch) */
-function SentimentBar({ sentiment }: { sentiment: string }) {
-  const config = SENTIMENT_CONFIG[sentiment as keyof typeof SENTIMENT_CONFIG] || SENTIMENT_CONFIG.neutral
-
-  return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
-      <Box
-        sx={{
-          flex: 1,
-          display: 'flex',
-          gap: 0.4,
-          alignItems: 'center',
-          maxWidth: 140
-        }}
-      >
-        {Array.from({ length: 10 }).map((_, i) => {
-          const filled = sentiment === 'positive'
-            ? i < 8
-            : sentiment === 'negative'
-            ? i < 3
-            : i < 5
-          return (
-            <Box
-              key={i}
-              sx={{
-                flex: 1,
-                height: 10,
-                borderRadius: 1,
-                bgcolor: filled ? config.color : config.trackColor,
-                transition: 'background-color 0.3s ease'
-              }}
-            />
-          )
-        })}
-      </Box>
-    </Box>
-  )
+/** Sentiment-Icon für die Kategoriezeile */
+function SentimentIcon({ sentiment, size = 22 }: { sentiment: string; size?: number }) {
+  const cfg = SENTIMENT_CONFIG[sentiment as keyof typeof SENTIMENT_CONFIG] || SENTIMENT_CONFIG.neutral
+  const Icon = cfg.icon
+  return <Icon sx={{ color: cfg.color, fontSize: size }} />
 }
 
 export function AiSummaryWidget({ refreshIntervalSeconds = 600 }: { refreshIntervalSeconds?: number }) {
   const [summary, setSummary] = useState<AiSummaryData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isSpeaking, setIsSpeaking] = useState(false)
-  const [speakingCategory, setSpeakingCategory] = useState<string | null>(null)
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
 
   const fetchSummary = useCallback(async () => {
     setLoading(true)
@@ -102,54 +67,6 @@ export function AiSummaryWidget({ refreshIntervalSeconds = 600 }: { refreshInter
     return () => clearInterval(interval)
   }, [fetchSummary, refreshIntervalSeconds])
 
-  const handleSpeak = (categorySummary?: string) => {
-    if (!summary || !window.speechSynthesis) return
-    if (isSpeaking) {
-      window.speechSynthesis.cancel()
-      setIsSpeaking(false)
-      setSpeakingCategory(null)
-      return
-    }
-
-    const text = categorySummary || (
-      summary.categories
-        .map(c => `${c.name}: ${c.summary}`)
-        .join('.\n') +
-      '\n\nTop Themen: ' + summary.topTopics.map(t => t.name).join(', ')
-    )
-
-    const utterance = new SpeechSynthesisUtterance(text)
-    utterance.lang = 'de-DE'
-    utterance.onend = () => {
-      setIsSpeaking(false)
-      setSpeakingCategory(null)
-    }
-    utterance.onerror = () => {
-      setIsSpeaking(false)
-      setSpeakingCategory(null)
-    }
-    utteranceRef.current = utterance
-    window.speechSynthesis.speak(utterance)
-    setIsSpeaking(true)
-    if (categorySummary) {
-      setSpeakingCategory(summary.categories.find(c => c.summary === categorySummary)?.name || null)
-    }
-  }
-
-  const handleSpeakCategory = (cat: AiCategory) => {
-    if (isSpeaking) {
-      window.speechSynthesis.cancel()
-      setIsSpeaking(false)
-      setSpeakingCategory(null)
-      return
-    }
-    handleSpeak(`${cat.name}: ${cat.summary}`)
-    setSpeakingCategory(cat.name)
-  }
-
-  const formatTime = (iso: string) =>
-    new Date(iso).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
-
   const navigateToCategory = (categoryName: string) => {
     window.dispatchEvent(new CustomEvent('navigate-to', {
       detail: { view: 'articles', search: categoryName }
@@ -162,11 +79,8 @@ export function AiSummaryWidget({ refreshIntervalSeconds = 600 }: { refreshInter
     }))
   }
 
-  // Sentiment-Dot Farbe
-  const getSentimentDot = (sentiment: string) => {
-    const cfg = SENTIMENT_CONFIG[sentiment as keyof typeof SENTIMENT_CONFIG] || SENTIMENT_CONFIG.neutral
-    return cfg.iconColor
-  }
+  const formatTime = (iso: string) =>
+    new Date(iso).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
 
   return (
     <Paper
@@ -225,76 +139,56 @@ export function AiSummaryWidget({ refreshIntervalSeconds = 600 }: { refreshInter
           </Alert>
         ) : summary ? (
           <Box>
-            {/* Kategorien als Listen-Zeilen */}
-            <List sx={{ py: 0 }}>
+            {/* Kategorien als kompakte Zeilen */}
+            <List dense sx={{ py: 0 }}>
               {summary.categories.map((cat, idx) => (
                 <Fade in key={cat.name} timeout={300 + idx * 100}>
                   <Box>
                     <ListItem
                       sx={{
-                        py: 1.5,
-                        px: 2.5,
+                        py: 1,
+                        px: 2,
+                        gap: 1,
                         transition: 'background-color 0.2s ease',
                         '&:hover': { bgcolor: 'action.hover' },
                         cursor: 'pointer'
                       }}
                       onClick={() => navigateToCategory(cat.name)}
                     >
-                      <ListItemAvatar sx={{ minWidth: 36 }}>
-                        <Avatar
-                          sx={{
-                            width: 12,
-                            height: 12,
-                            bgcolor: getSentimentDot(cat.sentiment)
-                          }}
-                        />
-                      </ListItemAvatar>
+                      {/* Sentiment-Smiley */}
+                      <SentimentIcon sentiment={cat.sentiment} size={20} />
 
                       <ListItemText
                         primary={
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75, flexWrap: 'wrap' }}>
                             <Typography
-                              variant="body1"
+                              variant="body2"
                               sx={{
                                 fontWeight: 600,
                                 color: 'text.primary',
-                                fontSize: '0.95rem'
+                                fontSize: '0.9rem',
                               }}
                             >
                               {cat.name}
                             </Typography>
-                          </Box>
-                        }
-                        secondary={
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 0.5, width: '100%' }}>
-                            <Typography variant="caption" color="text.secondary" sx={{ minWidth: 70 }}>
-                              {cat.articleCount} {cat.articleCount === 1 ? 'Artikel' : 'Artikel'}
+                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.78rem', lineHeight: 1.3 }}>
+                              {cat.summary}
                             </Typography>
-                            <SentimentBar sentiment={cat.sentiment} />
                           </Box>
                         }
+                        sx={{ my: 0 }}
                       />
 
-                      <Tooltip title={speakingCategory === cat.name ? 'Stoppen' : 'Zusammenfassung vorlesen'}>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleSpeakCategory(cat)
-                          }}
-                          sx={{
-                            color: speakingCategory === cat.name ? 'primary.main' : 'text.secondary',
-                            bgcolor: speakingCategory === cat.name ? 'primary.lighter' : 'transparent',
-                            transition: 'all 0.2s ease',
-                            '&:hover': { bgcolor: 'action.selected', color: 'primary.main' }
-                          }}
-                        >
-                          {speakingCategory === cat.name ? <Stop fontSize="small" /> : <PlayArrow fontSize="small" />}
-                        </IconButton>
-                      </Tooltip>
+                      {/* Rechts: Artikelanzahl + Pfeil */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0, ml: 1 }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.78rem', whiteSpace: 'nowrap' }}>
+                          {cat.articleCount} {cat.articleCount === 1 ? 'Artikel' : 'Artikel'}
+                        </Typography>
+                        <ArrowForward fontSize="small" sx={{ color: 'text.disabled', fontSize: 14 }} />
+                      </Box>
                     </ListItem>
                     {idx < summary.categories.length - 1 && (
-                      <Divider component="li" variant="inset" sx={{ ml: 7 }} />
+                      <Divider component="li" variant="inset" sx={{ ml: 8 }} />
                     )}
                   </Box>
                 </Fade>
@@ -358,53 +252,21 @@ export function AiSummaryWidget({ refreshIntervalSeconds = 600 }: { refreshInter
               </Box>
             )}
 
-            {/* Footer: Vorlesen + Neu generieren */}
+            {/* Footer: nur Zeitstempel */}
             <Box sx={{
-              px: 2.5,
-              py: 1.5,
+              px: 2,
+              py: 1,
               display: 'flex',
-              justifyContent: 'space-between',
+              justifyContent: 'flex-end',
               alignItems: 'center',
               borderTop: '1px solid',
               borderColor: 'divider'
             }}>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  startIcon={isSpeaking ? <Stop /> : <VolumeUp />}
-                  onClick={() => handleSpeak()}
-                  disabled={!summary}
-                  sx={{
-                    textTransform: 'none',
-                    borderRadius: 2,
-                    px: 2,
-                    py: 0.5,
-                    borderColor: 'divider',
-                    fontSize: '0.8rem'
-                  }}
-                >
-                  {isSpeaking ? 'Stoppen' : '🔊 Zusammenfassung vorlesen'}
-                </Button>
-              </Box>
-
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                {summary.generatedAt && (
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                    {formatTime(summary.generatedAt)}
-                  </Typography>
-                )}
-                <Button
-                  size="small"
-                  variant="text"
-                  startIcon={<Refresh className={loading ? 'spin' : ''} fontSize="small" />}
-                  onClick={fetchSummary}
-                  disabled={loading}
-                  sx={{ textTransform: 'none', fontSize: '0.8rem', px: 1 }}
-                >
-                  Neu generieren
-                </Button>
-              </Box>
+              {summary.generatedAt && (
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                  Aktualisiert: {formatTime(summary.generatedAt)}
+                </Typography>
+              )}
             </Box>
           </Box>
         ) : (

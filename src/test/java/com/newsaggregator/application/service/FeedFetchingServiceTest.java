@@ -48,7 +48,7 @@ class FeedFetchingServiceTest {
     @BeforeEach
     void setUp() {
         articleMapper = new ArticleMapper();
-        service = new FeedFetchingService(feedRepository, articleRepository, rssFeedReader, contentExtractor, articleMapper);
+        service = new FeedFetchingService(feedRepository, articleRepository, rssFeedReader, contentExtractor, articleMapper, mock(AiSummaryService.class));
     }
 
     @Test

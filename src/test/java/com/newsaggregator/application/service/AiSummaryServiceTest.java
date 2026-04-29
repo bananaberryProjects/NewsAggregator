@@ -9,9 +9,10 @@ import com.newsaggregator.domain.model.FeedStatus;
 import com.newsaggregator.domain.model.Category;
 import com.newsaggregator.domain.port.out.ArticleRepository;
 import com.newsaggregator.domain.port.out.CategoryRepository;
+import com.newsaggregator.infrastructure.adapter.persistence.repository.AiSummaryCacheJpaRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -35,8 +36,15 @@ class AiSummaryServiceTest {
     @Mock
     private CategoryRepository categoryRepository;
 
-    @InjectMocks
+    @Mock
+    private AiSummaryCacheJpaRepository cacheRepository;
+
     private AiSummaryService aiSummaryService;
+
+    @BeforeEach
+    void setup() {
+        aiSummaryService = new AiSummaryService(articleRepository, categoryRepository, cacheRepository);
+    }
 
     @Test
     void shouldReturnEmptySummaryWhenNoArticles() {
