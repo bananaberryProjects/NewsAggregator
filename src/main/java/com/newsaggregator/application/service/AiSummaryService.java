@@ -164,7 +164,8 @@ public class AiSummaryService {
     /**
      * Parst die JSON-Antwort von Ollama und baut das DTO.
      */
-    private AiSummaryDto parseAiResponse(String jsonResponse, int totalArticles) throws Exception {
+    private AiSummaryDto parseAiResponse(String jsonResponse, List<Article> articles) throws Exception {
+        int totalArticles = articles.size();
         // Ollama's `format: "json"` guarantees valid JSON, but may wrap in markdown
         jsonResponse = jsonResponse.trim();
         if (jsonResponse.startsWith("```json")) {
@@ -192,14 +193,9 @@ public class AiSummaryService {
             }
         }
 
-        // Fallback: wenn keine Kategorien zurückkamen
+        // Wenn keine Kategorien zurückkamen → wirf Exception für Fallback
         if (categories.isEmpty() && totalArticles > 0) {
-            categories.add(new AiSummaryDto.AiCategory(
-                    "Allgemein",
-                    "Heute gibt es " + totalArticles + " neue Artikel in deinen Feeds.",
-                    totalArticles,
-                    "neutral"
-            ));
+            throw new RuntimeException("No categories in AI response");
         }
 
         List<AiSummaryDto.AiTopic> topics = new ArrayList<>();
