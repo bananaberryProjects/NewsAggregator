@@ -2,9 +2,11 @@ package com.newsaggregator.application.service;
 
 import com.newsaggregator.application.dto.AiSummaryDto;
 import com.newsaggregator.domain.model.Article;
+import com.newsaggregator.domain.model.Category;
+import com.newsaggregator.domain.model.CategoryId;
+import com.newsaggregator.domain.model.Feed;
 import com.newsaggregator.domain.port.out.ArticleRepository;
 import com.newsaggregator.domain.port.out.CategoryRepository;
-import com.newsaggregator.domain.model.Category;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -85,6 +87,12 @@ public class AiSummaryService {
     }
 
     private String callOllamaStructured(List<Article> articles, String categoryNames) throws Exception {
+        // Quick sanity check: is Ollama reachable?
+        try {
+            restTemplate.getForEntity(ollamaBaseUrl + "/api/tags", String.class);
+        } catch (Exception ex) {
+            throw new RuntimeException("Ollama not reachable at " + ollamaBaseUrl + ": " + ex.getMessage());
+        }
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
@@ -203,22 +211,87 @@ public class AiSummaryService {
 
     /**
      * Fallback wenn Ollama nicht antwortet.
+     * Gruppiert Artikel nach Feed-Kategorien und extrahiert Themen lokal.
      */
     private AiSummaryDto fallbackSummary(List<Article> articles) {
-        List<AiSummaryDto.AiCategory> categories = List.of(
-            new AiSummaryDto.AiCategory(
-                "Allgemein",
-                "Heute gibt es " + articles.size() + " neue Artikel in deinen Feeds.",
-                articles.size(),
-                "neutral"
-            )
-        );
+        // Lade Kategorien-Mapping
+        Map<CategoryId, Category> categoryById = categoryRepository.findAll().stream()
+                .collect(Collectors.toMap(
+                        c -> new CategoryId(c.getId().getValue()),
+                        c -> c
+                ));
 
-        // Simple Top-Themen über Wort-Frequenz aus Titeln
+        // Gruppiere Artikel nach Kategorie
+        Map<String, List<Article>> articlesByCategory = new LinkedHashMap<>();
+        for (Article a : articles) {
+            Feed feed = a.getFeed();
+            List<CategoryId> catIds = feed.getCategoryIds();
+            if (catIds == null || catIds.isEmpty()) {
+                articlesByCategory.computeIfAbsent("Allgemein", k -> new ArrayList<>()).add(a);
+            } else {
+                for (CategoryId cid : catIds) {
+                    Category cat = categoryById.get(cid);
+                    String catName = (cat != null) ? cat.getName() : "Allgemein";
+                    articlesByCategory.computeIfAbsent(catName, k -> new ArrayList<>()).add(a);
+                }
+            }
+        }
+
+        // Baue Kategorien-Liste (max 5, absteigend nach Artikel-Count)
+        List<AiSummaryDto.AiCategory> categories = articlesByCategory.entrySet().stream()
+                .sorted(Map.Entry.<String, List<Article>>comparingByValue(
+                        Comparator.comparingInt(List::size)).reversed())
+                .limit(5)
+                .map(entry -> {
+                    String name = entry.getKey();
+                    int count = entry.getValue().size();
+                    String sentiment = computeSentiment(entry.getValue());
+                    String summary = count + " Artikel" + (count == 1 ? "" : "") + " in dieser Kategorie.";
+                    return new AiSummaryDto.AiCategory(name, summary, count, sentiment);
+                })
+                .collect(Collectors.toList());
+
+        // Wenn keine Kategorien mit Artikeln, "Allgemein" als Fallback
+        if (categories.isEmpty() && !articles.isEmpty()) {
+            categories = List.of(new AiSummaryDto.AiCategory(
+                    "Allgemein",
+                    articles.size() + " Artikel vorhanden.",
+                    articles.size(),
+                    "neutral"
+            ));
+        }
+
+        // Extrahiere Top-Themen (verbessert: 2-3 Wort-Phrasen)
         List<AiSummaryDto.AiTopic> topics = extractTopicsFromTitles(articles);
 
         String generatedAt = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         return new AiSummaryDto(categories, topics, generatedAt);
+    }
+
+    /**
+     * Simple Sentiment-Analyse über Wort-Listen.
+     */
+    private String computeSentiment(List<Article> articles) {
+        Set<String> positive = Set.of("gut", "erfolg", "gewinn", "wachstum", "stark", "positiv", "boom",
+                "rekord", "plus", "steigt", "rallye", "rally", "bullish", "optimismus", "fortschritt",
+                "success", "growth", "strong", "gain", "surge", "rally", "boost", "breakthrough");
+        Set<String> negative = Set.of("schlecht", "verlust", "krise", "crash", "schwach", "negativ",
+                "minus", "fällt", "panik", "bearish", "rezession", "problem", "warnung", "gefahr",
+                "loss", "crisis", "crash", "weak", "decline", "fall", "bearish", "recession", "fear");
+
+        int pos = 0, neg = 0;
+        for (Article a : articles) {
+            if (a.getTitle() == null) continue;
+            String[] words = a.getTitle().toLowerCase().split("\\s+");
+            for (String w : words) {
+                w = w.replaceAll("[^a-zäöüß]", "");
+                if (positive.contains(w)) pos++;
+                if (negative.contains(w)) neg++;
+            }
+        }
+        if (pos > neg) return "positive";
+        if (neg > pos) return "negative";
+        return "neutral";
     }
 
     /**
