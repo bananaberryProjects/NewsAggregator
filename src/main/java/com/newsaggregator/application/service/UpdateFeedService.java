@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -28,7 +29,13 @@ public class UpdateFeedService implements UpdateFeedUseCase {
 
     @Override
     public Feed updateFeed(Long id, String name, String url, String description, Boolean extractContent) {
-        logger.info("Aktualisiere Feed mit ID {}: name={}, url={}, extractContent={}", id, name, url, extractContent);
+        return updateFeed(id, name, url, description, extractContent, null);
+    }
+
+    @Override
+    public Feed updateFeed(Long id, String name, String url, String description, Boolean extractContent, List<String> blockedKeywords) {
+        logger.info("Aktualisiere Feed mit ID {}: name={}, url={}, extractContent={}, blockedKeywords={}",
+                id, name, url, extractContent, blockedKeywords);
 
         // Validierung
         if (name == null || name.trim().isEmpty()) {
@@ -51,15 +58,13 @@ public class UpdateFeedService implements UpdateFeedUseCase {
         }
 
         Feed feed = existingFeed.get();
-        if (extractContent != null) {
-            feed.update(name.trim(), url.trim(), description != null ? description.trim() : null, extractContent);
-        } else {
-            feed.update(name.trim(), url.trim(), description != null ? description.trim() : null);
-        }
-        
+        boolean effectiveExtractContent = extractContent != null ? extractContent : feed.isExtractContent();
+        feed.update(name.trim(), url.trim(), description != null ? description.trim() : null,
+                     effectiveExtractContent, blockedKeywords);
+
         Feed updatedFeed = feedRepository.save(feed);
         logger.info("Feed {} erfolgreich aktualisiert", id);
-        
+
         return updatedFeed;
     }
 }

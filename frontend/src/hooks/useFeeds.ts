@@ -20,10 +20,11 @@ export function useFeeds() {
     }
   }, [])
 
-  const addFeed = async (url: string, name: string, categoryIds: string[]) => {
+  const addFeed = async (url: string, name: string, categoryIds: string[], blockedKeywords?: string[]) => {
     const newFeed = await feedsApi.add({ 
       name: name.trim() || undefined as any, 
-      url: url.trim() 
+      url: url.trim(),
+      blockedKeywords: blockedKeywords?.length ? blockedKeywords : undefined
     })
     
     if (categoryIds.length > 0) {
@@ -34,12 +35,13 @@ export function useFeeds() {
     return newFeed
   }
 
-  const updateFeed = async (feedId: string, name: string, url: string, description: string, extractContent?: boolean) => {
+  const updateFeed = async (feedId: string, name: string, url: string, description: string, extractContent?: boolean, blockedKeywords?: string[]) => {
     await feedsApi.update(feedId, { 
       name: name.trim(), 
       url: url.trim(),
       description: description.trim() || undefined,
-      extractContent
+      extractContent,
+      blockedKeywords: blockedKeywords?.length ? blockedKeywords : undefined
     })
     await loadFeeds()
   }

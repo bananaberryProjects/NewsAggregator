@@ -6,7 +6,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import org.mockito.Mock;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -221,7 +221,7 @@ class FeedControllerTest {
         // Given
         Feed updatedFeed = createTestFeed(1L, "Updated Feed", "https://newurl.com/feed");
 
-        when(updateFeedUseCase.updateFeed(1L, "Updated Feed", "https://newurl.com/feed", "Updated Description", true))
+        when(updateFeedUseCase.updateFeed(anyLong(), eq("Updated Feed"), eq("https://newurl.com/feed"), eq("Updated Description"), eq(true), any()))
                 .thenReturn(updatedFeed);
 
         UpdateFeedCommand command = new UpdateFeedCommand();
@@ -241,7 +241,7 @@ class FeedControllerTest {
     @Test
     void updateFeed_WithNonExistingId_ShouldReturn404() throws Exception {
         // Given
-        when(updateFeedUseCase.updateFeed(1L, "Updated Feed", "https://newurl.com/feed", "Updated Description", true))
+        when(updateFeedUseCase.updateFeed(anyLong(), eq("Updated Feed"), eq("https://newurl.com/feed"), eq("Updated Description"), eq(true), any()))
                 .thenThrow(new IllegalArgumentException("Feed mit ID 1 nicht gefunden"));
 
         UpdateFeedCommand command = new UpdateFeedCommand();
@@ -259,7 +259,7 @@ class FeedControllerTest {
     @Test
     void updateFeed_WithInvalidData_ShouldReturn400() throws Exception {
         // Given
-        when(updateFeedUseCase.updateFeed(1L, "", "https://newurl.com/feed", "Updated Description", false))
+        when(updateFeedUseCase.updateFeed(eq(1L), eq(""), eq("https://newurl.com/feed"), eq("Updated Description"), eq(false), any()))
                 .thenThrow(new IllegalArgumentException("Feed-Name darf nicht leer sein"));
 
         // When / Then
@@ -272,7 +272,7 @@ class FeedControllerTest {
     @Test
     void updateFeed_WithDuplicateUrl_ShouldReturn400() throws Exception {
         // Given
-        when(updateFeedUseCase.updateFeed(1L, "Updated Feed", "https://duplicate.com/feed", "Updated Description", true))
+        when(updateFeedUseCase.updateFeed(eq(1L), eq("Updated Feed"), eq("https://duplicate.com/feed"), eq("Updated Description"), eq(true), any()))
                 .thenThrow(new IllegalArgumentException("Ein Feed mit dieser URL existiert bereits"));
 
         // When / Then

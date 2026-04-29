@@ -19,7 +19,7 @@ import type { Feed, Category } from '../../api/client'
 interface EditFeedDialogProps {
   open: boolean
   onClose: () => void
-  onSubmit: (name: string, url: string, description: string, categoryIds: string[], extractContent: boolean) => void
+  onSubmit: (name: string, url: string, description: string, categoryIds: string[], extractContent: boolean, blockedKeywords: string[]) => void
   feed: Feed | null
   loading: boolean
   categories: Category[]
@@ -41,6 +41,8 @@ export function EditFeedDialog({
   const [url, setUrl] = useState('')
   const [description, setDescription] = useState('')
   const [extractContent, setExtractContent] = useState(true)
+  const [blockedKeywords, setBlockedKeywords] = useState<string[]>([])
+  const [keywordInput, setKeywordInput] = useState('')
   const [errors, setErrors] = useState<{ name?: string; url?: string }>({})
   const [submitError, setSubmitError] = useState<string | null>(null)
 
@@ -50,6 +52,8 @@ export function EditFeedDialog({
       setUrl(feed.url)
       setDescription(feed.description || '')
       setExtractContent(feed.extractContent !== false)
+      setBlockedKeywords(feed.blockedKeywords || [])
+      setKeywordInput('')
       setErrors({})
       setSubmitError(null)
     }
@@ -77,7 +81,7 @@ export function EditFeedDialog({
     setSubmitError(null)
     if (validate()) {
       try {
-        onSubmit(name.trim(), url.trim(), description.trim(), selectedCategories, extractContent)
+        onSubmit(name.trim(), url.trim(), description.trim(), selectedCategories, extractContent, blockedKeywords)
       } catch (error) {
         setSubmitError(error instanceof Error ? error.message : 'Ein Fehler ist aufgetreten')
       }
@@ -165,6 +169,75 @@ export function EditFeedDialog({
             }
           />
           
+          {/* Blocked Keywords */}
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              Blockierte Keywords
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+              Artikel mit diesen Keywords im Titel werden beim Abruf ignoriert (kommagetrennt oder mit Enter hinzufügen)
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+              <TextField
+                value={keywordInput}
+                onChange={(e) => setKeywordInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && keywordInput.trim()) {
+                    e.preventDefault()
+                    const kw = keywordInput.trim().toLowerCase()
+                    if (!blockedKeywords.includes(kw)) {
+                      setBlockedKeywords(prev => [...prev, kw])
+                    }
+                    setKeywordInput('')
+                  }
+                }}
+                placeholder="z.B. werbung, anzeige, sponsored"
+                size="small"
+                fullWidth
+                disabled={loading}
+              />
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => {
+                  if (keywordInput.trim()) {
+                    const kw = keywordInput.trim().toLowerCase()
+                    if (!blockedKeywords.includes(kw)) {
+                      setBlockedKeywords(prev => [...prev, kw])
+                    }
+                    setKeywordInput('')
+                  }
+                }}
+                disabled={!keywordInput.trim() || loading}
+              >
+                + Hinzufügen
+              </Button>
+            </Box>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {blockedKeywords.length === 0 ? (
+                <Typography variant="body2" color="text.secondary">
+                  Keine blockierten Keywords
+                </Typography>
+              ) : (
+                blockedKeywords.map((kw, index) => (
+                  <Chip
+                    key={index}
+                    label={kw}
+                    onDelete={() => setBlockedKeywords(prev => prev.filter(k => k !== kw))}
+                    sx={{
+                      backgroundColor: 'error.light',
+                      color: 'error.contrastText',
+                      '& .MuiChip-deleteIcon': {
+                        color: 'error.contrastText',
+                      },
+                    }}
+                    size="small"
+                  />
+                ))
+              )}
+            </Box>
+          </Box>
+
           {/* Kategorien-Auswahl */}
           <Box>
             <Typography variant="subtitle2" sx={{ mb: 1 }}>

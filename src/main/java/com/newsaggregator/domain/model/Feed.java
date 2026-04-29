@@ -1,12 +1,12 @@
 package com.newsaggregator.domain.model;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Domain Entity für Feed.
@@ -30,6 +30,7 @@ public class Feed {
     private LocalDateTime lastFetched;
     private FeedStatus status;
     private boolean extractContent;
+    private List<String> blockedKeywords;
     private final Set<Article> articles;
     private final List<CategoryId> categoryIds;
 
@@ -37,14 +38,14 @@ public class Feed {
      * Factory-Methode für neue Feeds (ohne ID - wird von Repository vergeben).
      */
     public static Feed createNew(String name, String url, String description) {
-        return new Feed(null, name, url, description, LocalDateTime.now(), null, FeedStatus.ACTIVE, true);
+        return new Feed(null, name, url, description, LocalDateTime.now(), null, FeedStatus.ACTIVE, true, null);
     }
 
     /**
      * Factory-Methode für neue Feeds mit extractContent Option.
      */
     public static Feed createNew(String name, String url, String description, boolean extractContent) {
-        return new Feed(null, name, url, description, LocalDateTime.now(), null, FeedStatus.ACTIVE, extractContent);
+        return new Feed(null, name, url, description, LocalDateTime.now(), null, FeedStatus.ACTIVE, extractContent, null);
     }
 
     /**
@@ -52,7 +53,7 @@ public class Feed {
      */
     public static Feed of(FeedId id, String name, String url, String description,
                           LocalDateTime createdAt, LocalDateTime lastFetched, FeedStatus status) {
-        return new Feed(id, name, url, description, createdAt, lastFetched, status, true);
+        return new Feed(id, name, url, description, createdAt, lastFetched, status, true, null);
     }
 
     /**
@@ -60,11 +61,20 @@ public class Feed {
      */
     public static Feed of(FeedId id, String name, String url, String description,
                           LocalDateTime createdAt, LocalDateTime lastFetched, FeedStatus status, boolean extractContent) {
-        return new Feed(id, name, url, description, createdAt, lastFetched, status, extractContent);
+        return new Feed(id, name, url, description, createdAt, lastFetched, status, extractContent, null);
+    }
+
+    /**
+     * Factory-Methode für vorhandene Feeds mit allen Optionen.
+     */
+    public static Feed of(FeedId id, String name, String url, String description,
+                          LocalDateTime createdAt, LocalDateTime lastFetched, FeedStatus status,
+                          boolean extractContent, List<String> blockedKeywords) {
+        return new Feed(id, name, url, description, createdAt, lastFetched, status, extractContent, blockedKeywords);
     }
 
     private Feed(FeedId id, String name, String url, String description,
-                 LocalDateTime createdAt, LocalDateTime lastFetched, FeedStatus status, boolean extractContent) {
+                 LocalDateTime createdAt, LocalDateTime lastFetched, FeedStatus status, boolean extractContent, List<String> blockedKeywords) {
         this.id = id;
         this.name = validateNotEmpty(name, "Name");
         this.url = validateUrl(url);
@@ -73,6 +83,7 @@ public class Feed {
         this.lastFetched = lastFetched;
         this.status = Objects.requireNonNull(status, "status darf nicht null sein");
         this.extractContent = extractContent;
+        this.blockedKeywords = blockedKeywords != null ? new ArrayList<>(blockedKeywords) : new ArrayList<>();
         this.articles = new HashSet<>();
         this.categoryIds = new ArrayList<>();
     }
@@ -203,6 +214,38 @@ public class Feed {
         return extractContent;
     }
 
+    public List<String> getBlockedKeywords() {
+        return Collections.unmodifiableList(blockedKeywords);
+    }
+
+    public void setBlockedKeywords(List<String> keywords) {
+        this.blockedKeywords = keywords != null ? new ArrayList<>(keywords) : new ArrayList<>();
+    }
+
+    public void addBlockedKeyword(String keyword) {
+        if (keyword != null && !keyword.trim().isEmpty() && !this.blockedKeywords.contains(keyword.trim().toLowerCase())) {
+            this.blockedKeywords.add(keyword.trim().toLowerCase());
+        }
+    }
+
+    public void removeBlockedKeyword(String keyword) {
+        if (keyword != null) {
+            this.blockedKeywords.remove(keyword.trim().toLowerCase());
+        }
+    }
+
+    /**
+     * Prüft, ob der Artikel-Titel ein geblocktes Keyword enthält.
+     * Case-insensitive, prüft Teilstring.
+     */
+    public boolean isTitleBlocked(String title) {
+        if (title == null || this.blockedKeywords.isEmpty()) {
+            return false;
+        }
+        String lowerTitle = title.toLowerCase();
+        return this.blockedKeywords.stream().anyMatch(lowerTitle::contains);
+    }
+
     public Set<Article> getArticles() {
         return Collections.unmodifiableSet(articles);
     }
@@ -240,13 +283,16 @@ public class Feed {
     }
 
     /**
-     * Aktualisiert die Feed-Daten inklusive extractContent.
+     * Aktualisiert die Feed-Daten inklusive extractContent und blockedKeywords.
      */
-    public void update(String name, String url, String description, boolean extractContent) {
+    public void update(String name, String url, String description, boolean extractContent, List<String> blockedKeywords) {
         this.name = validateNotEmpty(name, "Name");
         this.url = validateUrl(url);
         this.description = description;
         this.extractContent = extractContent;
+        if (blockedKeywords != null) {
+            this.blockedKeywords = new ArrayList<>(blockedKeywords);
+        }
     }
 
     // ==================== Objekt-Methoden ====================

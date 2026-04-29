@@ -12,6 +12,7 @@ import com.newsaggregator.domain.port.in.CryptoPriceRepository;
 import com.newsaggregator.domain.port.out.ArticleRepository;
 import com.newsaggregator.domain.port.out.FeedRepository;
 import com.newsaggregator.domain.port.out.RssFeedReader;
+import com.newsaggregator.domain.service.TitleSimilarityService;
 import com.newsaggregator.infrastructure.adapter.persistence.adapter.ArticleRepositoryAdapter;
 import com.newsaggregator.infrastructure.adapter.persistence.adapter.CryptoPriceRepositoryAdapter;
 import com.newsaggregator.infrastructure.adapter.persistence.adapter.FeedRepositoryAdapter;
@@ -71,8 +72,9 @@ public class BeanConfig {
     public ArticleRepository articleRepository(
             ArticleJpaRepository jpaRepository,
             FeedJpaRepository feedJpaRepository,
-            ArticlePersistenceMapper mapper) {
-        return new ArticleRepositoryAdapter(jpaRepository, feedJpaRepository, mapper);
+            ArticlePersistenceMapper mapper,
+            TitleSimilarityService titleSimilarityService) {
+        return new ArticleRepositoryAdapter(jpaRepository, feedJpaRepository, mapper, titleSimilarityService);
     }
 
     // ==================== RSS Reader Adapter ====================

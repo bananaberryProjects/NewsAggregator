@@ -112,4 +112,16 @@ public interface ArticleJpaRepository extends JpaRepository<ArticleJpaEntity, Lo
     @Query("DELETE FROM ArticleJpaEntity a WHERE a.publishedAt < :cutoffDate")
     int deleteByPublishedAtBefore(@Param("cutoffDate") LocalDateTime cutoffDate);
 
+    /**
+     * Prüft, ob ein Artikel mit diesem (getrimmten, lowercased) Titel existiert.
+     */
+    @Query("SELECT COUNT(a) > 0 FROM ArticleJpaEntity a WHERE LOWER(TRIM(a.title)) = LOWER(TRIM(:title))")
+    boolean existsByTitle(@Param("title") String title);
+
+    /**
+     * Liefert Artikel der letzten N Tage für titelbasierte Duplikat-Prüfung.
+     */
+    @Query("SELECT a FROM ArticleJpaEntity a WHERE a.publishedAt > :since")
+    List<ArticleJpaEntity> findRecentForDuplicateCheck(@Param("since") LocalDateTime since);
+
 }

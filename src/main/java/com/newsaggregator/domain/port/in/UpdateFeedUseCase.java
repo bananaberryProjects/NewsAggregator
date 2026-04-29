@@ -2,6 +2,8 @@ package com.newsaggregator.domain.port.in;
 
 import com.newsaggregator.domain.model.Feed;
 
+import java.util.List;
+
 /**
  * Incoming Port für das Aktualisieren eines bestehenden Feeds.
  */
@@ -21,4 +23,20 @@ public interface UpdateFeedUseCase {
      * @throws IllegalArgumentException wenn ein anderer Feed mit dieser URL bereits existiert
      */
     Feed updateFeed(Long id, String name, String url, String description, Boolean extractContent);
+
+    /**
+     * Aktualisiert einen bestehenden Feed inklusive Keyword-Filter.
+     *
+     * @param id          Die ID des zu aktualisierenden Feeds
+     * @param name        Der neue Name des Feeds
+     * @param url         Die neue URL des Feeds
+     * @param description Die neue Beschreibung des Feeds
+     * @param extractContent Ob Content extrahiert werden soll
+     * @param blockedKeywords Liste der geblockten Keywords
+     * @return Der aktualisierte Feed
+     * @throws IllegalArgumentException wenn der Feed nicht gefunden wird
+     * @throws IllegalArgumentException wenn Name oder URL ungültig sind
+     * @throws IllegalArgumentException wenn ein anderer Feed mit dieser URL bereits existiert
+     */
+    Feed updateFeed(Long id, String name, String url, String description, Boolean extractContent, List<String> blockedKeywords);
 }

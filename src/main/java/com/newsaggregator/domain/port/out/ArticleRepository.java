@@ -79,6 +79,23 @@ public interface ArticleRepository {
     boolean existsByLink(String link);
 
     /**
+     * Prüft, ob ein Artikel mit diesem Titel existiert (case-insensitive, getrimmt).
+     *
+     * @param title Der zu prüfende Titel
+     * @return true, falls ein Artikel mit diesem Titel existiert
+     */
+    boolean existsByTitle(String title);
+
+    /**
+     * Liefert mögliche titelbasierte Duplikate basierend auf Textähnlichkeit.
+     *
+     * @param title Der Titel zum Vergleich
+     * @param threshold Minimale Ähnlichkeit (0.0 - 1.0)
+     * @return Liste potentieller Duplikate
+     */
+    List<Article> findPotentialDuplicatesByTitle(String title, double threshold);
+
+    /**
      * Findet alle Artikel ohne extrahierten Content (contentHtml ist null).
      *
      * @param limit Maximale Anzahl zurückgegebener Artikel
