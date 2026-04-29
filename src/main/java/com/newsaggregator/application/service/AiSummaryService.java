@@ -1,5 +1,32 @@
 package com.newsaggregator.application.service;
 
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newsaggregator.application.dto.AiSummaryDto;
 import com.newsaggregator.domain.model.Article;
 import com.newsaggregator.domain.model.Category;
@@ -9,24 +36,6 @@ import com.newsaggregator.domain.port.out.ArticleRepository;
 import com.newsaggregator.domain.port.out.CategoryRepository;
 import com.newsaggregator.infrastructure.adapter.persistence.entity.AiSummaryCacheJpaEntity;
 import com.newsaggregator.infrastructure.adapter.persistence.repository.AiSummaryCacheJpaRepository;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Service;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
-
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Service fuer strukturierte KI-Tageszusammenfassung v2.
@@ -221,7 +230,7 @@ public class AiSummaryService {
         prompt.append("  ],\n");
         prompt.append("  \"topTopics\": [\n");
         prompt.append("    {\n");
-        prompt.append("      \"name\": \"Themen-Name\",\n");
+        prompt.append("      \"name\": \"Thema in 2 bis 3 Worten\",\n");
         prompt.append("      \"articleCount\": 3,\n");
         prompt.append("      \"trending\": true // oder false\n");
         prompt.append("    }\n");
