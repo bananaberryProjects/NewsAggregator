@@ -60,7 +60,7 @@ public class AiSummaryService {
     @Value("${ollama.base-url:http://host.docker.internal:11434}")
     private String ollamaBaseUrl;
 
-    @Value("${ollama.model:kimi-k2.5:cloud}")
+    @Value("${ollama.model:gpt-oss:120b-cloud}")
     private String ollamaModel;
 
     public AiSummaryService(ArticleRepository articleRepository,
@@ -236,7 +236,7 @@ public class AiSummaryService {
         prompt.append("    }\n");
         prompt.append("  ]\n");
         prompt.append("}\n");
-        prompt.append("Waehle 3-5 Kategorien und 3 Top-Themen. 'trending' = true wenn das Thema besonders viele Artikel hat oder kontrovers ist.\n");
+        prompt.append("Waehle 3-5 Kategorien und 3 Top-Themen. Nutze ausschließlich die deutsche Sprache. 'trending' = true wenn das Thema besonders viele Artikel hat oder kontrovers ist.\n");
 
         Map<String, Object> options = new HashMap<>();
         options.put("temperature", 0.5);
