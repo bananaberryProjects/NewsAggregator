@@ -123,9 +123,12 @@ export function MarketWidget({ refreshIntervalSeconds = 300 }: { refreshInterval
           color: '#fff',
           position: 'relative',
           boxShadow: (t) => t.shadows[4],
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
-        <CardContent sx={{ p: 3, pb: '16px !important' }}>
+        <CardContent sx={{ p: 3, pb: '16px !important', flex: 1, display: 'flex', flexDirection: 'column' }}>
           {/* Header */}
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -169,7 +172,7 @@ export function MarketWidget({ refreshIntervalSeconds = 300 }: { refreshInterval
               ))}
             </Box>
           ) : market ? (
-            <Box>
+            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
               {/* 2-Spalten Layout */}
               {(market.stocks.length > 0 || market.cryptos.length > 0) && (
                 <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>

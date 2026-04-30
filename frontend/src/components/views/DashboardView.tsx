@@ -12,12 +12,16 @@ export function DashboardView() {
 
       {/* 3. Wetter, Markt */}
       <Box sx={{ mt: 1 }}>
-        <Grid container spacing={3}>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <WeatherWidget />
+        <Grid container spacing={3} sx={{ alignItems: 'stretch' }}>
+          <Grid size={{ xs: 12, md: 6 }} sx={{ display: 'flex' }}>
+            <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+              <WeatherWidget />
+            </Box>
           </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <MarketWidget />
+          <Grid size={{ xs: 12, md: 6 }} sx={{ display: 'flex' }}>
+            <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+              <MarketWidget />
+            </Box>
           </Grid>
         </Grid>
       </Box>
