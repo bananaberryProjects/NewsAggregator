@@ -5,21 +5,21 @@ import {
   Fade, Chip, Avatar
 } from '@mui/material'
 import {
-  Coffee as CoffeeIcon,
-  WbSunny as SunIcon,
-  Brightness4 as EveningIcon,
-  NightsStay as NightIcon,
-  Article as ArticleIcon,
-  RssFeed,
-  Favorite as FavoriteIcon,
-  LocalFireDepartment,
-  ArrowForward,
-} from '@mui/icons-material'
+  Coffee,
+  Sun,
+  Sunset,
+  Moon,
+  FileText,
+  Rss,
+  Heart,
+  Flame,
+  ArrowRight,
+} from 'lucide-react'
 import { useDashboardStats } from '../../hooks'
 
 interface GreetingConfig {
   text: string;
-  Icon: typeof CoffeeIcon;
+  Icon: React.ElementType;
   gradient: string;
   iconBg: string;
 }
@@ -27,15 +27,15 @@ interface GreetingConfig {
 function getGreeting(): GreetingConfig {
   const hour = new Date().getHours()
   if (hour >= 5 && hour < 12) {
-    return { text: 'Guten Morgen', Icon: CoffeeIcon, gradient: 'linear-gradient(135deg, #E65100 0%, #FF8F00 50%, #FFB300 100%)', iconBg: 'rgba(255,255,255,0.2)' }
+    return { text: 'Guten Morgen', Icon: Coffee, gradient: 'linear-gradient(135deg, #E65100 0%, #FF8F00 50%, #FFB300 100%)', iconBg: 'rgba(255,255,255,0.2)' }
   }
   if (hour >= 12 && hour < 17) {
-    return { text: 'Guten Tag', Icon: SunIcon, gradient: 'linear-gradient(135deg, #1565C0 0%, #42A5F5 50%, #64B5F6 100%)', iconBg: 'rgba(255,255,255,0.2)' }
+    return { text: 'Guten Tag', Icon: Sun, gradient: 'linear-gradient(135deg, #1565C0 0%, #42A5F5 50%, #64B5F6 100%)', iconBg: 'rgba(255,255,255,0.2)' }
   }
   if (hour >= 17 && hour < 22) {
-    return { text: 'Guten Abend', Icon: EveningIcon, gradient: 'linear-gradient(135deg, #C62828 0%, #EF5350 50%, #FF7043 100%)', iconBg: 'rgba(255,255,255,0.2)' }
+    return { text: 'Guten Abend', Icon: Sunset, gradient: 'linear-gradient(135deg, #C62828 0%, #EF5350 50%, #FF7043 100%)', iconBg: 'rgba(255,255,255,0.2)' }
   }
-  return { text: 'Gute Nacht', Icon: NightIcon, gradient: 'linear-gradient(135deg, #283593 0%, #5C6BC0 50%, #7986CB 100%)', iconBg: 'rgba(255,255,255,0.2)' }
+  return { text: 'Gute Nacht', Icon: Moon, gradient: 'linear-gradient(135deg, #283593 0%, #5C6BC0 50%, #7986CB 100%)', iconBg: 'rgba(255,255,255,0.2)' }
 }
 
 function formatDate(): string {
@@ -72,7 +72,7 @@ function useCountUp(target: number, duration: number = 1200): number {
 interface StatCardProps {
   label: string;
   value: number;
-  icon: typeof ArticleIcon;
+  icon: React.ElementType;
   color: string;
   suffix?: string;
 }
@@ -224,7 +224,7 @@ export function MorningBriefingWidget() {
             {/* Streak Badge */}
             {!loading && stats && stats.readStreakDays > 0 && stats.readStreakDays >= 3 && (
               <Chip
-                icon={<LocalFireDepartment sx={{ color: '#FF6F00 !important' }} />}
+                icon={<Box sx={{ color: '#FF6F00', display: 'flex', alignItems: 'center' }}><Flame size={18} /></Box>}
                 label={`${stats.readStreakDays} Tage Streak`}
                 sx={{
                   bgcolor: 'rgba(255,255,255,0.2)',
@@ -264,16 +264,16 @@ export function MorningBriefingWidget() {
             ) : stats ? (
               <>
                 <Grid size={{ xs: 6, sm: 3 }}>
-                  <StatCard label="Ungelesen" value={stats.unreadCount} icon={ArticleIcon} color="#F57C00" />
+                  <StatCard label="Ungelesen" value={stats.unreadCount} icon={FileText} color="#F57C00" />
                 </Grid>
                 <Grid size={{ xs: 6, sm: 3 }}>
-                  <StatCard label="offene Feeds" value={stats.feedsWithNewArticles} icon={RssFeed} color="#388E3C" />
+                  <StatCard label="offene Feeds" value={stats.feedsWithNewArticles} icon={Rss} color="#388E3C" />
                 </Grid>
                 <Grid size={{ xs: 6, sm: 3 }}>
-                  <StatCard label="Favoriten" value={stats.favoriteCount} icon={FavoriteIcon} color="#E53935" />
+                  <StatCard label="Favoriten" value={stats.favoriteCount} icon={Heart} color="#E53935" />
                 </Grid>
                 <Grid size={{ xs: 6, sm: 3 }}>
-                  <StatCard label="Lesestreak" value={stats.readStreakDays} icon={LocalFireDepartment} color="#D32F2F" suffix=" Tage" />
+                  <StatCard label="Lesestreak" value={stats.readStreakDays} icon={Flame} color="#D32F2F" suffix=" Tage" />
                 </Grid>
               </>
             ) : null}
@@ -295,7 +295,7 @@ export function MorningBriefingWidget() {
                   px: 2,
                   '&:hover': { bgcolor: 'rgba(255,255,255,0.35)' },
                 }}
-                endIcon={<ArrowForward />}
+                endIcon={<ArrowRight size={18} />}
               >
                 Artikel
               </Button>
@@ -312,7 +312,7 @@ export function MorningBriefingWidget() {
                   px: 2,
                   '&:hover': { borderColor: 'rgba(255,255,255,0.7)', bgcolor: 'rgba(255,255,255,0.08)' },
                 }}
-                endIcon={<ArrowForward />}
+                endIcon={<ArrowRight size={18} />}
               >
                 Favoriten
               </Button>
@@ -329,7 +329,7 @@ export function MorningBriefingWidget() {
                   px: 2,
                   '&:hover': { borderColor: 'rgba(255,255,255,0.7)', bgcolor: 'rgba(255,255,255,0.08)' },
                 }}
-                endIcon={<ArrowForward />}
+                endIcon={<ArrowRight size={18} />}
               >
                 Feeds
               </Button>

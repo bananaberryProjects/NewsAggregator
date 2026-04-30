@@ -9,7 +9,6 @@ import {
   Chip,
   type ChipProps,
   Typography,
-  Avatar,
   IconButton,
   Divider,
   Tooltip,
@@ -26,6 +25,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  BookmarkCheck,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useTheme } from '@mui/material/styles'
@@ -231,9 +231,9 @@ export function Sidebar({
             {feeds.sort((a, b) => a.name.localeCompare(b.name)).map((feed) => (
               <ListItem key={feed.id} disablePadding>
                 <ListItemButton>
-                  <Avatar sx={{ width: 24, height: 24, mr: 1, bgcolor: 'primary.main' }}>
-                    {feed.name.charAt(0)}
-                  </Avatar>
+                  <ListItemIcon sx={{ minWidth: 32, justifyContent: 'center', mr: 1, color: 'primary.main' }}>
+                    <BookmarkCheck size={20} />
+                  </ListItemIcon>
                   <ListItemText
                     primary={feed.name}
                     secondary={`${feed.articleCount} Artikel`}

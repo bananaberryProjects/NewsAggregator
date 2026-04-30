@@ -11,17 +11,7 @@ import {
   CircularProgress,
   Tooltip,
 } from '@mui/material'
-import {
-  Launch as LaunchIcon,
-  CalendarToday as CalendarTodayIcon,
-  Favorite as FavoriteIcon,
-  FavoriteBorder as FavoriteBorderIcon,
-  Visibility as VisibilityIcon,
-  VisibilityOff as VisibilityOffIcon,
-  CheckCircle as CheckCircleIcon,
-  Article as ArticleIcon,
-  MenuBook as MenuBookIcon,
-} from '@mui/icons-material'
+import { ExternalLink, Calendar, CheckCircle2, FileText, Eye, EyeOff, Heart, BookOpen } from 'lucide-react'
 import type { Article } from '../api/client'
 import { stripHtml } from '../utils'
 
@@ -76,16 +66,14 @@ export function ArticleCard({
             <Chip size="small" label={article.feedName || 'News'} color="primary" sx={{ maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis' }} />
             {hasContentHtml && (
               <Tooltip title="Vollständiger Artikel verfügbar">
-                <MenuBookIcon
-                  fontSize="small"
-                  color="primary"
-                  sx={{ ml: 0.5 }}
-                />
+                <Box sx={{ color: 'primary.main', ml: 0.5 }} component="span">
+                  <BookOpen size={16} />
+                </Box>
               </Tooltip>
             )}
           </Box>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <CalendarTodayIcon fontSize="inherit" />
+            <Calendar size={14} />
             {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('de-DE', {
               day: 'numeric', month: 'short', year: 'numeric',
             }) : 'Kein Datum'}
@@ -109,11 +97,9 @@ export function ArticleCard({
           }}
         >
           {isRead && (
-            <CheckCircleIcon 
-              fontSize="small" 
-              color="success" 
-              sx={{ mr: 0.5, verticalAlign: 'middle' }} 
-            />
+            <Box component="span" sx={{ color: 'success.main', mr: 0.5, verticalAlign: 'middle', display: 'inline-flex' }}>
+              <CheckCircle2 size={16} />
+            </Box>
           )}
           {article.title}
         </Typography>
@@ -140,7 +126,7 @@ export function ArticleCard({
       <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
         <Button
           size="small"
-          startIcon={hasContentHtml ? <ArticleIcon /> : <LaunchIcon />}
+          startIcon={hasContentHtml ? <FileText size={18} /> : <ExternalLink size={18} />}
           onClick={hasContentHtml ? onOpenReader : () => window.open(article.link, '_blank')}
         >
           {hasContentHtml ? 'Weiterlesen' : 'Lesen'}
@@ -157,9 +143,9 @@ export function ArticleCard({
             {updating ? (
               <CircularProgress size={20} />
             ) : isRead ? (
-              <VisibilityOffIcon color="action" />
+              <EyeOff size={20} />
             ) : (
-              <VisibilityIcon color="primary" />
+              <Eye size={20} />
             )}
           </IconButton>
           
@@ -172,9 +158,11 @@ export function ArticleCard({
             {updating ? (
               <CircularProgress size={20} />
             ) : isFavorite ? (
-              <FavoriteIcon color="error" />
+              <Box sx={{ color: 'error.main', display: 'flex' }}>
+                <Heart size={20} fill="currentColor" />
+              </Box>
             ) : (
-              <FavoriteBorderIcon color="action" />
+              <Heart size={20} />
             )}
           </IconButton>
         </Box>

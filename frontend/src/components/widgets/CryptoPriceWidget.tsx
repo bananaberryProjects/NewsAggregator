@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent, Typography, Box, Skeleton, Alert, IconButton, Divider, CardMedia } from '@mui/material'
-import { AttachMoney, TrendingUp, TrendingDown, Refresh, CurrencyBitcoin } from '@mui/icons-material'
+import {
+  DollarSign, TrendingUp, TrendingDown, RotateCw, Bitcoin
+} from 'lucide-react'
 
 interface CryptoPrice {
   coinId: string
@@ -99,7 +101,7 @@ export function CryptoPriceWidget({ refreshIntervalSeconds = 300 }: { refreshInt
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: 'white' }}>
-          <CurrencyBitcoin sx={{ fontSize: 32 }} />
+          <Bitcoin size={32} />
           <Box>
             <Typography variant="h6" component="div" sx={{ fontWeight: 500, lineHeight: 1.2, color: 'white' }}>
               Krypto
@@ -113,7 +115,7 @@ export function CryptoPriceWidget({ refreshIntervalSeconds = 300 }: { refreshInt
             </Typography>
           )}
           <IconButton size="small" onClick={loadPrices} disabled={loading} sx={{ color: 'white' }}>
-            <Refresh />
+            <RotateCw size={20} />
           </IconButton>
         </Box>
       </CardMedia>
@@ -187,9 +189,9 @@ export function CryptoPriceWidget({ refreshIntervalSeconds = 300 }: { refreshInt
                       }}
                     >
                       {crypto.priceChangePercentage24h >= 0 ? (
-                        <TrendingUp sx={{ fontSize: 16 }} />
+                        <TrendingUp size={16} />
                       ) : (
-                        <TrendingDown sx={{ fontSize: 16 }} />
+                        <TrendingDown size={16} />
                       )}
                       <Typography variant="caption" component="span" sx={{ fontWeight: 500 }}>
                         {crypto.priceChangePercentage24h >= 0 ? '+' : ''}{formatNumber(crypto.priceChangePercentage24h, 2)}%
@@ -204,7 +206,7 @@ export function CryptoPriceWidget({ refreshIntervalSeconds = 300 }: { refreshInt
             <Box sx={{ mt: 2, pt: 1, borderTop: '1px dashed', borderColor: 'divider' }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                 <Typography variant="caption" color="text.secondary">
-                  <AttachMoney sx={{ fontSize: 12, verticalAlign: 'middle', mr: 0.5 }} />
+                  <DollarSign size={12} style={{ verticalAlign: 'middle', marginRight: 4 }} />
                   Marktkap.
                 </Typography>
                 <Typography variant="caption" sx={{ fontWeight: 500 }}>

@@ -3,9 +3,9 @@ import {
   Card, CardContent, Typography, Box, Skeleton, Alert, Avatar, Divider
 } from '@mui/material'
 import {
-  Refresh, WbSunny, Cloud, CloudOff, Opacity, AcUnit, Thunderstorm,
-  Psychology as PsychologyIcon, LocationOn
-} from '@mui/icons-material'
+  Sun, Cloud, CloudOff, Droplets, Snowflake, CloudLightning,
+  Brain, MapPin, RotateCw
+} from 'lucide-react'
 import { IconButton, Tooltip, Fade } from '@mui/material'
 import type { WeatherInsight, WeatherForecastDay } from '../../api/client'
 import { weatherApi } from '../../api/client'
@@ -73,18 +73,18 @@ const getWeatherTheme = (code: number) => {
 }
 
 const getWeatherIcon = (code: number) => {
-  if (code === 0) return WbSunny
+  if (code === 0) return Sun
   if (code >= 1 && code <= 3) return Cloud
   if (code >= 45 && code <= 48) return CloudOff
-  if (code >= 51 && code <= 67) return Opacity
-  if (code >= 71 && code <= 77) return AcUnit
-  if (code >= 95) return Thunderstorm
+  if (code >= 51 && code <= 67) return Droplets
+  if (code >= 71 && code <= 77) return Snowflake
+  if (code >= 95) return CloudLightning
   return Cloud
 }
 
 function WeatherIconComponent({ code, size = 48 }: { code: number; size?: number }) {
   const Icon = getWeatherIcon(code)
-  return <Icon sx={{ fontSize: size }} />
+  return <Icon size={size} />
 }
 
 function getWeatherDescription(code: number): string {
@@ -161,7 +161,7 @@ export function WeatherWidget() {
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Avatar sx={{ width: 40, height: 40, bgcolor: 'rgba(255,255,255,0.2)', color: '#fff' }}>
-                <LocationOn sx={{ fontSize: 22 }} />
+                <MapPin size={22} />
               </Avatar>
               <Box>
                 <Typography variant="h6" sx={{ fontWeight: 600, lineHeight: 1.2, color: '#fff' }}>
@@ -181,7 +181,9 @@ export function WeatherWidget() {
                 disabled={loading}
                 sx={{ color: '#fff' }}
               >
-                <Refresh sx={{ fontSize: 20, ...(loading && { animation: 'spin 1s linear infinite' }) }} />
+                <Box sx={{ ...(loading && { animation: 'spin 1s linear infinite' }) }}>
+                  <RotateCw size={20} />
+                </Box>
               </IconButton>
             </Tooltip>
           </Box>
@@ -237,7 +239,7 @@ export function WeatherWidget() {
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                    <PsychologyIcon sx={{ fontSize: 16, color: '#fff' }} />
+                    <Brain size={16} color="#fff" />
                     <Typography variant="caption" sx={{ fontWeight: 600, opacity: 0.9 }}>
                       KI-Einblick
                     </Typography>
