@@ -208,8 +208,8 @@ public class MarketInsightService {
 
         double avg = sum / count;
 
-        if (avg >= 0.75) return "bullish";
-        if (avg <= -0.75) return "bearish";
+        if (avg >= 1.0) return "bullish";
+        if (avg <= -1.0) return "bearish";
         return "neutral";
     }
 }
