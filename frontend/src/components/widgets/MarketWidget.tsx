@@ -82,6 +82,13 @@ export function MarketWidget({ refreshIntervalSeconds = 300 }: { refreshInterval
     setError(null)
     try {
       const data = await marketApi.getInsight(config.stockSymbols, config.cryptoIds)
+      // Sichere Sortierung nach Einstellungs-Reihenfolge (Fallback falls Backend falsch sortiert)
+      data.stocks = config.stockSymbols
+        .map(sym => data.stocks.find(s => s.symbol === sym))
+        .filter((s): s is typeof data.stocks[0] => s !== undefined)
+      data.cryptos = config.cryptoIds
+        .map(id => data.cryptos.find(c => c.coinId === id))
+        .filter((c): c is typeof data.cryptos[0] => c !== undefined)
       setMarket(data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Fehler beim Laden der Marktdaten')
