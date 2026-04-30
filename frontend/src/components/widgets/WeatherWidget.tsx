@@ -202,21 +202,7 @@ export function WeatherWidget() {
               {/* Main weather display */}
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Box
-                    sx={{
-                      width: 72,
-                      height: 72,
-                      borderRadius: '50%',
-                      bgcolor: theme.iconBg,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                      color: '#333',
-                    }}
-                  >
-                    <WeatherIconComponent code={weather.weatherCode} size={40} />
-                  </Box>
+                  <WeatherIconComponent code={weather.weatherCode} size={56} />
                   <Box>
                     <Typography variant="h3" sx={{ fontWeight: 700, lineHeight: 1.1, color: '#fff' }}>
                       {Math.round(weather.temperature)}°
