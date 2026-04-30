@@ -276,3 +276,37 @@ export const weatherApi = {
     fetchApi<WeatherInsight>(`/weather/insight?lat=${lat}&lon=${lon}&city=${encodeURIComponent(city)}`),
 };
 
+// ── Market Insight ──
+
+export interface MarketStock {
+  symbol: string;
+  name: string;
+  value: number;
+  change: number;
+  changePercent: number;
+  currency: string;
+}
+
+export interface MarketCrypto {
+  coinId: string;
+  symbol: string;
+  name: string;
+  priceUsd: number;
+  priceChangePercentage24h: number;
+}
+
+export interface MarketInsight {
+  insight: string;
+  marketSentiment: 'bullish' | 'bearish' | 'neutral';
+  updatedAt: string;
+  stocks: MarketStock[];
+  cryptos: MarketCrypto[];
+}
+
+export const marketApi = {
+  getInsight: (stockSymbols: string[], cryptoIds: string[]) => {
+    const stocks = stockSymbols.join(',');
+    const cryptos = cryptoIds.join(',');
+    return fetchApi<MarketInsight>(`/market/insight?stockSymbols=${encodeURIComponent(stocks)}&cryptoIds=${encodeURIComponent(cryptos)}`);
+  },
+};
