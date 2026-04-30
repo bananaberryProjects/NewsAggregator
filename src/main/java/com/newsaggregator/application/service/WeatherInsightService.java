@@ -1,12 +1,17 @@
 package com.newsaggregator.application.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.newsaggregator.application.dto.WeatherInsightDto;
-import com.newsaggregator.domain.model.Article;
-import com.newsaggregator.domain.port.out.ArticleRepository;
-import com.newsaggregator.infrastructure.adapter.persistence.entity.WeatherInsightCacheJpaEntity;
-import com.newsaggregator.infrastructure.adapter.persistence.repository.WeatherInsightCacheJpaRepository;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,11 +22,15 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.newsaggregator.application.dto.WeatherInsightDto;
+import com.newsaggregator.domain.model.Article;
+import com.newsaggregator.domain.port.out.ArticleRepository;
+import com.newsaggregator.infrastructure.adapter.persistence.entity.WeatherInsightCacheJpaEntity;
+import com.newsaggregator.infrastructure.adapter.persistence.repository.WeatherInsightCacheJpaRepository;
+
+import lombok.Setter;
 
 /**
  * Service fuer KI-generierte Wetter-Einblicke.
@@ -76,7 +85,12 @@ public class WeatherInsightService {
             if (entry.getExpiresAt().isAfter(now)) {
                 log.debug("Weather-Cache-Hit fuer {}", locationKey);
                 try {
-                    return objectMapper.readValue(entry.getInsightJson(), WeatherInsightDto.class);
+                    WeatherInsightDto dto = objectMapper.readValue(entry.getInsightJson(), WeatherInsightDto.class);
+                    if (dto.getInsight() != null && !dto.getInsight().trim().isEmpty()) {
+                        log.info("Wetter-Insight aus Cache ({} Zeichen)", dto.getInsight().length());
+                        return dto;
+                    }
+                    log.warn("Gecachter Wetter-Insight war leer, wird neu generiert");
                 } catch (Exception e) {
                     log.warn("Wetter-Cache kaputt, wird neu generiert: {}", e.getMessage());
                 }
@@ -187,7 +201,7 @@ public class WeatherInsightService {
 
         Map<String, Object> options = new HashMap<>();
         options.put("temperature", 0.7);
-        options.put("num_predict", 256);
+        options.put("num_predict", 512);
 
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("model", ollamaModel);
@@ -200,13 +214,21 @@ public class WeatherInsightService {
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
         String response = restTemplate.postForObject(ollamaBaseUrl + "/api/generate", request, String.class);
+        log.debug("Ollama raw response: {}", response);
         JsonNode jsonNode = objectMapper.readTree(response);
-        String insight = jsonNode.get("response").asText().trim();
-        // Normalize newlines
+        String insight = jsonNode.path("response").asText("").trim();
+        if (insight.isEmpty()) {
+            log.warn("Ollama lieferte leeren Insight! Full JSON: {}", response);
+            throw new RuntimeException("Ollama Insight war leer");
+        }
+        // Remove <think> tags if present (common with reasoning models)
+        insight = insight.replaceAll("<think>.*?</think>", "").trim();
+        // Normalize whitespace
         insight = insight.replaceAll("\\s+", " ");
         if (insight.length() > 250) {
             insight = insight.substring(0, 247) + "...";
         }
+        log.info("KI-Insight generiert ({} Zeichen): {}", insight.length(), insight);
         return insight;
     }
 
@@ -283,6 +305,7 @@ public class WeatherInsightService {
         return "Unbekannt";
     }
 
+    @Setter
     private static class WeatherData {
         double temperature;
         int weatherCode;

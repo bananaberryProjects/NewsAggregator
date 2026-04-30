@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,10 +32,22 @@ public class WeatherInsightController {
         logger.info("Wetter-Insight angefragt: {} ({}, {})", city, lat, lon);
         try {
             WeatherInsightDto insight = weatherInsightService.generateInsight(lat, lon, city);
+            if (insight.getInsight() == null || insight.getInsight().trim().isEmpty()) {
+                logger.warn("Wetter-Insight fuer {} war leer!", city);
+            } else {
+                logger.info("Wetter-Insight fuer {} geliefert ({} Zeichen)", city, insight.getInsight().length());
+            }
             return ResponseEntity.ok(insight);
         } catch (Exception e) {
-            logger.error("Wetter-Insight fehlgeschlagen: {}", e.getMessage());
+            logger.error("Wetter-Insight fehlgeschlagen: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    @PostMapping("/api/weather/insight/invalidate")
+    public ResponseEntity<String> invalidateCache() {
+        logger.info("Wetter-Cache invalidierung angefragt");
+        weatherInsightService.invalidateCache();
+        return ResponseEntity.ok("{\"message\": \"Cache invalidiert\"}");
     }
 }
