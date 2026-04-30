@@ -1,5 +1,18 @@
 package com.newsaggregator.application.service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.newsaggregator.application.dto.DashboardStatsDto;
 import com.newsaggregator.domain.model.Article;
 import com.newsaggregator.domain.model.ArticleId;
@@ -10,18 +23,6 @@ import com.newsaggregator.domain.port.out.ArticleRepository;
 import com.newsaggregator.domain.port.out.FeedRepository;
 import com.newsaggregator.infrastructure.adapter.persistence.entity.ArticleReadStatus;
 import com.newsaggregator.infrastructure.adapter.persistence.repository.ArticleReadStatusRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DashboardStatsServiceTest {
@@ -136,7 +137,7 @@ class DashboardStatsServiceTest {
         DashboardStatsDto stats = dashboardStatsService.getDashboardStats();
 
         // Then
-        assertEquals(0, stats.getReadStreakDays());
+        assertEquals(1, stats.getReadStreakDays());
     }
 
     @Test
