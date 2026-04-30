@@ -18,7 +18,9 @@ import {
   DarkMode as DarkModeIcon,
   LightMode as LightModeIcon,
   LocationOn as LocationOnIcon,
+  ShowChart as ShowChartIcon,
 } from '@mui/icons-material'
+import { loadMarketConfig, saveMarketConfig, type MarketConfig } from '../widgets/MarketWidget'
 
 const CITIES = [
   { name: 'Berlin', lat: 52.52, lon: 13.41 },
@@ -81,8 +83,22 @@ export function SettingsView({
   onToggleTheme,
 }: SettingsViewProps) {
   const [selectedCity, setSelectedCity] = React.useState(loadSavedCity)
+  const [marketConfig, setMarketConfig] = React.useState<MarketConfig>(loadMarketConfig)
 
   const cityOptions: CityOption[] = CITIES.map(c => ({ label: c.name, lat: c.lat, lon: c.lon }))
+
+  const STOCK_OPTIONS = [
+    { label: 'DAX', value: 'DAX' },
+    { label: 'S&P 500', value: 'S&P500' },
+    { label: 'NASDAQ', value: 'NASDAQ' },
+  ]
+
+  const CRYPTO_OPTIONS = [
+    { label: 'Bitcoin', value: 'bitcoin' },
+    { label: 'Ethereum', value: 'ethereum' },
+    { label: 'Solana', value: 'solana' },
+    { label: 'XRP', value: 'ripple' },
+  ]
 
   return (
     <Box sx={{ maxWidth: 800, mx: 'auto', py: 4 }}>
@@ -147,6 +163,68 @@ export function SettingsView({
             )}
             sx={{ maxWidth: 400 }}
           />
+        </CardContent>
+      </Card>
+
+      {/* Market Symbols Card */}
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <ShowChartIcon color="primary" />
+            <Typography variant="h6">Markt-Symbole</Typography>
+          </Box>
+
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+            Wähle die Indizes und Kryptowährungen für das Markt-Widget.
+          </Typography>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {/* Stock symbols */}
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                Börsen-Indizes
+              </Typography>
+              <Autocomplete
+                multiple
+                options={STOCK_OPTIONS}
+                getOptionLabel={(opt) => opt.label}
+                value={STOCK_OPTIONS.filter(o => marketConfig.stockSymbols.includes(o.value))}
+                onChange={(_, newVals) => {
+                  const cfg: MarketConfig = {
+                    ...marketConfig,
+                    stockSymbols: newVals.map((v: typeof STOCK_OPTIONS[0]) => v.value),
+                  }
+                  setMarketConfig(cfg)
+                  saveMarketConfig(cfg)
+                }}
+                renderInput={(params) => <TextField {...params} label="Indizes" size="small" />}
+                sx={{ maxWidth: 500 }}
+              />
+            </Box>
+
+            {/* Crypto IDs */}
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                Krypto-Assets
+              </Typography>
+              <Autocomplete
+                multiple
+                options={CRYPTO_OPTIONS}
+                getOptionLabel={(opt) => opt.label}
+                value={CRYPTO_OPTIONS.filter(o => marketConfig.cryptoIds.includes(o.value))}
+                onChange={(_, newVals) => {
+                  const cfg: MarketConfig = {
+                    ...marketConfig,
+                    cryptoIds: newVals.map((v: typeof CRYPTO_OPTIONS[0]) => v.value),
+                  }
+                  setMarketConfig(cfg)
+                  saveMarketConfig(cfg)
+                }}
+                renderInput={(params) => <TextField {...params} label="Kryptos" size="small" />}
+                sx={{ maxWidth: 500 }}
+              />
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 

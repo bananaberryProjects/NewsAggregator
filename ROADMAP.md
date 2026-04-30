@@ -108,4 +108,4 @@ Für neue Feature-Vorschläge:
 
 ---
 
-*Letzte Aktualisierung: 2026-04-29*
+*Letzte Aktualisierung: 2026-04-30*
