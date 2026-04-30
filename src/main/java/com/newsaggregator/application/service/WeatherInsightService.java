@@ -291,6 +291,14 @@ public class WeatherInsightService {
         return "Abend";
     }
 
+    /**
+     * Invalidiert den gesamten Wetter-Insight-Cache.
+     */
+    public void invalidateCache() {
+        cacheRepository.deleteAll();
+        log.info("Wetter-Insight-Cache vollstaendig invalidiert");
+    }
+
     private static String getWeatherDescription(int code) {
         if (code == 0) return "Klarer Himmel";
         if (code == 1) return "Hauptsaechlich klar";
