@@ -249,3 +249,30 @@ export const adminApi = {
   getArticlesWithoutContentCount: () =>
     fetchApi<ArticlesWithoutContentCount>('/admin/articles/without-content/count'),
 };
+
+// ── Weather Insight ──
+
+export interface WeatherInsight {
+  temperature: number;
+  weatherCode: number;
+  description: string;
+  todayMin: number;
+  todayMax: number;
+  city: string;
+  insight: string;
+  forecast: WeatherForecastDay[];
+  generatedAt: string;
+}
+
+export interface WeatherForecastDay {
+  day: string;
+  maxTemp: number;
+  minTemp: number;
+  weatherCode: number;
+}
+
+export const weatherApi = {
+  getInsight: (lat: number, lon: number, city: string) =>
+    fetchApi<WeatherInsight>(`/weather/insight?lat=${lat}&lon=${lon}&city=${encodeURIComponent(city)}`),
+};
+

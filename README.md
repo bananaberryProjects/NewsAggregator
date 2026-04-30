@@ -91,12 +91,16 @@ npx vite --host 0.0.0.0
 - ✅ **Keyword-Filter pro Feed** - Blockierte Keywords pro Feed konfigurieren
 - ✅ **Titel-basierte Deduplizierung** - Duplicate Detection mit Normalisierung & Wortstamm-Matching
 - ✅ **Auto-Cleanup** - Alte Artikel automatisch löschen nach konfigurierbarer Anzahl Tage (Scheduled Task)
+### NewsWeave Morning Briefing & Tagesüberblick
+- ✅ **KI-gestütztes Morning Briefing** - Persönliche Begrüßung, Lesestatistiken, Quick-Actions
+- ✅ **KI-Tagesüberblick 2.0** - Strukturierte Zusammenfassung mit Kategorien, Sentiment-Balken, Top-Themen, TTS-Vorlesen und Click-Through-Filter
 
 ### Frontend
 - ✅ **React 19** mit TypeScript
 - ✅ **Vite** - Schnelles Build-Tool
 - ✅ **Material UI (MUI)** - Modernes, responsives Design
 - ✅ **Recharts** - Interaktive Charts für Statistiken
+- ✅ **Material Icons** - Material Icons
 - ✅ **Sidebar Navigation** - Dashboard / Feeds / Artikel / Favoriten / Kategorien / Statistiken / Einstellungen
 - ✅ **Content Extraction UI** - Reader-View Dialog mit DOMPurify-Sanitization
 - ✅ **Bulk-Extraction Dialog** - Fortschrittsanzeige für Content-Extraktion
@@ -110,11 +114,13 @@ npx vite --host 0.0.0.0
 - ✅ **Interaktive Icons** - Lesen/Gelesen markieren, Favoriten verwalten
 - ✅ **Datum-Anzeige** - In Artikel-Kacheln mit Kalender-Icon
 - ✅ **Infinite Scroll** - Automatisches Nachladen mit IntersectionObserver API (statt Paginierung)
-- ✅ **Dashboard-Widgets** - Wetter, Börsenkurse (NASDAQ), **Live-Kryptopreis-Tracking** (Bitcoin, Ethereum, Solana) & KI-Zusammenfassung
-- ✅ **NewsWeave Branding** - Eigenes Logo in Sidebar und Favicon
 - ✅ **Feed-Level Keyword-Filter** - Blockierte Keywords per Feed im Add/Edit-Dialog verwalten
-- ✅ **Morning Briefing Dashboard Widget** - Zeitabhängiger Begrüßungs-Header mit personalisierten Lesestats (Count-Up Animationen, Lesestreak-Badge, Quick-Actions)
-- ✅ **KI-Zusammenfassung 2.0** - Strukturierte Kategorien-Summary mit Sentiment-Balken, Accordion, TTS-Vorlesen, Top-Themen und Click-Through Filter
+
+### Dashboard-Widgets
+- ✅ **Wetter-Widget** - Standort-basiertes Wetter von Open-Meteo mit **KI-Insight** (Ollama-generierter Kommentar), 5-Tage-Forecast, Live-Standort-Wechsel
+- ✅ **Börsen Widget** - NASDAQ-Preise über Finnhub
+- ✅ **Krypto-Widget** - Live-Kryptopreis-Tracking (Bitcoin, Ethereum, Solana) über CoinGecko API
+- ✅ **NewsWeave Branding** - Eigenes Logo in Sidebar und Favicon
 
 ### PWA (Progressive Web App)
 - ✅ **App-Installation** - Als Desktop/Mobile-App installierbar
@@ -173,17 +179,20 @@ npx vite --host 0.0.0.0
 | POST | `/api/opml/import` | Feeds aus OPML importieren |
 | POST | `/api/stocks` | NASDAQ Preis abrufen (Finnhub) |
 | GET | `/api/crypto/price?symbol=BTC,ETH,SOL` | Live-Kryptopreis-Tracking über CoinGecko API |
-| GET | `/api/weather` | Aktuelle Wetterdaten |
+| GET | `/api/weather` | Aktuelle Wetterdaten (Temperatur, Code) |
+| GET | `/api/weather/insight?lat=&lon=&city=` | **KI-Wetter-Insight** mit Open-Meteo + Ollama, 5-Tage-Forecast |
+| POST | `/api/weather/insight/invalidate` | Wetter-Cache manuell invalidieren |
 | GET | `/api/summary` | KI-generierte Tageszusammenfassung |
 
 ## 🖥️ Frontend Views
 
-- **🏠 Dashboard** - Interaktive Widgets (Wetter, Börsenkurse, KI-Zusammenfassung)
+- **🏠 Dashboard** - Morning Briefing → KI-Tagesüberblick → Widgets (Wetter, Börsen, Krypto)
 - **📰 Feeds** - Alle Feeds mit Refresh/Delete-Buttons
 - **📄 Artikel** - Alle Artikel mit Filter (Alle/Ungelesen/Favoriten) + Interaktions-Icons
 - **⭐ Favoriten** - Alle als Favorit markierte Artikel (Multi-Column Grid)
 - **📊 Statistiken** - Lesegewohnheiten mit Charts (Artikel/Tag, pro Feed, Gelesen/Ungelesen)
 - **📤 OPML Import/Export** - Feeds im OPML-Format verwalten
+- **⚙️ Einstellungen** - Stadt-Auswahl für Wetter (15 deutsche Städte), Standort speichert in localStorage
 
 ## 📖 Technologien
 

@@ -4,11 +4,14 @@ import { WeatherWidget, StockWidget, AiSummaryWidget, CryptoPriceWidget, Morning
 export function DashboardView() {
   return (
     <Box>
-      {/* Morning Briefing — personalisierte Begrüßung + Stats + Quick Actions */}
+      {/* 1. Morning Briefing — personalisierte Begrüßung + Stats + Quick Actions */}
       <MorningBriefingWidget />
 
-      {/* Klassische Widgets: Wetter, Börsen, Krypto */}
-      <Grid container spacing={3}>
+      {/* 2. KI Tagesüberblick */}
+      <AiSummaryWidget />
+
+      {/* 3. Wetter, Börse, Krypto */}
+      <Grid container spacing={3} mt={1}>
         <Grid size={{ xs: 12, md: 4 }}>
           <WeatherWidget />
         </Grid>
@@ -17,11 +20,6 @@ export function DashboardView() {
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
           <CryptoPriceWidget />
-        </Grid>
-
-        {/* KI Summary Widget */}
-        <Grid size={{ xs: 12 }}>
-          <AiSummaryWidget />
         </Grid>
       </Grid>
     </Box>

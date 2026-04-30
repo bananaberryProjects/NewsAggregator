@@ -108,32 +108,42 @@ public class FeedPersistenceMapper {
 
     // ==================== Hilfsmethoden ====================
 
-    private List<String> parseBlockedKeywords(String json) {
-        if (json == null || json.isBlank() || json.equals("null")) {
+    private List<String> parseBlockedKeywords(String raw) {
+        if (raw == null || raw.isBlank() || raw.equals("null")) {
             return new ArrayList<>();
         }
         // Versuche echtes JSON-Array zu parsen (z.B. ["stau","reisewarnung"])
         try {
-            return objectMapper.readValue(json, STRING_LIST_TYPE);
-        } catch (Exception e) {
-            // Fallback: kommagetrennte Werte in Klammern, z.B. "[stau, reisewarnung]"
-            String trimmed = json.trim();
-            if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
-                trimmed = trimmed.substring(1, trimmed.length() - 1);
+            List<String> parsed = objectMapper.readValue(raw, STRING_LIST_TYPE);
+            // Edge case: DB hat ["stau, reisewarnung"] (ein String mit Komma statt zwei Elementen)
+            if (parsed.size() == 1 && parsed.get(0).contains(",")) {
+                List<String> exploded = new ArrayList<>();
+                for (String part : parsed.get(0).split(",")) {
+                    String kw = part.trim().replace("\"", "");
+                    if (!kw.isEmpty()) exploded.add(kw.toLowerCase());
+                }
+                if (exploded.size() > 1) return exploded;
             }
-            // Per Komma splitten, trimmen, leere Strings filtern
+            return parsed.stream()
+                    .map(k -> k.replace("\"", "").trim().toLowerCase())
+                    .filter(k -> !k.isEmpty())
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            // Manueller Fallback: entferne [ ] und ", dann per Komma splitten
+            String cleaned = raw.trim();
+            if (cleaned.startsWith("[") && cleaned.endsWith("]")) {
+                cleaned = cleaned.substring(1, cleaned.length() - 1);
+            }
+            cleaned = cleaned.replace("\"", "");
             List<String> result = new ArrayList<>();
-            for (String part : trimmed.split(",")) {
+            for (String part : cleaned.split(",")) {
                 String kw = part.trim();
                 if (!kw.isEmpty()) {
                     result.add(kw.toLowerCase());
                 }
             }
-            if (!result.isEmpty()) {
-                return result;
-            }
+            return result;
         }
-        return new ArrayList<>();
     }
 
     private String serializeBlockedKeywords(List<String> keywords) {

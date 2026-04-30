@@ -1,42 +1,24 @@
-import { useEffect, useState } from 'react'
-import { Card, CardContent, Typography, Box, Skeleton, Alert, IconButton, CardMedia, Divider } from '@mui/material'
-import { Refresh, WbSunny, Cloud, CloudOff, Opacity, AcUnit, Thunderstorm } from '@mui/icons-material'
+import { useEffect, useState, useCallback } from 'react'
+import {
+  Card, CardContent, Typography, Box, Skeleton, Alert, Avatar, Divider
+} from '@mui/material'
+import {
+  Refresh, WbSunny, Cloud, CloudOff, Opacity, AcUnit, Thunderstorm,
+  Psychology as PsychologyIcon, LocationOn
+} from '@mui/icons-material'
+import { IconButton, Tooltip, Fade } from '@mui/material'
+import type { WeatherInsight, WeatherForecastDay } from '../../api/client'
+import { weatherApi } from '../../api/client'
 
-interface WeatherData {
-  temperature: number
-  weatherCode: number
-  description: string
-  todayMin: number
-  todayMax: number
-}
-
-interface ForecastDay {
-  day: string
-  maxTemp: number
-  minTemp: number
-  weatherCode: number
-}
-
-interface WeatherTheme {
-  gradient: string
-  iconBg: string
-}
-
-interface WeatherWidgetProps {
-  defaultLatitude?: number
-  defaultLongitude?: number
-  defaultCity?: string
-}
-
-interface City {
+interface LocationConfig {
   name: string
   lat: number
   lon: number
 }
 
-// List of cities kept for potential fallback (not shown in UI)
-/*
-const CITIES: City[] = [
+const STORAGE_KEY = 'weather-location-config'
+
+const DEFAULT_LOCATIONS: LocationConfig[] = [
   { name: 'Berlin', lat: 52.52, lon: 13.41 },
   { name: 'München', lat: 48.14, lon: 11.58 },
   { name: 'Hamburg', lat: 53.55, lon: 9.99 },
@@ -47,45 +29,50 @@ const CITIES: City[] = [
   { name: 'Leipzig', lat: 51.34, lon: 12.37 },
   { name: 'Dresden', lat: 51.05, lon: 13.74 },
   { name: 'Nürnberg', lat: 49.45, lon: 11.08 },
-  // Additional cities (unused in UI)
-  { name: 'Kiel', lat: 54.32, lon: 10.13 },
-  { name: 'Bremen', lat: 53.08, lon: 8.80 },
-  { name: 'Mannheim', lat: 49.48, lon: 8.46 },
-  { name: 'Freiburg', lat: 47.99, lon: 7.85 },
-  { name: 'Bonn', lat: 50.73, lon: 7.10 }
 ]
-*/
 
-// WMO Weather interpretation codes – https://open-meteo.com/en/docs
-const getWeatherTheme = (code: number): WeatherTheme => {
-  if (code === 0) {
-    return { gradient: 'linear-gradient(135deg, #FFD54F 0%, #FFB300 50%, #FF8F00 100%)', iconBg: '#FFF8E1' }
+function loadLocation(): LocationConfig {
+  const raw = localStorage.getItem(STORAGE_KEY)
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw)
+      if (parsed.name && typeof parsed.lat === 'number' && typeof parsed.lon === 'number') {
+        return parsed
+      }
+    } catch {}
   }
-  if (code >= 1 && code <= 3) {
-    return { gradient: 'linear-gradient(135deg, #ECEFF1 0%, #B0BEC5 50%, #78909C 100%)', iconBg: '#ECEFF1' }
-  }
-  if (code >= 45 && code <= 48) {
-    return { gradient: 'linear-gradient(135deg, #CFD8DC 0%, #B0BEC5 100%)', iconBg: '#CFD8DC' }
-  }
-  if (code >= 51 && code <= 57) {
-    return { gradient: 'linear-gradient(135deg, #90CAF9 0%, #42A5F5 100%)', iconBg: '#E3F2FD' }
-  }
-  if (code >= 61 && code <= 67) {
-    return { gradient: 'linear-gradient(135deg, #42A5F5 0%, #1976D2 100%)', iconBg: '#BBDEFB' }
-  }
-  if (code >= 71 && code <= 77) {
-    return { gradient: 'linear-gradient(135deg, #B3E5FC 0%, #4FC3F7 50%, #81D4FA 100%)', iconBg: '#E1F5FE' }
-  }
-  if (code >= 80 && code <= 82) {
-    return { gradient: 'linear-gradient(135deg, #1976D2 0%, #0D47A1 100%)', iconBg: '#90CAF9' }
-  }
-  if (code >= 95) {
-    return { gradient: 'linear-gradient(135deg, #5C6BC0 0%, #3949AB 50%, #1A237E 100%)', iconBg: '#C5CAE9' }
-  }
-  return { gradient: 'linear-gradient(135deg, #FFD54F 0%, #FFB300 100%)', iconBg: '#FFF8E1' }
+  return DEFAULT_LOCATIONS[0]
 }
 
-const getMuiWeatherIcon = (code: number) => {
+const getWeatherTheme = (code: number) => {
+  if (code === 0) {
+    return { gradient: 'linear-gradient(135deg, #FF9800 0%, #FFB300 50%, #FFCA28 100%)', iconBg: '#FFF3E0' }
+  }
+  if (code >= 1 && code <= 3) {
+    return { gradient: 'linear-gradient(135deg, #78909C 0%, #90A4AE 50%, #B0BEC5 100%)', iconBg: '#ECEFF1' }
+  }
+  if (code >= 45 && code <= 48) {
+    return { gradient: 'linear-gradient(135deg, #546E7A 0%, #78909C 100%)', iconBg: '#CFD8DC' }
+  }
+  if (code >= 51 && code <= 57) {
+    return { gradient: 'linear-gradient(135deg, #42A5F5 0%, #64B5F6 100%)', iconBg: '#E3F2FD' }
+  }
+  if (code >= 61 && code <= 67) {
+    return { gradient: 'linear-gradient(135deg, #1E88E5 0%, #42A5F5 100%)', iconBg: '#BBDEFB' }
+  }
+  if (code >= 71 && code <= 77) {
+    return { gradient: 'linear-gradient(135deg, #4FC3F7 0%, #81D4FA 100%)', iconBg: '#E1F5FE' }
+  }
+  if (code >= 80 && code <= 82) {
+    return { gradient: 'linear-gradient(135deg, #1565C0 0%, #1976D2 100%)', iconBg: '#90CAF9' }
+  }
+  if (code >= 95) {
+    return { gradient: 'linear-gradient(135deg, #5C6BC0 0%, #7986CB 50%, #9FA8DA 100%)', iconBg: '#C5CAE9' }
+  }
+  return { gradient: 'linear-gradient(135deg, #FF9800 0%, #FFB300 100%)', iconBg: '#FFF3E0' }
+}
+
+const getWeatherIcon = (code: number) => {
   if (code === 0) return WbSunny
   if (code >= 1 && code <= 3) return Cloud
   if (code >= 45 && code <= 48) return CloudOff
@@ -95,12 +82,12 @@ const getMuiWeatherIcon = (code: number) => {
   return Cloud
 }
 
-const WeatherIcon = ({ code, size = 64, sx }: { code: number; size?: number; sx?: object }) => {
-  const IconComponent = getMuiWeatherIcon(code)
-  return <IconComponent sx={{ fontSize: size, ...sx }} />
+function WeatherIconComponent({ code, size = 48 }: { code: number; size?: number }) {
+  const Icon = getWeatherIcon(code)
+  return <Icon sx={{ fontSize: size }} />
 }
 
-const getWeatherDescription = (code: number): string => {
+function getWeatherDescription(code: number): string {
   if (code === 0) return 'Klarer Himmel'
   if (code === 1) return 'Hauptsächlich klar'
   if (code === 2) return 'Teilweise bewölkt'
@@ -114,227 +101,185 @@ const getWeatherDescription = (code: number): string => {
   return 'Unbekannt'
 }
 
-const getWeekdayAbbreviation = (dateStr: string): string => {
-  const days = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']
-  const date = new Date(dateStr)
-  return days[date.getDay()]
-}
-
-const STORAGE_KEY = 'weather-location'
-
-export function WeatherWidget({
-  defaultLatitude = 52.52,
-  defaultLongitude = 13.41,
-  defaultCity = 'Berlin'
-}: WeatherWidgetProps) {
-  const [weather, setWeather] = useState<WeatherData | null>(null)
-  const [forecast, setForecast] = useState<ForecastDay[]>([])
+export function WeatherWidget() {
+  const [weather, setWeather] = useState<WeatherInsight | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
+  const [location, setLocation] = useState<LocationConfig>(loadLocation)
 
-  // Initialise with defaults; will be overwritten by geolocation or saved location
-  const [selectedLocation, setSelectedLocation] = useState<City>({
-    name: defaultCity,
-    lat: defaultLatitude,
-    lon: defaultLongitude
-  })
-
-  // Load saved location from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved) as City
-        setSelectedLocation(parsed)
-      } catch {}
-    }
+    const timer = setTimeout(() => setMounted(true), 50)
+    return () => clearTimeout(timer)
   }, [])
 
-  // Obtain user's location on mount (fallback to defaults if denied)
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const { latitude, longitude } = pos.coords
-          setSelectedLocation({ name: 'Mein Standort', lat: latitude, lon: longitude })
-        },
-        () => {
-          // Permission denied – keep current (default or saved) location
-        }
-      )
-    }
-  }, [])
-
-  // Persist location changes
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(selectedLocation))
-  }, [selectedLocation])
-
-  const fetchWeather = async () => {
+  const fetchWeather = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${selectedLocation.lat}&longitude=${selectedLocation.lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&forecast_days=5`
-      )
-      if (!response.ok) throw new Error('Wetterdaten konnten nicht geladen werden')
-      const data = await response.json()
-      setWeather({
-        temperature: data.current.temperature_2m,
-        weatherCode: data.current.weather_code,
-        description: getWeatherDescription(data.current.weather_code),
-        todayMin: Math.round(data.daily.temperature_2m_min[0]),
-        todayMax: Math.round(data.daily.temperature_2m_max[0])
-      })
-      if (data.daily) {
-        const forecastData: ForecastDay[] = []
-        for (let i = 0; i < data.daily.time.length; i++) {
-          forecastData.push({
-            day: getWeekdayAbbreviation(data.daily.time[i]),
-            maxTemp: Math.round(data.daily.temperature_2m_max[i]),
-            minTemp: Math.round(data.daily.temperature_2m_min[i]),
-            weatherCode: data.daily.weather_code[i]
-          })
-        }
-        setForecast(forecastData)
-      }
+      const data = await weatherApi.getInsight(location.lat, location.lon, location.name)
+      setWeather(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unbekannter Fehler')
+      setError(err instanceof Error ? err.message : 'Wetterdaten konnten nicht geladen werden')
     } finally {
       setLoading(false)
     }
-  }
+  }, [location])
 
-  // Refetch when location changes
   useEffect(() => {
     fetchWeather()
-  }, [selectedLocation])
+  }, [fetchWeather])
 
-  const handleRefresh = () => {
-    fetchWeather()
-  }
+  // Subscribe to location changes from settings
+  useEffect(() => {
+    const handler = () => {
+      setLocation(loadLocation())
+    }
+    window.addEventListener('weather-location-changed', handler)
+    return () => window.removeEventListener('weather-location-changed', handler)
+  }, [])
 
   const theme = weather ? getWeatherTheme(weather.weatherCode) : getWeatherTheme(0)
 
   return (
-    <Card sx={{ height: '100%', minHeight: 200, overflow: 'hidden' }}>
-      {/* Header */}
-      <CardMedia
+    <Fade in={mounted} timeout={500}>
+      <Card
         sx={{
-          height: 50,
+          borderRadius: 3,
+          overflow: 'hidden',
           background: theme.gradient,
+          color: '#fff',
           position: 'relative',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          px: 2
+          boxShadow: (t) => t.shadows[4],
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <WbSunny sx={{ color: 'white', fontSize: 28 }} />
-          <Typography variant="h6" component="div" sx={{ fontWeight: 500, color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
-            Wetter
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <IconButton size="small" onClick={handleRefresh} disabled={loading} sx={{ color: 'white' }}>
-            <Refresh />
-          </IconButton>
-        </Box>
-      </CardMedia>
-
-      <CardContent sx={{ pt: 2 }}>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-        {loading ? (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Skeleton variant="rounded" width={64} height={64} sx={{ borderRadius: 1 }} />
-            <Box>
-              <Skeleton width={80} height={32} />
-              <Skeleton width={120} height={20} />
+        <CardContent sx={{ p: 3, pb: '16px !important' }}>
+          {/* Header */}
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Avatar sx={{ width: 40, height: 40, bgcolor: 'rgba(255,255,255,0.2)', color: '#fff' }}>
+                <LocationOn sx={{ fontSize: 22 }} />
+              </Avatar>
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 600, lineHeight: 1.2, color: '#fff' }}>
+                  Wetter
+                </Typography>
+                {weather && (
+                  <Typography variant="caption" sx={{ opacity: 0.85 }}>
+                    {weather.city}
+                  </Typography>
+                )}
+              </Box>
             </Box>
+            <Tooltip title="Aktualisieren">
+              <IconButton
+                size="small"
+                onClick={fetchWeather}
+                disabled={loading}
+                sx={{ color: '#fff' }}
+              >
+                <Refresh sx={{ fontSize: 20, ...(loading && { animation: 'spin 1s linear infinite' }) }} />
+              </IconButton>
+            </Tooltip>
           </Box>
-        ) : weather ? (
-          <Box>
-            {/* Current weather */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+
+          {error && (
+            <Alert severity="error" sx={{ mb: 2, bgcolor: 'rgba(255,255,255,0.9)' }}>
+              {error}
+            </Alert>
+          )}
+
+          {loading ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+              <Skeleton variant="circular" width={64} height={64} sx={{ bgcolor: 'rgba(255,255,255,0.2)' }} />
+              <Box>
+                <Skeleton variant="text" width={80} height={32} sx={{ bgcolor: 'rgba(255,255,255,0.2)' }} />
+                <Skeleton variant="text" width={120} height={20} sx={{ bgcolor: 'rgba(255,255,255,0.2)' }} />
+              </Box>
+            </Box>
+          ) : weather ? (
+            <Box>
+              {/* Main weather display */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Box
-                    sx={{
-                      width: 80,
-                      height: 80,
-                      borderRadius: '50%',
-                      backgroundColor: theme.iconBg,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                      flexShrink: 0
-                    }}
-                  >
-                    <WeatherIcon code={weather.weatherCode} size={64} />
-                  </Box>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="h4" component="div" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
-                      {Math.round(weather.temperature)}°C
+                  <WeatherIconComponent code={weather.weatherCode} size={56} />
+                  <Box>
+                    <Typography variant="h3" sx={{ fontWeight: 700, lineHeight: 1.1, color: '#fff' }}>
+                      {Math.round(weather.temperature)}°
                     </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        H: {weather.todayMax}° T: {weather.todayMin}°
-                      </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.3 }}>
+                      {getWeatherDescription(weather.weatherCode)}
+                    </Typography>
                   </Box>
                 </Box>
+                <Box sx={{ textAlign: 'right' }}>
+                  <Typography variant="body2" sx={{ opacity: 0.85 }}>
+                    H: {Math.round(weather.todayMax)}°
+                  </Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.85 }}>
+                    T: {Math.round(weather.todayMin)}°
+                  </Typography>
+                </Box>
               </Box>
-              <Box sx={{ textAlign: 'right' }}>
-                <Typography variant="h5" color="text.secondary" sx={{ fontWeight: 500 }}>
-                  {selectedLocation.name}
-                </Typography>
-                <Typography variant="body2" sx={{ mt: 0.5 }}>
-                  {weather.description}
-                </Typography>
-              </Box>
-            </Box>
-            {/* Forecast */}
-            {forecast.length > 0 && (
-              <>
-                <Divider sx={{ my: 1.5 }} />
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  {forecast.map((day, index) => (
-                    <Box
-                      key={index}
-                      sx={{
-                        flex: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        py: 0,
-                        px: 0,
-                        minWidth: 0
-                      }}
-                    >
-                      <Typography variant="caption" sx={{ fontWeight: 600, mb: 0.5 }}>
-                        {day.day}
-                      </Typography>
-                      <WeatherIcon code={day.weatherCode} size={32} />
-                      <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, alignItems: 'center' }}>
-                        <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                          {day.maxTemp}°
+
+              {/* KI Insight */}
+              {weather.insight && (
+                <Box
+                  sx={{
+                    bgcolor: 'rgba(255,255,255,0.15)',
+                    borderRadius: 2,
+                    p: 1.5,
+                    mb: 2,
+                    backdropFilter: 'blur(4px)',
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                    <PsychologyIcon sx={{ fontSize: 16, color: '#fff' }} />
+                    <Typography variant="caption" sx={{ fontWeight: 600, opacity: 0.9 }}>
+                      KI-Einblick
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" sx={{ opacity: 0.95, fontStyle: 'italic' }}>
+                    „{weather.insight}"
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Forecast */}
+              {weather.forecast && weather.forecast.length > 0 && (
+                <>
+                  <Divider sx={{ borderColor: 'rgba(255,255,255,0.3)', mb: 1.5 }} />
+                  <Box sx={{ display: 'flex', justifyContent: 'space-around' }}>
+                    {weather.forecast.map((day: WeatherForecastDay, index: number) => (
+                      <Box
+                        key={index}
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: 0.5,
+                          minWidth: 45,
+                        }}
+                      >
+                        <Typography variant="caption" sx={{ fontWeight: 600, opacity: 0.9 }}>
+                          {day.day}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {day.minTemp}°
+                        <WeatherIconComponent code={day.weatherCode} size={28} />
+                        <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                          {Math.round(day.maxTemp)}°
+                        </Typography>
+                        <Typography variant="caption" sx={{ opacity: 0.7, fontSize: '0.65rem' }}>
+                          {Math.round(day.minTemp)}°
                         </Typography>
                       </Box>
-                    </Box>
-                  ))}
-                </Box>
-              </>
-            )}
-          </Box>
-        ) : null}
-      </CardContent>
-    </Card>
+                    ))}
+                  </Box>
+                </>
+              )}
+            </Box>
+          ) : null}
+        </CardContent>
+      </Card>
+    </Fade>
   )
 }

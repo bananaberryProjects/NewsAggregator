@@ -120,12 +120,17 @@ public class DashboardStatsService {
         }
 
         LocalDate today = LocalDate.now();
-        if (!readDates.contains(today)) {
-            return 0;
+        LocalDate date = today;
+
+        // Wenn heute noch nicht gelesen, pruefe gestern (Grace Period)
+        if (!readDates.contains(date)) {
+            date = date.minusDays(1);
+            if (!readDates.contains(date)) {
+                return 0;
+            }
         }
 
         long streak = 0;
-        LocalDate date = today;
         while (readDates.contains(date)) {
             streak++;
             date = date.minusDays(1);
