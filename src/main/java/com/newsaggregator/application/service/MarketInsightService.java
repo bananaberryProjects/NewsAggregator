@@ -70,13 +70,15 @@ public class MarketInsightService {
         }
 
         List<StockDto> allStocks = stockService.fetchStockData().getStocks();
-        List<StockDto> filteredStocks = allStocks.stream()
-                .filter(s -> stockSymbols.contains(s.getSymbol()))
+        List<StockDto> filteredStocks = stockSymbols.stream()
+                .map(sym -> allStocks.stream().filter(s -> s.getSymbol().equals(sym)).findFirst().orElse(null))
+                .filter(java.util.Objects::nonNull)
                 .toList();
 
         List<CryptoPrice> allCryptos = cryptoPriceRepository.findAllCurrent();
-        List<CryptoPrice> filteredCryptos = allCryptos.stream()
-                .filter(c -> cryptoIds.contains(c.getCoinId()))
+        List<CryptoPrice> filteredCryptos = cryptoIds.stream()
+                .map(id -> allCryptos.stream().filter(c -> c.getCoinId().equals(id)).findFirst().orElse(null))
+                .filter(java.util.Objects::nonNull)
                 .toList();
 
         String insight = generateAiInsight(filteredStocks, filteredCryptos);
