@@ -1,14 +1,18 @@
 package com.newsaggregator.infrastructure.adapter.persistence.mapper;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+
 import com.newsaggregator.domain.model.Feed;
 import com.newsaggregator.domain.model.FeedId;
 import com.newsaggregator.domain.model.FeedStatus;
 import com.newsaggregator.infrastructure.adapter.persistence.entity.FeedJpaEntity;
-import org.junit.jupiter.api.Test;
-
-import java.time.LocalDateTime;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit-Test für FeedPersistenceMapper.
@@ -45,6 +49,36 @@ class FeedPersistenceMapperTest {
     @Test
     void toDomain_ShouldReturnNull_WhenEntityIsNull() {
         assertNull(mapper.toDomain(null));
+    }
+
+    @Test
+    void toDomain_ShouldParseValidJsonBlockedKeywords() {
+        FeedJpaEntity entity = new FeedJpaEntity();
+        entity.setId(1L);
+        entity.setName("Test");
+        entity.setUrl("https://example.com/feed");
+        entity.setCreatedAt(LocalDateTime.now());
+        entity.setBlockedKeywords("[\"stau\",\"reisewarnung\"]");
+
+        Feed domain = mapper.toDomain(entity);
+
+        assertEquals(List.of("stau", "reisewarnung"), domain.getBlockedKeywords());
+    }
+
+    @Test
+    void toDomain_ShouldParseMalformedBlockedKeywords() {
+        FeedJpaEntity entity = new FeedJpaEntity();
+        entity.setId(1L);
+        entity.setName("Test");
+        entity.setUrl("https://example.com/feed");
+        entity.setCreatedAt(LocalDateTime.now());
+        entity.setBlockedKeywords("[stau, reisewarnung]");
+
+        Feed domain = mapper.toDomain(entity);
+
+        assertNotNull(domain);
+        assertEquals(List.of("stau", "reisewarnung"), domain.getBlockedKeywords());
+        assertTrue(domain.isTitleBlocked("Stau auf A1"));
     }
 
     @Test
