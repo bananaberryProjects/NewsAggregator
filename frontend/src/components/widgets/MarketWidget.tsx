@@ -48,7 +48,7 @@ const SENTIMENT_CONFIG = {
     label: 'Bärisch',
   },
   neutral: {
-    gradient: 'linear-gradient(135deg, #607d8b 0%, #90a4ae 100%)',
+    gradient: 'linear-gradient(135deg, #f9a825 0%, #fdd835 100%)',
     icon: <Remove sx={{ fontSize: 32 }} />,
     label: 'Neutral',
   },
