@@ -106,7 +106,9 @@ public class StockService {
             YahooMeta meta = result.meta();
 
             BigDecimal currentPrice = BigDecimal.valueOf(meta.regularMarketPrice());
-            BigDecimal previousClose = BigDecimal.valueOf(meta.previousClose());
+            BigDecimal previousClose = meta.previousClose() != 0.0
+                    ? BigDecimal.valueOf(meta.previousClose())
+                    : BigDecimal.valueOf(meta.chartPreviousClose() != 0.0 ? meta.chartPreviousClose() : meta.regularMarketPrice());
 
             BigDecimal change = currentPrice.subtract(previousClose);
             BigDecimal changePercent = previousClose.compareTo(BigDecimal.ZERO) != 0
@@ -132,5 +134,5 @@ public class StockService {
     public record YahooChartResponse(YahooChart chart) {}
     public record YahooChart(List<YahooChartResult> result, Map<String, String> error) {}
     public record YahooChartResult(YahooMeta meta) {}
-    public record YahooMeta(double regularMarketPrice, double previousClose, String shortName, String symbol) {}
+    public record YahooMeta(double regularMarketPrice, double previousClose, double chartPreviousClose, String shortName, String symbol) {}
 }
