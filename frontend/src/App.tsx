@@ -28,6 +28,16 @@ import {
   Typography,
 } from '@mui/material'
 import { Add as AddIcon, Menu as MenuIcon } from '@mui/icons-material'
+
+function getInitialCollapsedState(): boolean {
+  try {
+    const saved = localStorage.getItem('sidebar-collapsed')
+    return saved === 'true'
+  } catch {
+    return false
+  }
+}
+
 import { useTheme, useFeeds, useArticles, useCategories } from './hooks'
 import { Sidebar, PWAInstallPrompt } from './components'
 import { DashboardView, FeedsView, ArticlesView, FavoritesView, CategoriesView, StatisticsView, SettingsView } from './components/views'
@@ -37,13 +47,21 @@ import { ContentExtractionDialog } from './components/ContentExtractionDialog'
 import type { Feed, Category, Article } from './api/client'
 import { adminApi } from './api/client'
 
-const drawerWidth = 280
-
 function App() {
   const { theme, isDark, toggleTheme } = useTheme()
   const { feeds, loading: feedsLoading, loadFeeds, addFeed, deleteFeed, refreshFeed, assignCategories, updateFeed } = useFeeds()
   const { articles, articleStatuses, loadArticles, toggleRead, toggleFavorite, updatingArticleId } = useArticles()
   const { categories, loadCategories, deleteCategory, updateCategory, addCategory } = useCategories()
+
+  // Sidebar collapse state (persisted in localStorage)
+  const [collapsed, setCollapsed] = useState(getInitialCollapsedState)
+  const handleToggleCollapse = () => {
+    const next = !collapsed
+    setCollapsed(next)
+    try { localStorage.setItem('sidebar-collapsed', String(next)) } catch { /* ignore */ }
+  }
+  const drawerWidth = 280
+  const drawerWidthCollapsed = 64
 
   // === Search state (lifted from SearchBar into App) ===
   const {
@@ -59,7 +77,6 @@ function App() {
 
   const isSearchActive = searchResults !== null || searchQuery !== ''
   const searchTotalElements = searchPageData?.totalElements ?? 0
-
 
   const [mobileOpen, setMobileOpen] = useState(false)
   const location = useLocation()
@@ -281,6 +298,8 @@ function App() {
           searchLoading={searchLoading}
           onSearch={search}
           onSearchReset={searchReset}
+          collapsed={collapsed}
+          onToggleCollapse={handleToggleCollapse}
         />
 
         {/* Main Content */}
@@ -289,10 +308,16 @@ function App() {
           sx={{
             flexGrow: 1,
             p: { xs: 0.5, sm: 2, md: 3 },
-            width: { md: 'calc(100% - ' + drawerWidth + 'px)' },
+            width: {
+              md: `calc(100% - ${collapsed ? drawerWidthCollapsed : drawerWidth}px)`,
+            },
             mt: { xs: 8, md: 0 },
             minHeight: '100vh',
             bgcolor: 'background.default',
+            transition: (theme) => theme.transitions.create('width', {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
           }}
         >
           <Container maxWidth="xl" sx={{ px: { xs: 0, sm: 2, md: 3 } }}>

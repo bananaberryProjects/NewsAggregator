@@ -9,7 +9,7 @@ import {
   WbSunny as SunIcon,
   Brightness4 as EveningIcon,
   NightsStay as NightIcon,
-  AutoStories as ArticleIcon,
+  Article as ArticleIcon,
   RssFeed,
   Favorite as FavoriteIcon,
   LocalFireDepartment,
