@@ -53,6 +53,8 @@ Feature-Ideen und zukünftige Entwicklungen für das News Aggregator Projekt.
 - [ ] **OAuth-Login** - Mit Google, GitHub, etc.
 
 ### 📱 Mobile & API
+- [x] **Wetter-Widget mit KI-Insight** - Standort-basiertes Wetter + persönlicher KI-Kommentar via Ollama
+- [x] **Dashboard-Widget-Reihenfolge** - Morning Briefing → Tagesüberblick → Wetter/Börse/Krypto
 - [ ] **Responsive Design** - Mobile-Optimierung verbessern
 - [ ] **REST API Erweiterung** - Mehr Endpoints, Pagination
 - [ ] **GraphQL** - Alternative API
