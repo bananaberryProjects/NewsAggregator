@@ -104,7 +104,12 @@ yarn-debug.log*
 yarn-error.log*
 build/
 dist/
+static/
 
 # Vite Cache
 .vite/
 .aider*
+
+# Cache
+.maven-cache/
+.hermes/

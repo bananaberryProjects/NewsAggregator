@@ -35,13 +35,13 @@ export function useFeeds() {
     return newFeed
   }
 
-  const updateFeed = async (feedId: string, name: string, url: string, description: string, extractContent?: boolean, blockedKeywords?: string[]) => {
+    const updateFeed = async (feedId: string, name: string, url: string, description: string, extractContent?: boolean, blockedKeywords?: string[]) => {
     await feedsApi.update(feedId, { 
       name: name.trim(), 
       url: url.trim(),
       description: description.trim() || undefined,
       extractContent,
-      blockedKeywords: blockedKeywords?.length ? blockedKeywords : undefined
+      blockedKeywords,
     })
     await loadFeeds()
   }

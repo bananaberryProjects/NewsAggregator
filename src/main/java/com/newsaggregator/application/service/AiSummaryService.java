@@ -75,8 +75,8 @@ public class AiSummaryService {
 
     private RestTemplate createRestTemplate() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(3000); // 3s connect
-        factory.setReadTimeout(180000);  // 180s read (Ollama braucht viel Zeit)
+        factory.setConnectTimeout(10000); // 10s connect
+        factory.setReadTimeout(300000);  // 5mins read (Ollama braucht viel Zeit)
         return new RestTemplate(factory);
     }
 

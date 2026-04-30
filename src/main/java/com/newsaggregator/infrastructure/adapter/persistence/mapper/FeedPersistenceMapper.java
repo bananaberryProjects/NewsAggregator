@@ -112,11 +112,28 @@ public class FeedPersistenceMapper {
         if (json == null || json.isBlank() || json.equals("null")) {
             return new ArrayList<>();
         }
+        // Versuche echtes JSON-Array zu parsen (z.B. ["stau","reisewarnung"])
         try {
             return objectMapper.readValue(json, STRING_LIST_TYPE);
         } catch (Exception e) {
-            return new ArrayList<>();
+            // Fallback: kommagetrennte Werte in Klammern, z.B. "[stau, reisewarnung]"
+            String trimmed = json.trim();
+            if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+                trimmed = trimmed.substring(1, trimmed.length() - 1);
+            }
+            // Per Komma splitten, trimmen, leere Strings filtern
+            List<String> result = new ArrayList<>();
+            for (String part : trimmed.split(",")) {
+                String kw = part.trim();
+                if (!kw.isEmpty()) {
+                    result.add(kw.toLowerCase());
+                }
+            }
+            if (!result.isEmpty()) {
+                return result;
+            }
         }
+        return new ArrayList<>();
     }
 
     private String serializeBlockedKeywords(List<String> keywords) {
