@@ -253,6 +253,7 @@ export function MarketWidget({ refreshIntervalSeconds = 300 }: { refreshInterval
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
+                            py: 0.5,
                           }}
                         >
                           <Box>
