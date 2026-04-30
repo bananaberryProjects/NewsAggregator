@@ -270,7 +270,7 @@ export function MorningBriefingWidget() {
                   <StatCard label="offene Feeds" value={stats.feedsWithNewArticles} icon={RssFeed} color="#388E3C" />
                 </Grid>
                 <Grid size={{ xs: 6, sm: 3 }}>
-                  <StatCard label="Favoriten" value={stats.favoriteCount} icon={FavoriteIcon} color="#FBC02D" />
+                  <StatCard label="Favoriten" value={stats.favoriteCount} icon={FavoriteIcon} color="#E53935" />
                 </Grid>
                 <Grid size={{ xs: 6, sm: 3 }}>
                   <StatCard label="Lesestreak" value={stats.readStreakDays} icon={LocalFireDepartment} color="#D32F2F" suffix=" Tage" />
