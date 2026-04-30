@@ -3,9 +3,8 @@ import {
   Card, CardContent, Typography, Box, Skeleton, Alert, IconButton, Fade, Divider, Avatar
 } from '@mui/material'
 import {
-  Refresh, TrendingUp, TrendingDown, Remove, ShowChart,
-  Psychology as PsychologyIcon
-} from '@mui/icons-material'
+  RotateCw, TrendingUp, TrendingDown, Minus, LineChart, Brain
+} from 'lucide-react'
 import { type MarketInsight, marketApi } from '../../api/client'
 
 const STORAGE_KEY = 'market-config'
@@ -39,17 +38,20 @@ export function saveMarketConfig(config: MarketConfig) {
 const SENTIMENT_CONFIG = {
   bullish: {
     gradient: 'linear-gradient(135deg, #4caf50 0%, #81c784 100%)',
-    icon: <TrendingUp sx={{ fontSize: 32 }} />,
+    icon: TrendingUp,
+    iconSize: 32,
     label: 'Bullisch',
   },
   bearish: {
     gradient: 'linear-gradient(135deg, #f44336 0%, #e57373 100%)',
-    icon: <TrendingDown sx={{ fontSize: 32 }} />,
+    icon: TrendingDown,
+    iconSize: 32,
     label: 'Bärisch',
   },
   neutral: {
     gradient: 'linear-gradient(135deg, #f9a825 0%, #fdd835 100%)',
-    icon: <Remove sx={{ fontSize: 32 }} />,
+    icon: Minus,
+    iconSize: 32,
     label: 'Neutral',
   },
 }
@@ -140,7 +142,7 @@ export function MarketWidget({ refreshIntervalSeconds = 300 }: { refreshInterval
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Avatar sx={{ width: 40, height: 40, bgcolor: 'rgba(255,255,255,0.2)', color: '#fff' }}>
-                <ShowChart sx={{ fontSize: 22 }} />
+                <LineChart size={22} />
               </Avatar>
               <Box>
                 <Typography variant="h6" sx={{ fontWeight: 600, lineHeight: 1.2, color: '#fff' }}>
@@ -159,7 +161,9 @@ export function MarketWidget({ refreshIntervalSeconds = 300 }: { refreshInterval
               disabled={loading}
               sx={{ color: '#fff' }}
             >
-              <Refresh sx={{ fontSize: 20, ...(loading && { animation: 'spin 1s linear infinite' }) }} />
+              <Box sx={{ ...(loading && { animation: 'spin 1s linear infinite' }) }}>
+                <RotateCw size={20} />
+              </Box>
             </IconButton>
           </Box>
 
@@ -225,9 +229,9 @@ export function MarketWidget({ refreshIntervalSeconds = 300 }: { refreshInterval
                               }}
                             >
                               {stock.changePercent >= 0 ? (
-                                <TrendingUp sx={{ fontSize: 14 }} />
+                                <TrendingUp size={14} />
                               ) : (
-                                <TrendingDown sx={{ fontSize: 14 }} />
+                                <TrendingDown size={14} />
                               )}
                               <Typography variant="caption" sx={{ fontWeight: 600 }}>
                                 {stock.changePercent >= 0 ? '+' : ''}{formatNumber(stock.changePercent, 2)}%
@@ -289,9 +293,9 @@ export function MarketWidget({ refreshIntervalSeconds = 300 }: { refreshInterval
                               }}
                             >
                               {crypto.priceChangePercentage24h >= 0 ? (
-                                <TrendingUp sx={{ fontSize: 14 }} />
+                                <TrendingUp size={14} />
                               ) : (
-                                <TrendingDown sx={{ fontSize: 14 }} />
+                                <TrendingDown size={14} />
                               )}
                               <Typography variant="caption" sx={{ fontWeight: 600 }}>
                                 {crypto.priceChangePercentage24h >= 0 ? '+' : ''}{formatNumber(crypto.priceChangePercentage24h, 2)}%
@@ -318,7 +322,7 @@ export function MarketWidget({ refreshIntervalSeconds = 300 }: { refreshInterval
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                    <PsychologyIcon sx={{ fontSize: 16, color: '#fff' }} />
+                    <Brain size={16} color="#fff" />
                     <Typography variant="caption" sx={{ fontWeight: 600, opacity: 0.9 }}>
                       KI-Einblick
                     </Typography>

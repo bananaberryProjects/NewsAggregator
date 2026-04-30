@@ -9,30 +9,46 @@ import {
   Chip,
   type ChipProps,
   Typography,
-  Avatar,
   IconButton,
   Divider,
   Tooltip,
   Badge,
 } from '@mui/material'
 import {
-  RssFeed as FeedIcon,
-  Article as ArticleIcon,
-  Newspaper as NewspaperIcon,
-  Favorite as FavoriteIcon,
-  Label as LabelIcon,
-  Assessment as AssessmentIcon,
-  Settings as SettingsIcon,
-  Close as CloseIcon,
-  ChevronLeft as ChevronLeftIcon,
-  ChevronRight as ChevronRightIcon,
-} from '@mui/icons-material'
+  Newspaper,
+  Rss,
+  FileText,
+  Heart,
+  Tag,
+  BarChart3,
+  Settings,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  BookmarkCheck,
+} from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useTheme } from '@mui/material/styles'
 import type { Feed, Category } from '../../api/client'
 import { SearchBar } from '../SearchBar'
 
 const drawerWidth = 280
 const drawerWidthCollapsed = 64
+
+// Sehr sanfter Farbverlauf für die gesamte Sidebar (als Overlay auf Glas)
+function getSidebarGradient(mode: 'light' | 'dark', hour: number): string {
+  if (mode === 'dark') {
+    if (hour >= 6 && hour < 10) return 'linear-gradient(180deg, rgba(251,140,0,0.08) 0%, rgba(251,140,0,0) 50%)'
+    if (hour >= 10 && hour < 17) return 'linear-gradient(180deg, rgba(66,165,245,0.08) 0%, rgba(66,165,245,0) 50%)'
+    if (hour >= 17 && hour < 22) return 'linear-gradient(180deg, rgba(216,27,96,0.08) 0%, rgba(216,27,96,0) 50%)'
+    return 'linear-gradient(180deg, rgba(92,107,192,0.08) 0%, rgba(92,107,192,0) 50%)'
+  }
+  // Light Mode
+  if (hour >= 6 && hour < 10) return 'linear-gradient(180deg, rgba(255,183,77,0.15) 0%, rgba(255,255,255,0) 50%)'
+  if (hour >= 10 && hour < 17) return 'linear-gradient(180deg, rgba(66,165,245,0.12) 0%, rgba(255,255,255,0) 50%)'
+  if (hour >= 17 && hour < 22) return 'linear-gradient(180deg, rgba(240,98,146,0.12) 0%, rgba(255,255,255,0) 50%)'
+  return 'linear-gradient(180deg, rgba(126,87,194,0.1) 0%, rgba(255,255,255,0) 50%)'
+}
 
 interface SidebarProps {
   mobileOpen: boolean
@@ -75,6 +91,10 @@ export function Sidebar({
   collapsed,
   onToggleCollapse,
 }: SidebarProps) {
+  const theme = useTheme()
+  const hour = new Date().getHours()
+  const sidebarGlassBg = getSidebarGradient(theme.palette.mode, hour)
+
   const handleDrawerClose = () => {
     setMobileOpen(false)
   }
@@ -82,13 +102,13 @@ export function Sidebar({
   const currentDrawerWidth = collapsed ? drawerWidthCollapsed : drawerWidth
 
   const navItems = [
-    { key: 'dashboard', to: '/', label: 'Dashboard', icon: <NewspaperIcon />, badge: null as number | null, badgeColor: undefined as ChipProps['color'] },
-    { key: 'feeds', to: '/feeds', label: 'Feeds', icon: <FeedIcon color="success" />, badge: feeds.length || null, badgeColor: 'success' as const },
-    { key: 'articles', to: '/articles', label: 'Artikel', icon: <ArticleIcon color="warning" />, badge: articleCount || null, badgeColor: 'warning' as const },
-    { key: 'favorites', to: '/favorites', label: 'Favoriten', icon: <FavoriteIcon color="error" />, badge: favoriteCount || null, badgeColor: 'error' as const },
-    { key: 'categories', to: '/categories', label: 'Kategorien', icon: <LabelIcon color="primary" />, badge: categories.length || null, badgeColor: 'primary' as const },
-    { key: 'statistics', to: '/statistics', label: 'Statistiken', icon: <AssessmentIcon sx={{ color: '#9c27b0' }} />, badge: null, badgeColor: undefined },
-    { key: 'settings', to: '/settings', label: 'Einstellungen', icon: <SettingsIcon sx={{ color: '#757575' }} />, badge: null, badgeColor: undefined },
+    { key: 'dashboard', to: '/', label: 'Dashboard', icon: <Newspaper size={20} />, badge: null as number | null, badgeColor: undefined as ChipProps['color'] },
+    { key: 'feeds', to: '/feeds', label: 'Feeds', icon: <Rss size={20} />, badge: feeds.length || null, badgeColor: 'success' as const },
+    { key: 'articles', to: '/articles', label: 'Artikel', icon: <FileText size={20} />, badge: articleCount || null, badgeColor: 'warning' as const },
+    { key: 'favorites', to: '/favorites', label: 'Favoriten', icon: <Heart size={20} />, badge: favoriteCount || null, badgeColor: 'error' as const },
+    { key: 'categories', to: '/categories', label: 'Kategorien', icon: <Tag size={20} />, badge: categories.length || null, badgeColor: 'primary' as const },
+    { key: 'statistics', to: '/statistics', label: 'Statistiken', icon: <BarChart3 size={20} />, badge: null, badgeColor: undefined },
+    { key: 'settings', to: '/settings', label: 'Einstellungen', icon: <Settings size={20} />, badge: null, badgeColor: undefined },
   ]
 
   const drawer = (
@@ -99,12 +119,12 @@ export function Sidebar({
           Menü
         </Typography>
         <IconButton onClick={handleDrawerClose}>
-          <CloseIcon />
+          <X size={20} />
         </IconButton>
       </Box>
       <Divider sx={{ display: { xs: 'block', md: 'none' }, mb: 2 }} />
 
-      {/* Desktop Header */}
+      {/* Desktop Header — Logo + NewsWeave (neutral) */}
       <Box
         sx={{
           px: collapsed ? 1 : 2,
@@ -131,7 +151,7 @@ export function Sidebar({
         )}
         <Tooltip title={collapsed ? 'Expandieren' : 'Einklappen'} placement="right">
           <IconButton onClick={onToggleCollapse} size="small" sx={{ mx: collapsed ? 'auto' : 0 }}>
-            {collapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+            {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
           </IconButton>
         </Tooltip>
       </Box>
@@ -211,9 +231,9 @@ export function Sidebar({
             {feeds.sort((a, b) => a.name.localeCompare(b.name)).map((feed) => (
               <ListItem key={feed.id} disablePadding>
                 <ListItemButton>
-                  <Avatar sx={{ width: 24, height: 24, mr: 1, bgcolor: 'primary.main' }}>
-                    {feed.name.charAt(0)}
-                  </Avatar>
+                  <ListItemIcon sx={{ minWidth: 32, justifyContent: 'center', mr: 1, color: 'primary.main' }}>
+                    <BookmarkCheck size={20} />
+                  </ListItemIcon>
                   <ListItemText
                     primary={feed.name}
                     secondary={`${feed.articleCount} Artikel`}
@@ -255,7 +275,7 @@ export function Sidebar({
         {drawer}
       </Drawer>
 
-      {/* Desktop Drawer - Permanent */}
+      {/* Desktop Drawer — Permanent mit zeitabhängigem Glas-Effekt */}
       <Drawer
         variant="permanent"
         sx={{
@@ -264,10 +284,26 @@ export function Sidebar({
             boxSizing: 'border-box',
             width: currentDrawerWidth,
             overflowX: 'hidden',
-            transition: (theme) => theme.transitions.create('width', {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.enteringScreen,
-            }),
+            backdropFilter: 'blur(16px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+            backgroundColor: (theme) =>
+              theme.palette.mode === 'dark'
+                ? 'rgba(30, 30, 40, 0.55)'
+                : 'rgba(255, 255, 255, 0.72)',
+            backgroundImage: sidebarGlassBg,
+            borderRight: (theme) =>
+              theme.palette.mode === 'dark'
+                ? '1px solid rgba(255,255,255,0.08)'
+                : '1px solid rgba(0,0,0,0.06)',
+            boxShadow: (theme) =>
+              theme.palette.mode === 'dark'
+                ? '4px 0 32px rgba(0,0,0,0.3), inset 1px 0 0 rgba(255,255,255,0.05)'
+                : '4px 0 32px rgba(0,0,0,0.08), inset 1px 0 0 rgba(255,255,255,0.6)',
+            transition: (theme) =>
+              theme.transitions.create('width', {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.enteringScreen,
+              }),
           },
         }}
         open

@@ -5,10 +5,8 @@ import {
   Fade, Avatar, Divider
 } from '@mui/material'
 import {
-  Refresh, Newspaper,
-  SentimentSatisfiedAlt, SentimentNeutral, SentimentVeryDissatisfied,
-  ArrowForward
-} from '@mui/icons-material'
+  RotateCw, Newspaper, Smile, Meh, Frown, ArrowRight
+} from 'lucide-react'
 
 interface AiCategory {
   name: string
@@ -32,15 +30,15 @@ interface AiSummaryData {
 const GRADIENT = 'linear-gradient(135deg, #7C4DFF 0%, #651FFF 50%, #6200EA 100%)'
 
 const SENTIMENT_CONFIG = {
-  positive: { color: '#66BB6A', icon: SentimentSatisfiedAlt, label: 'Positiv' },
-  neutral:  { color: '#FFA726', icon: SentimentNeutral,       label: 'Neutral' },
-  negative: { color: '#EF5350', icon: SentimentVeryDissatisfied, label: 'Negativ' }
+  positive: { color: '#66BB6A', icon: Smile, label: 'Positiv' },
+  neutral:  { color: '#FFA726', icon: Meh,   label: 'Neutral' },
+  negative: { color: '#EF5350', icon: Frown, label: 'Negativ' }
 }
 
 function SentimentIcon({ sentiment, size = 20 }: { sentiment: string; size?: number }) {
   const cfg = SENTIMENT_CONFIG[sentiment as keyof typeof SENTIMENT_CONFIG] || SENTIMENT_CONFIG.neutral
   const Icon = cfg.icon
-  return <Icon sx={{ color: cfg.color, fontSize: size }} />
+  return <Icon size={size} color={cfg.color} />
 }
 
 export function AiSummaryWidget({ refreshIntervalSeconds = 600 }: { refreshIntervalSeconds?: number }) {
@@ -109,7 +107,7 @@ export function AiSummaryWidget({ refreshIntervalSeconds = 600 }: { refreshInter
                   backdropFilter: 'blur(4px)',
                 }}
               >
-                <Newspaper sx={{ fontSize: 28 }} />
+                <Newspaper size={28} />
               </Avatar>
               <Box>
                 <Typography variant="h5" sx={{ fontWeight: 600, lineHeight: 1.3, color: '#fff' }}>
@@ -127,7 +125,9 @@ export function AiSummaryWidget({ refreshIntervalSeconds = 600 }: { refreshInter
             </Box>
             <Tooltip title="Neu generieren">
               <IconButton size="small" onClick={fetchSummary} disabled={loading} sx={{ color: '#fff' }}>
-                <Refresh className={loading ? 'spin' : ''} />
+                <Box sx={{ ...(loading && { animation: 'spin 1s linear infinite' }) }}>
+                  <RotateCw size={20} />
+                </Box>
               </IconButton>
             </Tooltip>
           </Box>
@@ -241,7 +241,7 @@ export function AiSummaryWidget({ refreshIntervalSeconds = 600 }: { refreshInter
                           <Typography variant="caption" sx={{ minWidth: 60, textAlign: 'right', color: 'rgba(255,255,255,0.7)' }}>
                             ({topic.articleCount} {topic.articleCount === 1 ? 'Artikel' : 'Artikel'})
                           </Typography>
-                          <ArrowForward fontSize="small" sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 16 }} />
+                          <ArrowRight size={16} color="rgba(255,255,255,0.7)" />
                         </Box>
                       </Fade>
                     ))}

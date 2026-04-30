@@ -100,7 +100,7 @@ npx vite --host 0.0.0.0
 - ✅ **Vite** - Schnelles Build-Tool
 - ✅ **Material UI (MUI)** - Modernes, responsives Design
 - ✅ **Recharts** - Interaktive Charts für Statistiken
-- ✅ **Material Icons** - Material Icons
+- ✅ **Lucide Icons** - Lucide React Icons (ersetzt Material Icons)
 - ✅ **Sidebar Navigation** - Dashboard / Feeds / Artikel / Favoriten / Kategorien / Statistiken / Einstellungen
 - ✅ **Content Extraction UI** - Reader-View Dialog mit DOMPurify-Sanitization
 - ✅ **Bulk-Extraction Dialog** - Fortschrittsanzeige für Content-Extraktion
@@ -214,7 +214,7 @@ npx vite --host 0.0.0.0
 | **Build Tool** | Vite |
 | **UI Library** | Material UI (MUI) |
 | **Charts** | Recharts |
-| **Icons** | Material Icons |
+| **Icons** | Lucide React (ersetzt Material Icons) |
 
 ## 🗄️ Datenbank-Struktur
 

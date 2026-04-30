@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Card, CardContent, Typography, Box, Skeleton, Alert, IconButton, Divider, CardMedia } from '@mui/material'
-import { TrendingUp, TrendingDown, Refresh, ShowChart, Remove } from '@mui/icons-material'
+import { TrendingUp, TrendingDown, RotateCw, LineChart, Minus } from 'lucide-react'
 
 interface StockIndex {
   symbol: string
@@ -15,7 +15,8 @@ type Sentiment = 'bullish' | 'bearish' | 'neutral'
 interface SentimentConfig {
   type: Sentiment
   gradient: string
-  icon: React.ReactNode
+  icon: React.ComponentType<{ size?: number | string }>
+  iconSize: number
   label: string
 }
 
@@ -37,7 +38,8 @@ const getMarketSentiment = (stocks: StockIndex[]): SentimentConfig => {
     return {
       type: 'neutral',
       gradient: 'linear-gradient(135deg, #607d8b 0%, #90a4ae 100%)',
-      icon: <Remove sx={{ fontSize: 32 }} />,
+      icon: Minus,
+      iconSize: 32,
       label: 'Neutral'
     }
   }
@@ -52,7 +54,8 @@ const getMarketSentiment = (stocks: StockIndex[]): SentimentConfig => {
     return {
       type: 'bullish',
       gradient: 'linear-gradient(135deg, #4caf50 0%, #81c784 100%)',
-      icon: <TrendingUp sx={{ fontSize: 32 }} />,
+      icon: TrendingUp,
+      iconSize: 32,
       label: 'Bullisch'
     }
   }
@@ -61,7 +64,8 @@ const getMarketSentiment = (stocks: StockIndex[]): SentimentConfig => {
     return {
       type: 'bearish',
       gradient: 'linear-gradient(135deg, #f44336 0%, #e57373 100%)',
-      icon: <TrendingDown sx={{ fontSize: 32 }} />,
+      icon: TrendingDown,
+      iconSize: 32,
       label: 'Bärisch'
     }
   }
@@ -69,7 +73,8 @@ const getMarketSentiment = (stocks: StockIndex[]): SentimentConfig => {
   return {
     type: 'neutral',
     gradient: 'linear-gradient(135deg, #607d8b 0%, #90a4ae 100%)',
-    icon: <Remove sx={{ fontSize: 32 }} />,
+    icon: Minus,
+    iconSize: 32,
     label: 'Neutral'
   }
 }
@@ -181,7 +186,7 @@ export function StockWidget({ refreshIntervalSeconds = 600 }: StockWidgetProps) 
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: 'white' }}>
-          {sentiment.icon}
+          {React.createElement(sentiment.icon, { size: sentiment.iconSize })}
           <Box>
             <Typography variant="h6" component="div" sx={{ fontWeight: 500, lineHeight: 1.2, color: 'white' }}>
               Börse
@@ -195,7 +200,7 @@ export function StockWidget({ refreshIntervalSeconds = 600 }: StockWidgetProps) 
             </Typography>
           )}
           <IconButton size="small" onClick={fetchStocks} disabled={loading} sx={{ color: 'white' }}>
-            <Refresh />
+            <RotateCw size={20} />
           </IconButton>
         </Box>
       </CardMedia>
@@ -247,9 +252,9 @@ export function StockWidget({ refreshIntervalSeconds = 600 }: StockWidgetProps) 
                       }}
                     >
                       {stock.change >= 0 ? (
-                        <TrendingUp sx={{ fontSize: 16 }} />
+                        <TrendingUp size={16} />
                       ) : (
-                        <TrendingDown sx={{ fontSize: 16 }} />
+                        <TrendingDown size={16} />
                       )}
                       <Typography variant="caption" component="span" sx={{ fontWeight: 500 }}>
                         {stock.change >= 0 ? '+' : ''}{formatNumber(stock.changePercent, 2)}%
@@ -263,7 +268,7 @@ export function StockWidget({ refreshIntervalSeconds = 600 }: StockWidgetProps) 
 
             <Box sx={{ mt: 2, pt: 1, borderTop: '1px dashed', borderColor: 'divider' }}>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <ShowChart sx={{ fontSize: 14 }} />
+                <LineChart size={14} />
                 Yahoo Finance • Aktualisiert alle {refreshIntervalSeconds/60} Minuten
               </Typography>
             </Box>

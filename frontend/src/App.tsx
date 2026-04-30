@@ -248,7 +248,17 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ display: 'flex', bgcolor: 'background.default', minHeight: '100vh' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          bgcolor: 'background.default',
+          minHeight: '100vh',
+          backgroundImage: (theme) =>
+            theme.palette.mode === 'dark'
+              ? 'radial-gradient(ellipse at 25% 25%, rgba(66,165,245,0.06) 0%, transparent 50%), radial-gradient(ellipse at 75% 75%, rgba(156,39,176,0.04) 0%, transparent 50%)'
+              : 'radial-gradient(ellipse at 25% 25%, rgba(66,165,245,0.04) 0%, transparent 50%), radial-gradient(ellipse at 75% 75%, rgba(156,39,176,0.03) 0%, transparent 50%)',
+        }}
+      >
         {/* App Bar (Mobile) */}
         <AppBar
           position="fixed"
