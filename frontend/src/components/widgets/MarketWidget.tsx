@@ -137,7 +137,7 @@ export function MarketWidget({ refreshIntervalSeconds = 300 }: { refreshInterval
               </Avatar>
               <Box>
                 <Typography variant="h6" sx={{ fontWeight: 600, lineHeight: 1.2, color: '#fff' }}>
-                  Markt
+                  Märkte
                 </Typography>
                 {market && (
                   <Typography variant="caption" sx={{ opacity: 0.85 }}>

@@ -2,7 +2,6 @@ package com.newsaggregator.application.service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -157,7 +156,7 @@ public class MarketInsightService {
 
             Map<String, Object> options = new HashMap<>();
             options.put("temperature", 0.7);
-            options.put("num_predict", 80);
+            options.put("num_predict", 1024);
 
             Map<String, Object> body = new HashMap<>();
             body.put("model", ollamaModel);
@@ -189,29 +188,28 @@ public class MarketInsightService {
     }
 
     private String determineSentiment(List<StockDto> stocks, List<CryptoPrice> cryptos) {
-        int positive = 0;
-        int negative = 0;
-        int total = 0;
+        if (stocks.isEmpty() && cryptos.isEmpty()) {
+            return "neutral";
+        }
+
+        double sum = 0;
+        int count = 0;
 
         for (StockDto s : stocks) {
-            total++;
-            if (s.getChangePercent().doubleValue() > 0) positive++;
-            else if (s.getChangePercent().doubleValue() < 0) negative++;
+            sum += s.getChangePercent().doubleValue();
+            count++;
         }
 
         for (CryptoPrice c : cryptos) {
-            total++;
             double change = c.getPriceChangePercentage24h() != null ? c.getPriceChangePercentage24h().doubleValue() : 0;
-            if (change > 0) positive++;
-            else if (change < 0) negative++;
+            sum += change;
+            count++;
         }
 
-        if (total == 0) return "neutral";
-        double positiveRatio = (double) positive / total;
-        double negativeRatio = (double) negative / total;
+        double avg = sum / count;
 
-        if (positiveRatio > 0.5) return "bullish";
-        if (negativeRatio > 0.5) return "bearish";
+        if (avg >= 0.75) return "bullish";
+        if (avg <= -0.75) return "bearish";
         return "neutral";
     }
 }
