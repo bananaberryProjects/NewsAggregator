@@ -11,7 +11,7 @@ import {
   NightsStay as NightIcon,
   AutoStories as ArticleIcon,
   RssFeed,
-  Star,
+  Favorite as FavoriteIcon,
   LocalFireDepartment,
   ArrowForward,
 } from '@mui/icons-material'
@@ -270,7 +270,7 @@ export function MorningBriefingWidget() {
                   <StatCard label="offene Feeds" value={stats.feedsWithNewArticles} icon={RssFeed} color="#388E3C" />
                 </Grid>
                 <Grid size={{ xs: 6, sm: 3 }}>
-                  <StatCard label="Favoriten" value={stats.favoriteCount} icon={Star} color="#FBC02D" />
+                  <StatCard label="Favoriten" value={stats.favoriteCount} icon={FavoriteIcon} color="#FBC02D" />
                 </Grid>
                 <Grid size={{ xs: 6, sm: 3 }}>
                   <StatCard label="Lesestreak" value={stats.readStreakDays} icon={LocalFireDepartment} color="#D32F2F" suffix=" Tage" />
