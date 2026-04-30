@@ -118,8 +118,7 @@ npx vite --host 0.0.0.0
 
 ### Dashboard-Widgets
 - ✅ **Wetter-Widget** - Standort-basiertes Wetter von Open-Meteo mit **KI-Insight** (Ollama-generierter Kommentar), 5-Tage-Forecast, Live-Standort-Wechsel
-- ✅ **Börsen Widget** - NASDAQ-Preise über Finnhub
-- ✅ **Krypto-Widget** - Live-Kryptopreis-Tracking (Bitcoin, Ethereum, Solana) über CoinGecko API
+- ✅ **Markt-Widget** - Kombinierte Börsen- (NASDAQ via Finnhub) und Krypto-Preise (CoinGecko) mit KI-Sentiment-Einschätzung, responsive 2-Spalten-Layout, gleiche Höhe auf Desktop
 - ✅ **NewsWeave Branding** - Eigenes Logo in Sidebar und Favicon
 
 ### PWA (Progressive Web App)
@@ -182,6 +181,7 @@ npx vite --host 0.0.0.0
 | GET | `/api/weather` | Aktuelle Wetterdaten (Temperatur, Code) |
 | GET | `/api/weather/insight?lat=&lon=&city=` | **KI-Wetter-Insight** mit Open-Meteo + Ollama, 5-Tage-Forecast |
 | POST | `/api/weather/insight/invalidate` | Wetter-Cache manuell invalidieren |
+| GET | `/api/market/insight` | Börsen/Krypto-Daten + KI-Einschätzung (sortiert nach Einstellungs-Reihenfolge) |
 | GET | `/api/summary` | KI-generierte Tageszusammenfassung |
 
 ## 🖥️ Frontend Views
