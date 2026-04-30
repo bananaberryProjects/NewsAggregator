@@ -170,53 +170,127 @@ export function MarketWidget({ refreshIntervalSeconds = 300 }: { refreshInterval
             </Box>
           ) : market ? (
             <Box>
-              {/* Stocks */}
-              {market.stocks.length > 0 && (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
-                  {market.stocks.map((stock) => (
-                    <Box
-                      key={stock.symbol}
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        py: 0.5,
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#fff' }}>
-                          {stock.name}
-                        </Typography>
-                        <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                          {stock.symbol}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ textAlign: 'right' }}>
-                        <Typography variant="body2" sx={{ fontWeight: 500, color: '#fff' }}>
-                          {formatNumber(stock.value, 0)} {stock.currency}
-                        </Typography>
+              {/* 2-Spalten Layout */}
+              {(market.stocks.length > 0 || market.cryptos.length > 0) && (
+                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                  {/* Stocks */}
+                  {market.stocks.length > 0 && (
+                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Typography
+                        variant="overline"
+                        sx={{ fontWeight: 600, opacity: 0.7, fontSize: '0.7rem', lineHeight: 1, mb: 0.5 }}
+                      >
+                        Indizes
+                      </Typography>
+                      {market.stocks.map((stock) => (
                         <Box
+                          key={stock.symbol}
                           sx={{
                             display: 'flex',
+                            justifyContent: 'space-between',
                             alignItems: 'center',
-                            justifyContent: 'flex-end',
-                            gap: 0.3,
-                            mt: 0.3,
-                            color: stock.changePercent >= 0 ? '#c8e6c9' : '#ffcdd2',
+                            py: 0.5,
                           }}
                         >
-                          {stock.changePercent >= 0 ? (
-                            <TrendingUp sx={{ fontSize: 14 }} />
-                          ) : (
-                            <TrendingDown sx={{ fontSize: 14 }} />
-                          )}
-                          <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                            {stock.changePercent >= 0 ? '+' : ''}{formatNumber(stock.changePercent, 2)}%
-                          </Typography>
+                          <Box>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#fff' }}>
+                              {stock.name}
+                            </Typography>
+                            <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                              {stock.symbol}
+                            </Typography>
+                          </Box>
+                          <Box sx={{ textAlign: 'right' }}>
+                            <Typography variant="body2" sx={{ fontWeight: 500, color: '#fff' }}>
+                              {formatNumber(stock.value, 0)} {stock.currency}
+                            </Typography>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'flex-end',
+                                gap: 0.3,
+                                mt: 0.3,
+                                color: stock.changePercent >= 0 ? '#c8e6c9' : '#ffcdd2',
+                              }}
+                            >
+                              {stock.changePercent >= 0 ? (
+                                <TrendingUp sx={{ fontSize: 14 }} />
+                              ) : (
+                                <TrendingDown sx={{ fontSize: 14 }} />
+                              )}
+                              <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                                {stock.changePercent >= 0 ? '+' : ''}{formatNumber(stock.changePercent, 2)}%
+                              </Typography>
+                            </Box>
+                          </Box>
                         </Box>
-                      </Box>
+                      ))}
                     </Box>
-                  ))}
+                  )}
+
+                  {market.stocks.length > 0 && market.cryptos.length > 0 && (
+                    <Divider
+                      orientation="vertical"
+                      flexItem
+                      sx={{ borderColor: 'rgba(255,255,255,0.3)' }}
+                    />
+                  )}
+
+                  {/* Cryptos */}
+                  {market.cryptos.length > 0 && (
+                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Typography
+                        variant="overline"
+                        sx={{ fontWeight: 600, opacity: 0.7, fontSize: '0.7rem', lineHeight: 1, mb: 0.5 }}
+                      >
+                        Krypto
+                      </Typography>
+                      {market.cryptos.map((crypto) => (
+                        <Box
+                          key={crypto.coinId}
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <Box>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#fff' }}>
+                              {crypto.name}
+                            </Typography>
+                            <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                              {crypto.symbol}
+                            </Typography>
+                          </Box>
+                          <Box sx={{ textAlign: 'right' }}>
+                            <Typography variant="body2" sx={{ fontWeight: 500, color: '#fff' }}>
+                              {crypto.symbol === 'BTC' ? formatNumber(crypto.priceUsd, 0) : formatNumber(crypto.priceUsd)} $
+                            </Typography>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'flex-end',
+                                gap: 0.3,
+                                mt: 0.3,
+                                color: crypto.priceChangePercentage24h >= 0 ? '#c8e6c9' : '#ffcdd2',
+                              }}
+                            >
+                              {crypto.priceChangePercentage24h >= 0 ? (
+                                <TrendingUp sx={{ fontSize: 14 }} />
+                              ) : (
+                                <TrendingDown sx={{ fontSize: 14 }} />
+                              )}
+                              <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                                {crypto.priceChangePercentage24h >= 0 ? '+' : ''}{formatNumber(crypto.priceChangePercentage24h, 2)}%
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </Box>
+                      ))}
+                    </Box>
+                  )}
                 </Box>
               )}
 
@@ -229,6 +303,7 @@ export function MarketWidget({ refreshIntervalSeconds = 300 }: { refreshInterval
                     p: 1.5,
                     mb: 2,
                     backdropFilter: 'blur(4px)',
+                    mt: market.stocks.length > 0 || market.cryptos.length > 0 ? 2 : 0,
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
@@ -240,75 +315,6 @@ export function MarketWidget({ refreshIntervalSeconds = 300 }: { refreshInterval
                   <Typography variant="body2" sx={{ opacity: 0.95, fontStyle: 'italic' }}>
                     „{market.insight}"
                   </Typography>
-                </Box>
-              )}
-
-              <Divider sx={{ borderColor: 'rgba(255,255,255,0.3)', mb: 2 }} />
-
-              {/* Cryptos */}
-              {market.cryptos.length > 0 && (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                  {market.cryptos.map((crypto) => (
-                    <Box
-                      key={crypto.coinId}
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Box
-                          sx={{
-                            width: 32,
-                            height: 32,
-                            borderRadius: '50%',
-                            background: 'rgba(255,255,255,0.2)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '0.75rem',
-                            fontWeight: 'bold',
-                            color: '#fff',
-                          }}
-                        >
-                          {crypto.symbol.charAt(0)}
-                        </Box>
-                        <Box>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#fff' }}>
-                            {crypto.name}
-                          </Typography>
-                          <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                            {crypto.symbol}
-                          </Typography>
-                        </Box>
-                      </Box>
-                      <Box sx={{ textAlign: 'right' }}>
-                        <Typography variant="body2" sx={{ fontWeight: 500, color: '#fff' }}>
-                          {crypto.symbol === 'BTC' ? formatNumber(crypto.priceUsd, 0) : formatNumber(crypto.priceUsd)} $
-                        </Typography>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'flex-end',
-                            gap: 0.3,
-                            mt: 0.3,
-                            color: crypto.priceChangePercentage24h >= 0 ? '#c8e6c9' : '#ffcdd2',
-                          }}
-                        >
-                          {crypto.priceChangePercentage24h >= 0 ? (
-                            <TrendingUp sx={{ fontSize: 14 }} />
-                          ) : (
-                            <TrendingDown sx={{ fontSize: 14 }} />
-                          )}
-                          <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                            {crypto.priceChangePercentage24h >= 0 ? '+' : ''}{formatNumber(crypto.priceChangePercentage24h, 2)}%
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </Box>
-                  ))}
                 </Box>
               )}
             </Box>
