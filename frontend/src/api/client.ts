@@ -23,6 +23,7 @@ export interface Article {
   feedName: string;
   categoryIds?: string[];
   contentHtml?: string | null;
+  readingTimeMinutes?: number;
 }
 
 export interface Page<T> {

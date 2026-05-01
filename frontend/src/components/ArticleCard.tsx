@@ -11,7 +11,7 @@ import {
   CircularProgress,
   Tooltip,
 } from '@mui/material'
-import { ExternalLink, Calendar, CheckCircle2, FileText, Eye, EyeOff, Heart, BookOpen } from 'lucide-react'
+import { ExternalLink, Calendar, CheckCircle2, FileText, Eye, EyeOff, Heart, BookOpen, Clock } from 'lucide-react'
 import type { Article, Category } from '../api/client'
 import { stripHtml } from '../utils'
 
@@ -132,11 +132,13 @@ export function ArticleCard({
               </Tooltip>
             )}
           </Box>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Calendar size={14} />
-            {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('de-DE', {
-              day: 'numeric', month: 'short', year: 'numeric',
-            }) : 'Kein Datum'}
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Calendar size={14} />
+              {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('de-DE', {
+                day: 'numeric', month: 'short', year: 'numeric',
+              }) : 'Kein Datum'}
+            </Box>
           </Typography>
         </Box>
 
@@ -194,10 +196,18 @@ export function ArticleCard({
           {hasContentHtml ? 'Weiterlesen' : 'Lesen'}
         </Button>
 
-        <Box>
-          <IconButton
-            size="small"
-            onClick={onToggleRead}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          {article.readingTimeMinutes != null && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary', typography: 'caption' }}>
+              <Clock size={14} />
+              {article.readingTimeMinutes} min
+            </Box>
+          )}
+
+          <Box>
+            <IconButton
+              size="small"
+              onClick={onToggleRead}
             disabled={updating}
             sx={{ mr: 0.5 }}
             title={isRead ? 'Als ungelesen markieren' : 'Als gelesen markieren'}
@@ -228,6 +238,7 @@ export function ArticleCard({
             )}
           </IconButton>
         </Box>
+      </Box>
       </CardActions>
     </Card>
   )

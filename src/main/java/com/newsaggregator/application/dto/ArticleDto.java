@@ -32,5 +32,6 @@ public class ArticleDto {
     private List<String> categoryIds;
     private String contentHtml;
     private Boolean extractionFailed;
+    private Integer readingTimeMinutes;
 
 }
