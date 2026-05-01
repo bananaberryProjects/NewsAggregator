@@ -1,10 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import {
   Box,
-  Card,
   Chip,
   Grid,
-  Skeleton,
   Typography,
   Alert,
   Drawer,
@@ -16,6 +14,7 @@ import {
 } from '@mui/material'
 import { FilterList as FilterIcon, Close as CloseIcon } from '@mui/icons-material'
 import { ArticleCard } from '../ArticleCard'
+import { ArticleSkeleton } from '../ArticleSkeleton'
 import { useInfiniteArticles } from '../../hooks/useInfiniteArticles'
 import type { Article, Category } from '../../api/client'
 
@@ -315,12 +314,10 @@ export function ArticlesView({
 
       {/* Articles Grid with Infinite Scroll */}
       {loading ? (
-        <Grid container spacing={3}>
+        <Grid container spacing={2}>
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={i}>
-              <Card sx={{ flexShrink: 0, height: 430 }}>
-                <Skeleton variant="rectangular" height={200} />
-              </Card>
+              <ArticleSkeleton />
             </Grid>
           ))}
         </Grid>
@@ -335,6 +332,7 @@ export function ArticlesView({
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={article.id}>
                 <ArticleCard
                   article={article}
+                  categories={categories}
                   isRead={isRead(article.id)}
                   isFavorite={isFavorite(article.id)}
                   updating={updatingArticleId === article.id}
