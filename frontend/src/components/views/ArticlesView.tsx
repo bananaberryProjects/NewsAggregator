@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   Box,
   Chip,
@@ -60,6 +60,7 @@ export function ArticlesView({
   onOpenReader,
 }: ArticlesViewProps) {
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false)
+  const [exitingArticleIds, setExitingArticleIds] = useState<number[]>([])
 
   // Persist filter to localStorage on changes
   useEffect(() => {
@@ -118,6 +119,22 @@ export function ArticlesView({
 
   // Search infinite scroll via IntersectionObserver
   const searchLoadMoreRef = useRef<HTMLDivElement>(null)
+
+  const handleToggleRead = useCallback(
+    (articleId: number) => {
+      if (articlesFilter === 'unread' && !articleStatuses[articleId]?.isRead) {
+        // In Ungelesen-Ansicht: Artikel als "exiting" markieren und erst nach Animation entfernen
+        setExitingArticleIds(prev => [...prev, articleId])
+        setTimeout(() => {
+          onToggleRead(articleId)
+          setExitingArticleIds(prev => prev.filter(id => id !== articleId))
+        }, 400)
+      } else {
+        onToggleRead(articleId)
+      }
+    },
+    [articlesFilter, articleStatuses, onToggleRead]
+  )
 
   useEffect(() => {
     if (!isSearchActive || !searchHasMore || !onSearchNextPage) return
@@ -329,7 +346,15 @@ export function ArticlesView({
         <>
           <Grid container spacing={2}>
             {(isSearchActive ? articlesList : displayedArticles).map((article) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={article.id}>
+              <Grid
+                size={{ xs: 12, sm: 6, md: 4 }}
+                key={article.id}
+                sx={{
+                  opacity: exitingArticleIds.includes(article.id) ? 0 : 1,
+                  transform: exitingArticleIds.includes(article.id) ? 'translateY(-20px)' : 'translateY(0)',
+                  transition: 'opacity 0.35s ease, transform 0.35s ease',
+                }}
+              >
                 <ArticleCard
                   article={article}
                   categories={categories}
@@ -337,7 +362,7 @@ export function ArticlesView({
                   isFavorite={isFavorite(article.id)}
                   updating={updatingArticleId === article.id}
                   hasContentHtml={!!article.contentHtml}
-                  onToggleRead={() => onToggleRead(article.id)}
+                  onToggleRead={() => handleToggleRead(article.id)}
                   onToggleFavorite={() => onToggleFavorite(article.id)}
                   onOpenReader={() => onOpenReader(article)}
                 />
