@@ -84,11 +84,10 @@ export function FeedCard({ feed, categories = [], isRefreshing, onRefresh, onEdi
         height: 280,
         display: 'flex',
         flexDirection: 'column',
+        borderRadius: 3,
         transition: 'all 0.3s ease',
-        border: '1px solid',
-        borderColor: hovered ? 'primary.main' : 'divider',
-        transform: hovered ? 'translateY(-6px)' : 'translateY(0)',
-        boxShadow: (theme) => (hovered ? theme.shadows[8] : theme.shadows[1]),
+        transform: hovered ? 'translateY(-4px)' : 'translateY(0)',
+        boxShadow: (theme) => (hovered ? theme.shadows[6] : theme.shadows[2]),
         cursor: 'pointer',
       }}
     >
@@ -108,16 +107,16 @@ export function FeedCard({ feed, categories = [], isRefreshing, onRefresh, onEdi
         <Avatar
           src={hasImage ? (feed.imageUrl as string) : undefined}
           sx={{
-            width: 56,
-            height: 56,
-            bgcolor: hasImage ? 'transparent' : 'rgba(255,255,255,0.9)',
+            width: 52,
+            height: 52,
+            bgcolor: hasImage ? 'transparent' : 'rgba(255,255,255,0.95)',
             color: hasImage ? 'inherit' : 'text.primary',
             fontWeight: 700,
-            fontSize: '1.25rem',
+            fontSize: '1.1rem',
             border: '3px solid',
             borderColor: 'background.paper',
-            transform: 'translateY(28px)',
-            boxShadow: 2,
+            transform: 'translateY(26px)',
+            boxShadow: 3,
           }}
         >
           {!hasImage && feed.name.charAt(0).toUpperCase()}
