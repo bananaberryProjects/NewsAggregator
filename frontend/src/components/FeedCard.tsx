@@ -94,7 +94,7 @@ export function FeedCard({ feed, categories = [], isRefreshing, onRefresh, onEdi
       {/* Top Gradient-Bar */}
       <Box
         sx={{
-          height: 80,
+          height: 72,
           background: gradient,
           position: 'relative',
           display: 'flex',

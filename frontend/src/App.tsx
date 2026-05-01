@@ -384,6 +384,7 @@ function App() {
               <Route path="/categories" element={
                 <CategoriesView
                   categories={categories}
+                  feeds={feeds}
                   loading={feedsLoading}
                   onEdit={handleOpenEditCategoryDialog}
                   onDelete={deleteCategory}

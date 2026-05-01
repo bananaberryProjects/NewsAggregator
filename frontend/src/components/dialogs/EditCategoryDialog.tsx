@@ -16,7 +16,7 @@ import {
   MenuItem,
 } from '@mui/material'
 import { useState, useEffect } from 'react'
-import { ICON_MAP } from '../views/CategoriesView'
+import { ICON_MAP } from '../categoryIcons'
 import type { Category } from '../../api/client'
 
 const PRESET_COLORS = [
