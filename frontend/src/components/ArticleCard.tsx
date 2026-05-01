@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   Card,
   CardContent,
@@ -9,9 +10,8 @@ import {
   Box,
   IconButton,
   CircularProgress,
-  Tooltip,
 } from '@mui/material'
-import { ExternalLink, Calendar, CheckCircle2, FileText, Eye, EyeOff, Heart, BookOpen, Clock } from 'lucide-react'
+import { ExternalLink, Calendar, CheckCircle2, FileText, Eye, EyeOff, Heart, Clock } from 'lucide-react'
 import type { Article, Category } from '../api/client'
 import { stripHtml } from '../utils'
 
@@ -45,11 +45,21 @@ export function ArticleCard({
   onToggleFavorite,
   onOpenReader,
 }: ArticleCardProps) {
+  const [justMarkedRead, setJustMarkedRead] = useState(false)
   const primaryCategory = getCategoryForArticle(article, categories)
+
+  const handleToggleRead = () => {
+    if (!isRead) {
+      setJustMarkedRead(true)
+      setTimeout(() => setJustMarkedRead(false), 1400)
+    }
+    onToggleRead()
+  }
 
   return (
     <Card
       sx={{
+        position: 'relative',
         width: '100%',
         height: 430,
         display: 'flex',
@@ -58,6 +68,7 @@ export function ArticleCard({
         borderColor: 'divider',
         transition: 'all 0.3s ease',
         opacity: isRead ? 0.75 : 1,
+        overflow: 'hidden',
         '&:hover': {
           transform: 'translateY(-6px)',
           boxShadow: (theme) => theme.shadows[8],
@@ -65,6 +76,37 @@ export function ArticleCard({
         },
       }}
     >
+      {/* Watermark-Overlay: erscheint wenn als gelesen markiert */}
+      <Box
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          pointerEvents: 'none',
+          zIndex: 2,
+          opacity: justMarkedRead ? 1 : 0,
+          transform: justMarkedRead ? 'scale(1)' : 'scale(0.4)',
+          transition: 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
+      >
+        <Box
+          sx={{
+            width: 140,
+            height: 140,
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'success.light',
+            opacity: 0.12,
+          }}
+        >
+          <CheckCircle2 size={72} style={{ opacity: 0.35, color: 'var(--mui-palette-success-main)' }} />
+        </Box>
+      </Box>
+
       {/* Image area with overlay badges */}
       <Box sx={{ position: 'relative', overflow: 'hidden', height: 200 }}>
         <CardMedia
@@ -124,21 +166,12 @@ export function ArticleCard({
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, minWidth: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Chip size="small" label={article.feedName || 'News'} color="primary" sx={{ maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis' }} />
-            {hasContentHtml && (
-              <Tooltip title="Vollständiger Artikel verfügbar">
-                <Box sx={{ color: 'primary.main', ml: 0.5 }} component="span">
-                  <BookOpen size={16} />
-                </Box>
-              </Tooltip>
-            )}
           </Box>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Calendar size={14} />
-              {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('de-DE', {
-                day: 'numeric', month: 'short', year: 'numeric',
-              }) : 'Kein Datum'}
-            </Box>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Calendar size={14} />
+            {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('de-DE', {
+              day: 'numeric', month: 'short', year: 'numeric',
+            }) : 'Kein Datum'}
           </Typography>
         </Box>
 
@@ -207,38 +240,38 @@ export function ArticleCard({
           <Box>
             <IconButton
               size="small"
-              onClick={onToggleRead}
-            disabled={updating}
-            sx={{ mr: 0.5 }}
-            title={isRead ? 'Als ungelesen markieren' : 'Als gelesen markieren'}
-          >
-            {updating ? (
-              <CircularProgress size={20} />
-            ) : isRead ? (
-              <EyeOff size={20} />
-            ) : (
-              <Eye size={20} />
-            )}
-          </IconButton>
+              onClick={handleToggleRead}
+              disabled={updating}
+              sx={{ mr: 0.5 }}
+              title={isRead ? 'Als ungelesen markieren' : 'Als gelesen markieren'}
+            >
+              {updating ? (
+                <CircularProgress size={20} />
+              ) : isRead ? (
+                <EyeOff size={20} />
+              ) : (
+                <Eye size={20} />
+              )}
+            </IconButton>
 
-          <IconButton
-            size="small"
-            onClick={onToggleFavorite}
-            disabled={updating}
-            title={isFavorite ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen'}
-          >
-            {updating ? (
-              <CircularProgress size={20} />
-            ) : isFavorite ? (
-              <Box sx={{ color: 'error.main', display: 'flex' }}>
-                <Heart size={20} fill="currentColor" />
-              </Box>
-            ) : (
-              <Heart size={20} />
-            )}
-          </IconButton>
+            <IconButton
+              size="small"
+              onClick={onToggleFavorite}
+              disabled={updating}
+              title={isFavorite ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen'}
+            >
+              {updating ? (
+                <CircularProgress size={20} />
+              ) : isFavorite ? (
+                <Box sx={{ color: 'error.main', display: 'flex' }}>
+                  <Heart size={20} fill="currentColor" />
+                </Box>
+              ) : (
+                <Heart size={20} />
+              )}
+            </IconButton>
+          </Box>
         </Box>
-      </Box>
       </CardActions>
     </Card>
   )
