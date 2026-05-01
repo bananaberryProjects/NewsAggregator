@@ -122,7 +122,7 @@ export function CategoryCard({ category, feedCount, articleCount, onEdit, onDele
       {/* Top Gradient-Bar */}
       <Box
         sx={{
-          height: 72,
+          height: 60,
           background: gradient,
           position: 'relative',
           display: 'flex',
