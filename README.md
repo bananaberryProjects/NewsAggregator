@@ -105,8 +105,8 @@ npx vite --host 0.0.0.0
 - ✅ **Content Extraction UI** - Reader-View Dialog mit DOMPurify-Sanitization
 - ✅ **Bulk-Extraction Dialog** - Fortschrittsanzeige für Content-Extraktion
 - ✅ **Feed Management** - Hinzufügen, Löschen, Bearbeiten mit Kategorien
-- ✅ **Feed-Kacheln** - Gradient-Header, Avatar-Overlap, determistische Farben, **Dashboard-konsistente Schatten & abgerundete Ecken**
-- ✅ **Category Management** - Kategorien mit Icons und Farben
+- ✅ **Feed-Kacheln** - Gradient-Header, Avatar-Overlap, RSS-Icon in passender Akzentfarbe, einheitliche 60px Höhe, determistische Farben, **Dashboard-konsistente Schatten & abgerundete Ecken**
+- ✅ **Category-Kacheln** - Gradient-Header, einheitliche 60px Höhe, verbesserter Kontrast, Avatar-Overlap-Design
 - ✅ **Artikel-Übersicht** - Einheitliche Karten mit Content-Indikator
 - ✅ **PostgreSQL Volltextsuche** - Mit tsvector-GIN-Index, Ranking, Filtern (Kategorie, Lese-/Favoriten-Status) und Paginierung
 - ✅ **Filter** - Alle / Ungelesen / Favoriten + Kategorie-Filter

@@ -22,7 +22,7 @@ import {
 } from 'lucide-react'
 import type { Feed, Category } from '../api/client'
 
-// Deterministischer Gradient aus Feed-Name
+// Deterministischer Gradient + akzentfarbe aus Feed-Name
 function getFeedGradient(name: string): string {
   let hash = 0
   for (let i = 0; i < name.length; i++) {
@@ -31,6 +31,15 @@ function getFeedGradient(name: string): string {
   const h1 = Math.abs(hash % 360)
   const h2 = (h1 + 50) % 360
   return `linear-gradient(135deg, hsl(${h1}, 72%, 58%), hsl(${h2}, 72%, 42%))`
+}
+
+function getFeedAccentColor(name: string): string {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  const h = Math.abs(hash % 360)
+  return `hsl(${h}, 72%, 42%)`
 }
 
 interface FeedCardProps {
@@ -56,6 +65,7 @@ export function FeedCard({ feed, categories = [], isRefreshing, onRefresh, onEdi
   }, [])
 
   const gradient = getFeedGradient(feed.name)
+  const accentColor = getFeedAccentColor(feed.name)
   const hasImage = !!feed.imageUrl
 
   // Zugeordnete Kategorien auflösen
@@ -119,7 +129,7 @@ export function FeedCard({ feed, categories = [], isRefreshing, onRefresh, onEdi
             boxShadow: 3,
           }}
         >
-          {!hasImage && feed.name.charAt(0).toUpperCase()}
+          {!hasImage && <Rss size={26} strokeWidth={2.5} color={accentColor} />}
         </Avatar>
 
         {/* Overflow Menu — top right */}
