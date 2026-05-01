@@ -43,6 +43,26 @@ public class ArticleMapper {
                 .categoryIds(categoryIds)
                 .contentHtml(article.getExtractedContent())
                 .extractionFailed(article.isExtractionFailed())
+                .readingTimeMinutes(calculateReadingTime(article))
                 .build();
+    }
+
+    /**
+     * Berechnet die geschätzte Lesezeit in Minuten.
+     * Annahme: 200 Wörter pro Minute.
+     */
+    private int calculateReadingTime(Article article) {
+        String text = (article.getTitle() != null ? article.getTitle() + " " : "")
+                + (article.getDescription() != null ? article.getDescription() + " " : "")
+                + (article.getExtractedContent() != null ? article.getExtractedContent() : "");
+
+        if (text.isBlank()) {
+            return 1;
+        }
+
+        // Einfache Word-Count: Splitten nach Whitespace
+        String[] words = text.trim().split("\\s+");
+        int wordCount = words.length;
+        return Math.max(1, (int) Math.ceil(wordCount / 200.0));
     }
 }
