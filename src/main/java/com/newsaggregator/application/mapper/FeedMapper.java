@@ -46,7 +46,7 @@ public class FeedMapper {
                 .name(feed.getName())
                 .url(feed.getUrl())
                 .description(feed.getDescription())
-                .lastFetched(feed.getLastFetched())
+                .lastFetchedAt(feed.getLastFetched())
                 .createdAt(feed.getCreatedAt())
                 .status(feed.getStatus() != null ? feed.getStatus().name() : null)
                 .articleCount(articleCount)

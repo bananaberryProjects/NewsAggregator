@@ -24,7 +24,7 @@ public class FeedDto {
     private String name;
     private String url;
     private String description;
-    private LocalDateTime lastFetched;
+    private LocalDateTime lastFetchedAt;
     private LocalDateTime createdAt;
     private String status;
     private int articleCount;

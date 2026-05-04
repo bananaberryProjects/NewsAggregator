@@ -1,73 +1,38 @@
-import { Box, Card, Avatar, IconButton, Skeleton, Typography, Alert, Grid } from '@mui/material'
-import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material'
-import {
-  Label,
-  Folder,
-  Star,
-  Bookmark,
-  Favorite,
-  Home,
-  Work,
-  School,
-  Sports,
-  MusicNote,
-  Movie,
-  Book,
-  Computer,
-  Phone,
-  Email,
-  CalendarToday,
-  ShoppingCart,
-  Restaurant,
-  Flight,
-  DirectionsCar,
-  CurrencyBitcoin,
-  TrendingUp,
-  Newspaper
-} from '@mui/icons-material'
-import type { Category } from '../../api/client'
-
-// Icon-Mapping für häufig verwendete Icons - wird auch in Dialogen verwendet
-export const ICON_MAP: Record<string, React.ComponentType> = {
-  label: Label,
-  folder: Folder,
-  star: Star,
-  bookmark: Bookmark,
-  favorite: Favorite,
-  home: Home,
-  work: Work,
-  school: School,
-  sports: Sports,
-  music: MusicNote,
-  movie: Movie,
-  book: Book,
-  computer: Computer,
-  phone: Phone,
-  email: Email,
-  calendar: CalendarToday,
-  shopping: ShoppingCart,
-  restaurant: Restaurant,
-  flight: Flight,
-  car: DirectionsCar,
-  crypto: CurrencyBitcoin,
-  economy: TrendingUp,
-  news: Newspaper
-}
-
-// Hilfsfunktion um das Icon dynamisch zu laden
-function getIconComponent(iconName: string) {
-  const normalizedName = (iconName || 'label').toLowerCase().trim()
-  return ICON_MAP[normalizedName] || Label
-}
+import { useMemo } from 'react'
+import { Box, Skeleton, Typography, Alert, Grid } from '@mui/material'
+import type { Category, Feed } from '../../api/client'
+import { CategoryCard } from '../CategoryCard'
 
 interface CategoriesViewProps {
   categories: Category[]
+  feeds: Feed[]
   loading: boolean
-  onDelete: (id: string) => void
   onEdit: (category: Category) => void
+  onDelete: (id: string) => void
 }
 
-export function CategoriesView({ categories, loading, onDelete, onEdit }: CategoriesViewProps) {
+export function CategoriesView({ categories, feeds, loading, onEdit, onDelete }: CategoriesViewProps) {
+  // Feed-/Artikel-Zählung pro Kategorie im Frontend berechnen
+  const categoryStats = useMemo(() => {
+    const stats = new Map<string, { feedCount: number; articleCount: number }>()
+    
+    for (const cat of categories) {
+      stats.set(cat.id, { feedCount: 0, articleCount: 0 })
+    }
+
+    for (const feed of feeds) {
+      for (const catId of feed.categoryIds || []) {
+        const s = stats.get(catId)
+        if (s) {
+          s.feedCount += 1
+          s.articleCount += (feed.articleCount || 0)
+        }
+      }
+    }
+
+    return stats
+  }, [categories, feeds])
+
   return (
     <Box>
       <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
@@ -77,10 +42,24 @@ export function CategoriesView({ categories, loading, onDelete, onEdit }: Catego
       {loading ? (
         <Grid container spacing={3}>
           {[1, 2, 3, 4].map((i) => (
-            <Grid size={{ xs: 12, sm: 6 }} key={i}>
-              <Card sx={{ height: 120 }}>
-                <Skeleton variant="rectangular" height={120} />
-              </Card>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={i}>
+              <Box
+                sx={{
+                  height: 200,
+                  overflow: 'hidden',
+                  borderRadius: 3,
+                  bgcolor: 'background.paper',
+                }}
+              >
+                <Skeleton variant="rectangular" height={90} width="100%" sx={{ mb: 0 }} />
+                <Box sx={{ p: 2, pt: 4 }}>
+                  <Skeleton variant="text" width="60%" sx={{ mb: 1 }} />
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Skeleton variant="rounded" width={80} height={24} />
+                    <Skeleton variant="rounded" width={80} height={24} />
+                  </Box>
+                </Box>
+              </Box>
             </Grid>
           ))}
         </Grid>
@@ -90,35 +69,17 @@ export function CategoriesView({ categories, loading, onDelete, onEdit }: Catego
         </Alert>
       ) : (
         <Grid container spacing={3}>
-          {categories.map((category) => {
-            const IconComponent = getIconComponent(category.icon)
+          {[...categories].sort((a, b) => a.name.localeCompare(b.name)).map((category) => {
+            const stats = categoryStats.get(category.id) || { feedCount: 0, articleCount: 0 }
             return (
-              <Grid size={{ xs: 12, sm: 6 }} key={category.id}>
-                <Card
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    p: 2,
-                    borderLeft: `4px solid ${category.color}`,
-                  }}
-                >
-                  <Avatar sx={{ width: 56, height: 56, mr: 2, bgcolor: category.color }}>
-                    <IconComponent />
-                  </Avatar>
-                  <Box sx={{ flexGrow: 1 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      {category.name}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <IconButton onClick={() => onEdit(category)} color="primary">
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton onClick={() => onDelete(category.id)} color="error">
-                      <DeleteIcon />
-                    </IconButton>
-                  </Box>
-                </Card>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={category.id}>
+                <CategoryCard
+                  category={category}
+                  feedCount={stats.feedCount}
+                  articleCount={stats.articleCount}
+                  onEdit={() => onEdit(category)}
+                  onDelete={() => onDelete(category.id)}
+                />
               </Grid>
             )
           })}

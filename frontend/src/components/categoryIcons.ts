@@ -1,0 +1,56 @@
+import {
+  Label,
+  Folder,
+  Star,
+  Bookmark,
+  Favorite,
+  Home,
+  Work,
+  School,
+  SportsEsports,
+  MusicNote,
+  Movie,
+  Book,
+  Computer,
+  Phone,
+  Email,
+  CalendarToday,
+  ShoppingCart,
+  Restaurant,
+  Flight,
+  DirectionsCar,
+  CurrencyBitcoin,
+  TrendingUp,
+  Newspaper,
+} from '@mui/icons-material'
+
+export const ICON_MAP: Record<string, React.ComponentType> = {
+  label: Label,
+  folder: Folder,
+  star: Star,
+  bookmark: Bookmark,
+  favorite: Favorite,
+  home: Home,
+  work: Work,
+  school: School,
+  sports: SportsEsports,
+  music: MusicNote,
+  movie: Movie,
+  book: Book,
+  computer: Computer,
+  phone: Phone,
+  email: Email,
+  calendar: CalendarToday,
+  shopping: ShoppingCart,
+  restaurant: Restaurant,
+  flight: Flight,
+  car: DirectionsCar,
+  crypto: CurrencyBitcoin,
+  economy: TrendingUp,
+  news: Newspaper,
+}
+
+export function getIconComponent(iconName: string) {
+  const normalizedName = (iconName || 'label').toLowerCase().trim()
+  return ICON_MAP[normalizedName] || Label
+}

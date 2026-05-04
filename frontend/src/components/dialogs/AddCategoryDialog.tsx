@@ -16,7 +16,7 @@ import {
   MenuItem,
 } from '@mui/material'
 import { useState } from 'react'
-import { ICON_MAP } from '../views/CategoriesView'
+import { ICON_MAP } from '../categoryIcons'
 
 const PRESET_COLORS = [
   '#667eea', // Lila

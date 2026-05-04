@@ -336,6 +336,7 @@ function App() {
               <Route path="/feeds" element={
                 <FeedsView
                   feeds={feeds}
+                  categories={categories}
                   loading={feedsLoading}
                   refreshingFeedId={null}
                   onRefresh={refreshFeed}
@@ -383,6 +384,7 @@ function App() {
               <Route path="/categories" element={
                 <CategoriesView
                   categories={categories}
+                  feeds={feeds}
                   loading={feedsLoading}
                   onEdit={handleOpenEditCategoryDialog}
                   onDelete={deleteCategory}
