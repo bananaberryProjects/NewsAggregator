@@ -80,7 +80,7 @@ export function TrendingWidget({ refreshIntervalSeconds = 300 }: { refreshInterv
   const formatTime = (iso: string) =>
     new Date(iso).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
 
-  const maxCount = data?.topics.length > 0
+  const maxCount = data && data.topics.length > 0
     ? Math.max(...data.topics.map(t => t.count))
     : 1
 
