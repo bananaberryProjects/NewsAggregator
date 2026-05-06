@@ -31,7 +31,22 @@ interface TrendingData {
   breakingAlerts: BreakingAlert[]
 }
 
-const GRADIENT = 'linear-gradient(135deg, #FFB74D 0%, #FF6D00 20%, #FF1744 50%, #6A0000 100%)'
+function getTrendingGradient(hour: number): string {
+  if (hour >= 5 && hour < 12) {
+    // Morgen: Dunkelorange → Orange → Gold
+    return 'linear-gradient(135deg, #E65100 0%, #FF8F00 50%, #FFB300 100%)'
+  }
+  if (hour >= 12 && hour < 17) {
+    // Tag: Dunkelblau → Blau → Hellblau
+    return 'linear-gradient(135deg, #1565C0 0%, #42A5F5 50%, #64B5F6 100%)'
+  }
+  if (hour >= 17 && hour < 22) {
+    // Abend: Dunkelrot → Rot → Koralle
+    return 'linear-gradient(135deg, #C62828 0%, #EF5350 50%, #FF7043 100%)'
+  }
+  // Nacht: Dunkelindigo → Indigo → Hellindigo
+  return 'linear-gradient(135deg, #283593 0%, #5C6BC0 50%, #7986CB 100%)'
+}
 
 const TREND_CONFIG = {
   up:     { color: '#66BB6A', icon: TrendingUp,   label: 'Steigend' },
@@ -45,6 +60,8 @@ export function TrendingWidget({ refreshIntervalSeconds = 300 }: { refreshInterv
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
+  const hour = new Date().getHours()
+  const gradient = getTrendingGradient(hour)
 
   const fetchTrending = useCallback(async () => {
     setLoading(true)
@@ -90,7 +107,7 @@ export function TrendingWidget({ refreshIntervalSeconds = 300 }: { refreshInterv
         sx={{
           borderRadius: 3,
           overflow: 'visible',
-          background: GRADIENT,
+          background: gradient,
           color: '#fff',
           position: 'relative',
           mb: 3,
