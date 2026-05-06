@@ -40,30 +40,30 @@ function getSidebarGradient(mode: 'light' | 'dark', hour: number): string {
   if (mode === 'dark') {
     if (hour >= 5 && hour < 12) {
       // Morgen: Orange mit mäßiger Deckkraft
-      return 'linear-gradient(180deg, rgba(230,81,0,0.40) 0%, rgba(191,54,12,0.20) 30%, rgba(191,54,12,0) 100%)'
+      return 'linear-gradient(180deg, rgba(230,81,0,0.60) 0%, rgba(191,54,12,0.40) 30%, rgba(191,54,12,0) 100%)'
     }
     if (hour >= 12 && hour < 17) {
       // Tag: Blau mit mäßiger Deckkraft
-      return 'linear-gradient(180deg, rgba(21,101,192,0.40) 0%, rgba(13,71,161,0.20) 30%, rgba(13,71,161,0) 100%)'
+      return 'linear-gradient(180deg, rgba(21,101,192,0.60) 0%, rgba(13,71,161,0.40) 30%, rgba(13,71,161,0) 100%)'
     }
     if (hour >= 17 && hour < 22) {
       // Abend: Rot mit mäßiger Deckkraft
-      return 'linear-gradient(180deg, rgba(198,40,40,0.40) 0%, rgba(183,28,28,0.20) 30%, rgba(183,28,28,0) 100%)'
+      return 'linear-gradient(180deg, rgba(198,40,40,0.60) 0%, rgba(183,28,28,0.40) 30%, rgba(183,28,28,0) 100%)'
     }
     // Nacht: Indigo mit mäßiger Deckkraft
-    return 'linear-gradient(180deg, rgba(40,53,147,0.40) 0%, rgba(26,35,126,0.20) 30%, rgba(26,35,126,0) 100%)'
+    return 'linear-gradient(180deg, rgba(40,53,147,0.60) 0%, rgba(26,35,126,0.40) 30%, rgba(26,35,126,0) 100%)'
   }
   // Light Mode — noch dezenter
   if (hour >= 5 && hour < 12) {
-    return 'linear-gradient(180deg, rgba(230,81,0,0.25) 0%, rgba(255,143,0,0.12) 30%, rgba(255,143,0,0) 100%)'
+    return 'linear-gradient(180deg, rgba(230,81,0,0.50) 0%, rgba(255,143,0,0.30) 30%, rgba(255,143,0,0) 100%)'
   }
   if (hour >= 12 && hour < 17) {
-    return 'linear-gradient(180deg, rgba(21,101,192,0.25) 0%, rgba(66,165,245,0.12) 30%, rgba(66,165,245,0) 100%)'
+    return 'linear-gradient(180deg, rgba(21,101,192,0.50) 0%, rgba(66,165,245,0.30) 30%, rgba(66,165,245,0) 100%)'
   }
   if (hour >= 17 && hour < 22) {
-    return 'linear-gradient(180deg, rgba(198,40,40,0.25) 0%, rgba(239,83,80,0.12) 30%, rgba(239,83,80,0) 100%)'
+    return 'linear-gradient(180deg, rgba(198,40,40,0.50) 0%, rgba(239,83,80,0.30) 30%, rgba(239,83,80,0) 100%)'
   }
-  return 'linear-gradient(180deg, rgba(40,53,147,0.25) 0%, rgba(92,107,192,0.12) 30%, rgba(92,107,192,0) 100%)'
+  return 'linear-gradient(180deg, rgba(40,53,147,0.50) 0%, rgba(92,107,192,0.30) 30%, rgba(92,107,192,0) 100%)'
 }
 
 interface SidebarProps {
