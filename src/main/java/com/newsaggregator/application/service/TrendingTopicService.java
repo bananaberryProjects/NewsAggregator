@@ -205,13 +205,16 @@ public class TrendingTopicService {
         for (TermStats ts : stats) {
             if (ts.term == null) continue;
             String[] words = ts.term.split("\\s+");
-            for (String word : words) {
-                word = word.trim();
+            for (String rawWord : words) {
+                String word = rawWord.trim();
                 if (word.length() < 3 || STOPWORDS.contains(word)) continue;
-                result.compute(word, (k, v) -> {
-                    if (v == null) return new TermAgg(word, ts.articleCount, ts.feedCount);
-                    v.count += ts.articleCount;
-                    v.feedCount = Math.max(v.feedCount, ts.feedCount);
+                final String w = word;
+                final int ac = ts.articleCount;
+                final int fc = ts.feedCount;
+                result.compute(w, (k, v) -> {
+                    if (v == null) return new TermAgg(w, ac, fc);
+                    v.count += ac;
+                    v.feedCount = Math.max(v.feedCount, fc);
                     return v;
                 });
             }
