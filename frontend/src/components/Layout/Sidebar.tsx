@@ -38,14 +38,14 @@ const drawerWidthCollapsed = 64
 // Dynamischer Farbverlauf für die Sidebar – kräftiger, aber dezent
 function getSidebarGradient(mode: 'light' | 'dark', hour: number): string {
   if (mode === 'dark') {
-    if (hour >= 6 && hour < 10) return 'linear-gradient(180deg, rgba(251,140,0,0.18) 0%, rgba(251,140,0,0) 55%)'
-    if (hour >= 10 && hour < 17) return 'linear-gradient(180deg, rgba(66,165,245,0.16) 0%, rgba(66,165,245,0) 55%)'
+    if (hour >= 5 && hour < 12) return 'linear-gradient(180deg, rgba(251,140,0,0.18) 0%, rgba(251,140,0,0) 55%)'
+    if (hour >= 12 && hour < 17) return 'linear-gradient(180deg, rgba(66,165,245,0.16) 0%, rgba(66,165,245,0) 55%)'
     if (hour >= 17 && hour < 22) return 'linear-gradient(180deg, rgba(216,27,96,0.18) 0%, rgba(216,27,96,0) 55%)'
     return 'linear-gradient(180deg, rgba(92,107,192,0.16) 0%, rgba(92,107,192,0) 55%)'
   }
   // Light Mode
-  if (hour >= 6 && hour < 10) return 'linear-gradient(180deg, rgba(255,183,77,0.30) 0%, rgba(255,255,255,0) 55%)'
-  if (hour >= 10 && hour < 17) return 'linear-gradient(180deg, rgba(66,165,245,0.24) 0%, rgba(255,255,255,0) 55%)'
+  if (hour >= 5 && hour < 12) return 'linear-gradient(180deg, rgba(255,183,77,0.30) 0%, rgba(255,255,255,0) 55%)'
+  if (hour >= 12 && hour < 17) return 'linear-gradient(180deg, rgba(66,165,245,0.24) 0%, rgba(255,255,255,0) 55%)'
   if (hour >= 17 && hour < 22) return 'linear-gradient(180deg, rgba(240,98,146,0.24) 0%, rgba(255,255,255,0) 55%)'
   return 'linear-gradient(180deg, rgba(126,87,194,0.22) 0%, rgba(255,255,255,0) 55%)'
 }
