@@ -31,7 +31,7 @@ interface TrendingData {
   breakingAlerts: BreakingAlert[]
 }
 
-const GRADIENT = 'linear-gradient(135deg, #FF5722 0%, #E64A19 50%, #D84315 100%)'
+const GRADIENT = 'linear-gradient(135deg, #FFB74D 0%, #FF6D00 20%, #FF1744 50%, #6A0000 100%)'
 
 const TREND_CONFIG = {
   up:     { color: '#66BB6A', icon: TrendingUp,   label: 'Steigend' },
