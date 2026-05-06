@@ -32,7 +32,7 @@ public class TrendingTextAnalyzer {
     // Zusätzliche Domain-Noise-Wörter die Lucene's GermanAnalyzer nicht abdeckt
     private static final Set<String> EXTRA_STOPWORDS = Set.of(
         "neu", "neue", "neuer", "neues", "neuen",
-        "alt", "alte", "alter", "altes", "alten",
+        "alte", "alter", "altes", "alten",
         "groß", "große", "großer", "großes", "großen",
         "klein", "kleine", "kleiner", "kleines", "kleinen",
         "update", "updates", "version", "v", "nr", "nummer",

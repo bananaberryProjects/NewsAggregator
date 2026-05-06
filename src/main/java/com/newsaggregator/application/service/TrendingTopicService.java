@@ -172,9 +172,8 @@ public class TrendingTopicService {
         Map<String, TermAgg> result = new HashMap<>();
 
         for (ArticleText article : articles) {
-            String combined = (article.title != null ? article.title : "")
-                    + " "
-                    + (article.description != null ? article.description : "");
+            // TESTWEISE: nur title, keine description (vermeidet HTML-Noise)
+            String combined = article.title != null ? article.title : "";
 
             List<TermToken> tokens = textAnalyzer.extractTerms(combined);
 
@@ -210,9 +209,8 @@ public class TrendingTopicService {
 
         Map<String, Integer> counts = new HashMap<>();
         for (ArticleText article : prevArticles) {
-            String combined = (article.title != null ? article.title : "")
-                    + " "
-                    + (article.description != null ? article.description : "");
+            // TESTWEISE: nur title, keine description (vermeidet HTML-Noise)
+            String combined = article.title != null ? article.title : "";
             List<TermToken> tokens = textAnalyzer.extractTerms(combined);
             for (TermToken token : tokens) {
                 String term = token.term.toLowerCase();
