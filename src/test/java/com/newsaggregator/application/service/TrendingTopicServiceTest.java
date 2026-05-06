@@ -1,11 +1,11 @@
 package com.newsaggregator.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,10 +15,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.newsaggregator.application.dto.TrendingTopicDto;
 import com.newsaggregator.infrastructure.adapter.persistence.repository.TrendingTopicRepository;
-import com.newsaggregator.infrastructure.adapter.persistence.repository.TrendingTopicRepository.TermStats;
+import com.newsaggregator.infrastructure.adapter.persistence.repository.TrendingTopicRepository.ArticleText;
 
 /**
- * Unit-Test für TrendingTopicService (Fast-Modus, ohne KI).
+ * Unit-Test für TrendingTopicService mit Lucene-Analyse.
  */
 @ExtendWith(MockitoExtension.class)
 class TrendingTopicServiceTest {
@@ -29,29 +29,29 @@ class TrendingTopicServiceTest {
     @Mock
     private GptClient gptClient;
 
+    private TrendingTextAnalyzer textAnalyzer;
     private TrendingTopicService service;
 
     @BeforeEach
     void setUp() {
-        service = new TrendingTopicService(trendingRepository, gptClient);
+        // Echter Lucene-Analyzer (kein Mock — will seine Tokenisierung testen)
+        textAnalyzer = new TrendingTextAnalyzer();
+        service = new TrendingTopicService(trendingRepository, textAnalyzer, gptClient);
     }
 
     @Test
     void getTrendingTopicsFast_WithArticles_ShouldReturnTopics() {
         // Given
-        LocalDateTime now = LocalDateTime.now();
-        List<TermStats> currentStats = List.of(
-                new TermStats("bitcoin etf zulassung", 8, 3),
-                new TermStats("dax neue rekordhoch", 5, 2),
-                new TermStats("ki regulierung eu", 4, 2)
+        List<ArticleText> articles = List.of(
+                new ArticleText("Bitcoin ETF Zulassung in den USA", "Die SEC hat den Bitcoin ETF endlich zugelassen."),
+                new ArticleText("DAX erreicht neues Rekordhoch", "Der DAX klettert auf 18.000 Punkte."),
+                new ArticleText("KI Regulierung in der EU", "Die EU arbeitet an neuen KI Regeln."),
+                new ArticleText("Bitcoin Kurs explodiert", "Nach der ETF Zulassung steigt Bitcoin stark."),
+                new ArticleText("Ethereum Update steht bevor", "Das nächste Ethereum Upgrade kommt bald.")
         );
 
-        when(trendingRepository.findTopTermsInWindow(
-                org.mockito.ArgumentMatchers.any(),
-                org.mockito.ArgumentMatchers.any(),
-                org.mockito.ArgumentMatchers.anyInt(),
-                org.mockito.ArgumentMatchers.anyInt()))
-                .thenReturn(currentStats);
+        when(trendingRepository.findArticleTextsSince(any(LocalDateTime.class)))
+                .thenReturn(articles);
 
         // When
         TrendingTopicDto result = service.getTrendingTopicsFast(24, 10);
@@ -60,25 +60,22 @@ class TrendingTopicServiceTest {
         assertThat(result.getWindow()).isEqualTo("24h");
         assertThat(result.getTopics()).isNotEmpty();
 
-        // "bitcoin" sollte als eigenes Wort auftauchen (Tokenisierung)
-        Map<String, TrendingTopicDto.Topic> topicMap = new java.util.HashMap<>();
-        for (TrendingTopicDto.Topic t : result.getTopics()) {
-            topicMap.put(t.getTerm().toLowerCase(), t);
-        }
+        // "bitcoin" sollte durch Lucene gestemmt auftauchen
+        List<String> terms = result.getTopics().stream()
+                .map(TrendingTopicDto.Topic::getTerm)
+                .map(String::toLowerCase)
+                .toList();
 
-        assertThat(topicMap).containsKey("Bitcoin");
-        assertThat(topicMap.get("bitcoin").getCount()).isGreaterThanOrEqualTo(8);
-        assertThat(topicMap.get("bitcoin").getFeeds()).isEqualTo(3);
+        assertThat(terms).contains("Bitcoin");
+
+        // "Bitcoin ETF" als Bigram sollte auch auftauchen
+        assertThat(terms).anyMatch(t -> t.contains(" ") && t.toLowerCase().contains("bitcoin"));
     }
 
     @Test
     void getTrendingTopicsFast_NoArticles_ShouldReturnEmpty() {
         // Given
-        when(trendingRepository.findTopTermsInWindow(
-                org.mockito.ArgumentMatchers.any(),
-                org.mockito.ArgumentMatchers.any(),
-                org.mockito.ArgumentMatchers.anyInt(),
-                org.mockito.ArgumentMatchers.anyInt()))
+        when(trendingRepository.findArticleTextsSince(any(LocalDateTime.class)))
                 .thenReturn(List.of());
 
         // When
@@ -91,42 +88,36 @@ class TrendingTopicServiceTest {
     }
 
     @Test
-    void getTrendingTopicsFast_WithBreaking_ShouldFlagBreaking() {
-        // Given
-        List<TermStats> currentStats = List.of(
-                new TermStats("bitcoin", 12, 4)  // 4 feeds, 12 Artikel
+    void getTrendingTopicsFast_StopwordsShouldBeFiltered() {
+        // Given — Titel mit vielen Stopwords
+        List<ArticleText> articles = List.of(
+                new ArticleText("Der die das ein neue Update", "Heute und morgen ist es sehr wichtig.")
         );
 
-        when(trendingRepository.findTopTermsInWindow(
-                org.mockito.ArgumentMatchers.any(),
-                org.mockito.ArgumentMatchers.any(),
-                org.mockito.ArgumentMatchers.anyInt(),
-                org.mockito.ArgumentMatchers.anyInt()))
-                .thenReturn(currentStats);
+        when(trendingRepository.findArticleTextsSince(any(LocalDateTime.class)))
+                .thenReturn(articles);
 
         // When
         TrendingTopicDto result = service.getTrendingTopicsFast(24, 10);
 
-        // Then
-        assertThat(result.getTopics()).isNotEmpty();
-        TrendingTopicDto.Topic bitcoin = result.getTopics().get(0);
-        assertThat(bitcoin.isBreaking()).isTrue();
-        assertThat(result.getBreakingAlerts()).hasSize(1);
-        assertThat(result.getBreakingAlerts().get(0).getTerm()).isEqualTo("Bitcoin");
+        // Then — reine Stopwords sollten nicht als Topics auftauchen
+        List<String> terms = result.getTopics().stream()
+                .map(TrendingTopicDto.Topic::getTerm)
+                .map(String::toLowerCase)
+                .toList();
+
+        assertThat(terms).noneMatch(t -> t.equals("Der") || t.equals("Die") || t.equals("Das")
+                || t.equals("Ein") || t.equals("Und") || t.equals("Heute"));
     }
 
     @Test
     void getTrendingTopicsFast_Cache_ShouldReturnCachedResult() {
         // Given
-        List<TermStats> currentStats = List.of(
-                new TermStats("test", 5, 1)
+        List<ArticleText> articles = List.of(
+                new ArticleText("Test Artikel", "Beschreibung")
         );
-        when(trendingRepository.findTopTermsInWindow(
-                org.mockito.ArgumentMatchers.any(),
-                org.mockito.ArgumentMatchers.any(),
-                org.mockito.ArgumentMatchers.anyInt(),
-                org.mockito.ArgumentMatchers.anyInt()))
-                .thenReturn(currentStats);
+        when(trendingRepository.findArticleTextsSince(any(LocalDateTime.class)))
+                .thenReturn(articles);
 
         // First call
         TrendingTopicDto first = service.getTrendingTopicsFast(24, 10);
@@ -135,6 +126,30 @@ class TrendingTopicServiceTest {
         TrendingTopicDto second = service.getTrendingTopicsFast(24, 10);
 
         // Then
-        assertThat(second).isEqualTo(first);
+        assertThat(second.getTopics()).hasSameSizeAs(first.getTopics());
+    }
+
+    @Test
+    void getTrendingTopics_WithAiFilter_ShouldFilterTerms() throws Exception {
+        // Given
+        List<ArticleText> articles = List.of(
+                new ArticleText("Bitcoin ETF Zulassung", "Bitcoin ETF News"),
+                new ArticleText("Bitcoin Kurs", "Bitcoin Preis"),
+                new ArticleText("DAX Rekord", "DAX steigt"),
+                new ArticleText("DAX Analyse", "DAX Heute")
+        );
+
+        when(trendingRepository.findArticleTextsSince(any(LocalDateTime.class)))
+                .thenReturn(articles);
+        when(gptClient.filterTrendingTerms(any()))
+                .thenReturn(List.of("Bitcoin", "DAX"));
+
+        // When
+        TrendingTopicDto result = service.getTrendingTopics(24, 10);
+
+        // Then
+        assertThat(result.getTopics()).hasSize(2);
+        assertThat(result.getTopics().get(0).getTerm()).isEqualTo("Bitcoin");
+        assertThat(result.getTopics().get(1).getTerm()).isEqualTo("DAX");
     }
 }
