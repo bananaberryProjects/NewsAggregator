@@ -39,11 +39,11 @@ public class TrendingTopicService {
         "der", "die", "das", "ein", "eine", "und", "oder", "mit", "für", "von", "in", "zu",
         "auf", "ist", "sind", "war", "wurde", "wird", "nicht", "bei", "nach", "wie", "als",
         "um", "über", "aus", "an", "durch", "vor", "zum", "zur", "am", "im", "es", "er",
-        "sie", "ihn", "ihr", "uns", "du", "ich", "man", "was", "wer", "wo", "wann", "warum",
-        "wenn", "dann", "so", "auch", "nur", "noch", "schon", "immer", "hier", "da", "jetzt",
+        "sie", "ihn", "ihr", "uns", "du", "ich", "man", "wer", "wo", "wann", "warum",
+        "wenn", "dann", "auch", "nur", "noch", "schon", "immer", "hier", "da", "jetzt",
         "neu", "neue", "neuer", "neues", "heute", "gestern", "morgen", "erste", "zweite",
         "dritte", "mehr", "weniger", "viel", "alle", "jede", "jeder", "jedes", "kein",
-        "the", "a", "an", "to", "of", "and", "for", "on", "is", "are", "was", "were", "be",
+        "the", "a", "to", "of", "and", "for", "on", "is", "are", "was", "were", "be",
         "been", "being", "have", "has", "had", "do", "does", "did", "will", "would", "could",
         "should", "may", "might", "must", "shall", "can", "need", "dare", "ought", "used",
         "this", "that", "these", "those", "i", "you", "he", "she", "it", "we", "they",
@@ -53,7 +53,7 @@ public class TrendingTopicService {
         "own", "same", "so", "than", "too", "very", "just", "now", "then", "here", "there",
         "up", "out", "if", "about", "into", "through", "during", "before", "after", "above",
         "below", "between", "under", "again", "further", "once", "from", "down", "off", "over",
-        "at", "by", "with", "against", "because", "until", "while", "since", "until"
+        "at", "by", "with", "against", "because", "until", "while", "since"
     );
 
     public TrendingTopicService(TrendingTopicRepository trendingRepository, GptClient gptClient) {
