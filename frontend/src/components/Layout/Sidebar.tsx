@@ -35,35 +35,35 @@ import { SearchBar } from '../SearchBar'
 const drawerWidth = 280
 const drawerWidthCollapsed = 64
 
-// Dynamischer Farbverlauf für die Sidebar — kräftig wie im MorningBriefingWidget
+// Dynamischer Farbverlauf für die Sidebar — dezenter Glas-Effekt
 function getSidebarGradient(mode: 'light' | 'dark', hour: number): string {
   if (mode === 'dark') {
     if (hour >= 5 && hour < 12) {
-      // Morgen: Dunkelorange → Orange → Gold
-      return 'linear-gradient(180deg, #E65100 0%, #BF360C 30%, rgba(191,54,12,0) 100%)'
+      // Morgen: Orange mit mäßiger Deckkraft
+      return 'linear-gradient(180deg, rgba(230,81,0,0.40) 0%, rgba(191,54,12,0.20) 30%, rgba(191,54,12,0) 100%)'
     }
     if (hour >= 12 && hour < 17) {
-      // Tag: Dunkelblau → Blau → Hellblau
-      return 'linear-gradient(180deg, #1565C0 0%, #0D47A1 30%, rgba(13,71,161,0) 100%)'
+      // Tag: Blau mit mäßiger Deckkraft
+      return 'linear-gradient(180deg, rgba(21,101,192,0.40) 0%, rgba(13,71,161,0.20) 30%, rgba(13,71,161,0) 100%)'
     }
     if (hour >= 17 && hour < 22) {
-      // Abend: Dunkelrot → Rot → Koralle
-      return 'linear-gradient(180deg, #C62828 0%, #B71C1C 30%, rgba(183,28,28,0) 100%)'
+      // Abend: Rot mit mäßiger Deckkraft
+      return 'linear-gradient(180deg, rgba(198,40,40,0.40) 0%, rgba(183,28,28,0.20) 30%, rgba(183,28,28,0) 100%)'
     }
-    // Nacht: Dunkelindigo → Indigo → Hellindigo
-    return 'linear-gradient(180deg, #283593 0%, #1A237E 30%, rgba(26,35,126,0) 100%)'
+    // Nacht: Indigo mit mäßiger Deckkraft
+    return 'linear-gradient(180deg, rgba(40,53,147,0.40) 0%, rgba(26,35,126,0.20) 30%, rgba(26,35,126,0) 100%)'
   }
-  // Light Mode — gleiche Farben wie Dark, aber etwas heller startend
+  // Light Mode — noch dezenter
   if (hour >= 5 && hour < 12) {
-    return 'linear-gradient(180deg, #E65100 0%, #FF8F00 30%, rgba(255,143,0,0) 100%)'
+    return 'linear-gradient(180deg, rgba(230,81,0,0.25) 0%, rgba(255,143,0,0.12) 30%, rgba(255,143,0,0) 100%)'
   }
   if (hour >= 12 && hour < 17) {
-    return 'linear-gradient(180deg, #1565C0 0%, #42A5F5 30%, rgba(66,165,245,0) 100%)'
+    return 'linear-gradient(180deg, rgba(21,101,192,0.25) 0%, rgba(66,165,245,0.12) 30%, rgba(66,165,245,0) 100%)'
   }
   if (hour >= 17 && hour < 22) {
-    return 'linear-gradient(180deg, #C62828 0%, #EF5350 30%, rgba(239,83,80,0) 100%)'
+    return 'linear-gradient(180deg, rgba(198,40,40,0.25) 0%, rgba(239,83,80,0.12) 30%, rgba(239,83,80,0) 100%)'
   }
-  return 'linear-gradient(180deg, #283593 0%, #5C6BC0 30%, rgba(92,107,192,0) 100%)'
+  return 'linear-gradient(180deg, rgba(40,53,147,0.25) 0%, rgba(92,107,192,0.12) 30%, rgba(92,107,192,0) 100%)'
 }
 
 interface SidebarProps {
