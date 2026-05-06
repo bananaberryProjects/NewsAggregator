@@ -1,5 +1,5 @@
 import { Box, Grid } from '@mui/material'
-import { WeatherWidget, MarketWidget, AiSummaryWidget, MorningBriefingWidget } from '../widgets'
+import { WeatherWidget, MarketWidget, AiSummaryWidget, MorningBriefingWidget, TrendingWidget } from '../widgets'
 
 export function DashboardView() {
   return (
@@ -10,7 +10,10 @@ export function DashboardView() {
       {/* 2. KI Tagesüberblick */}
       <AiSummaryWidget />
 
-      {/* 3. Wetter, Markt */}
+      {/* 3. Trending-Themen */}
+      <TrendingWidget />
+
+      {/* 4. Wetter, Markt */}
       <Box sx={{ mt: 1 }}>
         <Grid container spacing={3} sx={{ alignItems: 'stretch' }}>
           <Grid size={{ xs: 12, md: 6 }} sx={{ display: 'flex' }}>

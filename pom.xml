@@ -113,6 +113,18 @@
             <version>1.17.2</version>
         </dependency>
 
+        <!-- Apache Lucene für Text-Analyse (GermanAnalyzer, Tokenisierung, Stopwords) -->
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+            <version>9.11.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-analysis-common</artifactId>
+            <version>9.11.1</version>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
