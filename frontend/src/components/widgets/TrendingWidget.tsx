@@ -236,9 +236,10 @@ export function TrendingWidget({ refreshIntervalSeconds = 300 }: { refreshInterv
                                   <Typography
                                     variant="caption"
                                     sx={{
-                                      fontSize: '0.65rem',
-                                      color: topic.deltaPercent > 0 ? '#66BB6A' : '#EF5350',
-                                      fontWeight: 600,
+                                      fontSize: '0.7rem',
+                                      color: topic.deltaPercent > 0 ? '#00E676' : '#FF1744',
+                                      fontWeight: 700,
+                                      textShadow: '0 1px 2px rgba(0,0,0,0.4)',
                                     }}
                                   >
                                     {topic.deltaPercent > 0 ? '+' : ''}{topic.deltaPercent}%
