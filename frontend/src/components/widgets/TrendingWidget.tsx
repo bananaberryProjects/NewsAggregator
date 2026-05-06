@@ -237,9 +237,9 @@ export function TrendingWidget({ refreshIntervalSeconds = 300 }: { refreshInterv
                                     variant="caption"
                                     sx={{
                                       fontSize: '0.7rem',
-                                      color: topic.deltaPercent > 0 ? '#00E676' : '#FF1744',
+                                      color: '#F5F5F5',
                                       fontWeight: 700,
-                                      textShadow: '0 1px 2px rgba(0,0,0,0.4)',
+                                      textShadow: '0 1px 3px rgba(0,0,0,0.5)',
                                     }}
                                   >
                                     {topic.deltaPercent > 0 ? '+' : ''}{topic.deltaPercent}%
