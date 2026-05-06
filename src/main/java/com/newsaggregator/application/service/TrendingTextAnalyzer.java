@@ -52,8 +52,8 @@ public class TrendingTextAnalyzer {
         "wenige", "weniger", "weniges", "wenigen",
         "mehrere", "mehrerer", "mehreres", "mehreren",
         "einige", "einiger", "einiges", "einigen",
-        "meiste", "meisten", "meistes", "meisten",
-        "beste", "besten", "bestes", "besten",
+        "meiste", "meisten", "meistes",
+        "beste", "besten", "bestes",
         "schlechteste", "schlechtesten", "schlechtestes",
         "erste", "ersten", "erster", "erstes",
         "letzte", "letzten", "letzter", "letztes",
@@ -62,18 +62,22 @@ public class TrendingTextAnalyzer {
         "tag", "tage", "woche", "wochen", "monat", "monate", "monaten",
         "jahr", "jahre", "jahren", "jahres", "jahrs",
         "heute", "gestern", "morgen", "vorgestern", "übermorgen",
-        "nacht", "nächte", "mittag", "mittags", "abend", "abends", "morgen",
+        "nacht", "nächte", "mittag", "mittags", "abend", "abends", "morgens",
         "früh", "spät", "früher", "später", "früheste", "späteste",
-        "damals", "einst", "früher", "neuerdings", "neulich",
+        "damals", "einst", "neuerdings", "neulich",
         "immer", "oft", "häufig", "selten", "manchmal",
         "nie", "niemals", "immerhin", "wenigstens", "mindestens",
         "fast", "kaum", "schwerlich", "baldigst",
-        "ca", "circa", "etwa", "ungefähr", "fast", "mindestens", "maximal",
-        "prozent", "prozente", "pro", "anti", "pro contra",
+        "ca", "circa", "etwa", "ungefähr", "maximal",
+        "prozent", "prozente", "anti", "pro contra",
         "pro", "kontra", "vs", "versus", "gegen",
         "plus", "minus", "mal", "durch", "geteilt",
-        "stück", "stücke", "teile", "teil", "stück", "einheit", "einheiten",
-        "milliarde", "milliarden", "million", "millionen", "tausend", "hundert"
+        "stück", "stücke", "teile", "teil", "einheit", "einheiten",
+        "milliarde", "milliarden", "million", "millionen", "tausend", "hundert",
+        // HTML/CSS Reste (falls durchsickern)
+        "div", "span", "script", "style", "img", "width", "height", "class",
+        "src", "href", "alt", "px", "em", "rem", "com", "de", "org", "net",
+        "www", "http", "https", "html", "body", "head", "title", "meta", "link"
     );
 
     private final Analyzer germanAnalyzer;
@@ -97,11 +101,17 @@ public class TrendingTextAnalyzer {
             return List.of();
         }
 
+        // 0. HTML + URLs entfernen BEVOR Tokenisierung
+        String cleaned = cleanText(text);
+        if (cleaned.isBlank()) {
+            return List.of();
+        }
+
         List<TermToken> tokens = new ArrayList<>();
 
         try {
             // 1. GermanAnalyzer Tokenisierung (Stopwords + Stemming)
-            List<String> unigrams = tokenizeWithGermanAnalyzer(text);
+            List<String> unigrams = tokenizeWithGermanAnalyzer(cleaned);
 
             // 2. Bigram-Erzeugung aus den gefilterten Unigrams
             List<String> bigrams = generateBigrams(unigrams);
@@ -119,6 +129,34 @@ public class TrendingTextAnalyzer {
         }
 
         return tokens;
+    }
+
+    /**
+     * Bereinigt Rohtext von HTML-Markup, URLs und Entities.
+     * Muss vor der Lucene-Analyse passieren.
+     */
+    private String cleanText(String raw) {
+        if (raw == null) {
+            return "";
+        }
+
+        String text = raw;
+
+        // 1. HTML-Tags entfernen: <div class="foo"> → " "
+        text = text.replaceAll("<[^>]+>", " ");
+
+        // 2. URLs entfernen: https://example.com/path?x=1 → " "
+        text = text.replaceAll("https?://\\S+", " ");
+
+        // 3. HTML Entities entfernen: &nbsp; &amp; &lt; → " "
+        text = text.replaceAll("&\\w+;", " ");
+        text = text.replaceAll("&#[0-9]+;", " ");
+
+        // 4. Numerische Token (reine Zahlen) entfernen — "2024", "42" sind kein Thema
+        text = text.replaceAll("\\b\\d+\\b", " ");
+
+        // 5. Redundante Whitespace normalisieren
+        return text.replaceAll("\\s+", " ").trim();
     }
 
     /**
@@ -166,10 +204,15 @@ public class TrendingTextAnalyzer {
             return List.of();
         }
 
+        String cleaned = cleanText(text);
+        if (cleaned.isBlank()) {
+            return List.of();
+        }
+
         List<String> shingles = new ArrayList<>();
 
         try {
-            try (TokenStream stream = germanAnalyzer.tokenStream("content", text)) {
+            try (TokenStream stream = germanAnalyzer.tokenStream("content", cleaned)) {
                 // ShingleFilter: max_shingle_size=2 → Unigrams + Bigrams
                 ShingleFilter shingleFilter = new ShingleFilter(stream, 2, 2);
                 shingleFilter.setOutputUnigrams(false); // nur Bigrams

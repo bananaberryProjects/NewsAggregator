@@ -88,6 +88,46 @@ class TrendingTopicServiceTest {
     }
 
     @Test
+    void getTrendingTopicsFast_WithHtmlAndUrls_ShouldNotContainHtmlTokens() {
+        // Given — Artikel mit HTML-Markup und URLs in der Description
+        List<ArticleText> articles = List.of(
+                new ArticleText(
+                        "Bitcoin ETF Zulassung",
+                        "<div class='news'><span>Die SEC hat den Bitcoin ETF zugelassen.</span>"
+                                + " <a href='https://example.com/article/123'>Mehr lesen</a>"
+                                + " Bildbreite: 800px. Quelle: https://www.btc-news.de/update?id=42&amp;ref=top"
+                ),
+                new ArticleText(
+                        "Bitcoin Kurs",
+                        "Nach der Zulassung steigt Bitcoin. \u003cscript>alert('x')\u003c/script>"
+                                + " Mehr unter www.bitcoin.de und http://crypto.org/net"
+                )
+        );
+
+        when(trendingRepository.findArticleTextsSince(any(LocalDateTime.class)))
+                .thenReturn(articles);
+
+        // When
+        TrendingTopicDto result = service.getTrendingTopicsFast(24, 10);
+
+        // Then — HTML/CSS/URL-Reste dürfen nicht als Topics auftauchen
+        List<String> terms = result.getTopics().stream()
+                .map(TrendingTopicDto.Topic::getTerm)
+                .map(String::toLowerCase)
+                .toList();
+
+        assertThat(terms)
+                .noneMatch(t -> t.contains("div") || t.contains("span") || t.contains("script")
+                        || t.contains("style") || t.contains("width") || t.contains("px")
+                        || t.contains("href") || t.contains("class") || t.contains("src"))
+                .noneMatch(t -> t.startsWith("http") || t.contains("www.")
+                        || t.contains(".com") || t.contains(".de") || t.contains(".org"));
+
+        // Stattdessen sollte "Bitcoin" und "Bitcoin ETF" auftauchen
+        assertThat(terms).anyMatch(t -> t.toLowerCase().contains("bitcoin"));
+    }
+
+    @Test
     void getTrendingTopicsFast_StopwordsShouldBeFiltered() {
         // Given — Titel mit vielen Stopwords
         List<ArticleText> articles = List.of(
