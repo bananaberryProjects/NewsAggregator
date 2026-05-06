@@ -2,8 +2,11 @@ package com.newsaggregator.application.service;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.core.LowerCaseFilter;
+import org.apache.lucene.analysis.core.StopFilter;
 import org.apache.lucene.analysis.de.GermanAnalyzer;
 import org.apache.lucene.analysis.shingle.ShingleFilter;
+import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,24 +18,23 @@ import java.util.*;
 /**
  * Text-Analyse für Trending-Topics mit Apache Lucene.
  *
- * Nutzt {@link GermanAnalyzer} für:
- * - Deutsche Tokenisierung (Whitespace + StandardTokenizer)
- * - Integrierte deutsche Stopword-Liste (~200 Wörter)
- * - Deutsche Lemmatisierung/Stemming (Snowball GermanStemmer)
+ * <p>Eigener Analyzer ohne Stemming — damit bleiben Wörter intakt
+ * (z.B. "Aktie" statt "akti", "Trailer" statt "trail").</p>
  *
- * Erweitert mit {@link ShingleFilter} für Bigram-Erkennung:
- * - "Bitcoin ETF" wird als einzelner Begriff "bitcoin etf" extrahiert
- * - Kombination aus Unigrams + Bigrams liefert sowohl Einzelwörter als auch Phrasen
+ * <p>Pipeline: StandardTokenizer → LowerCaseFilter → StopFilter (deutsche Stopwords)</p>
+ *
+ * <p>Erweitert mit {@link ShingleFilter} für Bigram-Erkennung:
+ * "Bitcoin ETF" wird als einzelner Begriff "bitcoin etf" extrahiert.</p>
  */
 @Component
 public class TrendingTextAnalyzer {
 
     private static final Logger log = LoggerFactory.getLogger(TrendingTextAnalyzer.class);
 
-    // Zusätzliche Domain-Noise-Wörter die Lucene's GermanAnalyzer nicht abdeckt
+    // Zusätzliche Domain-Noise-Wörter
     private static final Set<String> EXTRA_STOPWORDS = Set.of(
         "neu", "neue", "neuer", "neues", "neuen",
-        "alte", "alter", "altes", "alten",
+        "alt", "alte", "alter", "altes", "alten",
         "groß", "große", "großer", "großes", "großen",
         "klein", "kleine", "kleiner", "kleines", "kleinen",
         "update", "updates", "version", "v", "nr", "nummer",
@@ -69,25 +71,30 @@ public class TrendingTextAnalyzer {
         "nie", "niemals", "immerhin", "wenigstens", "mindestens",
         "fast", "kaum", "schwerlich", "baldigst",
         "ca", "circa", "etwa", "ungefähr", "maximal",
-        "prozent", "prozente", "anti", "pro contra",
+        "prozent", "prozente", "anti",
         "pro", "kontra", "vs", "versus", "gegen",
         "plus", "minus", "mal", "durch", "geteilt",
         "stück", "stücke", "teile", "teil", "einheit", "einheiten",
         "milliarde", "milliarden", "million", "millionen", "tausend", "hundert",
-        // HTML/CSS Reste (falls durchsickern)
+        // HTML/CSS Reste
         "div", "span", "script", "style", "img", "width", "height", "class",
-        "src", "href", "alt", "px", "em", "rem", "com", "de", "org", "net",
+        "src", "href", "px", "em", "rem", "com", "org", "net",
         "www", "http", "https", "html", "body", "head", "title", "meta", "link"
     );
 
-    private final Analyzer germanAnalyzer;
+    private final Analyzer analyzer;
 
     public TrendingTextAnalyzer() {
-        // GermanAnalyzer mit erweiterter Stopword-Liste
-        this.germanAnalyzer = new GermanAnalyzer(
-            GermanAnalyzer.getDefaultStopSet(),
-            GermanAnalyzer.getDefaultStopSet()  // beide Sets identisch, wir filtern EXTRA separat
-        );
+        // Eigener Analyzer: Tokenisieren + Lowercase + Stopwords — KEIN Stemming
+        this.analyzer = new Analyzer() {
+            @Override
+            protected TokenStreamComponents createComponents(String fieldName) {
+                StandardTokenizer source = new StandardTokenizer();
+                TokenStream filter = new LowerCaseFilter(source);
+                filter = new StopFilter(filter, GermanAnalyzer.getDefaultStopSet());
+                return new TokenStreamComponents(source, filter);
+            }
+        };
     }
 
     /**
@@ -110,8 +117,8 @@ public class TrendingTextAnalyzer {
         List<TermToken> tokens = new ArrayList<>();
 
         try {
-            // 1. GermanAnalyzer Tokenisierung (Stopwords + Stemming)
-            List<String> unigrams = tokenizeWithGermanAnalyzer(cleaned);
+            // 1. Tokenisierung (kein Stemming!)
+            List<String> unigrams = tokenize(cleaned);
 
             // 2. Bigram-Erzeugung aus den gefilterten Unigrams
             List<String> bigrams = generateBigrams(unigrams);
@@ -152,7 +159,7 @@ public class TrendingTextAnalyzer {
         text = text.replaceAll("&\\w+;", " ");
         text = text.replaceAll("&#[0-9]+;", " ");
 
-        // 4. Numerische Token (reine Zahlen) entfernen — "2024", "42" sind kein Thema
+        // 4. Numerische Token (reine Zahlen) entfernen
         text = text.replaceAll("\\b\\d+\\b", " ");
 
         // 5. Redundante Whitespace normalisieren
@@ -160,18 +167,18 @@ public class TrendingTextAnalyzer {
     }
 
     /**
-     * Tokenisiert Text mit GermanAnalyzer (Stopword-Filter + Stemming).
+     * Tokenisiert Text mit eigenem Analyzer (kein Stemming).
      */
-    private List<String> tokenizeWithGermanAnalyzer(String text) throws IOException {
+    private List<String> tokenize(String text) throws IOException {
         List<String> tokens = new ArrayList<>();
 
-        try (TokenStream stream = germanAnalyzer.tokenStream("content", text)) {
+        try (TokenStream stream = analyzer.tokenStream("content", text)) {
             stream.reset();
             CharTermAttribute termAttr = stream.getAttribute(CharTermAttribute.class);
 
             while (stream.incrementToken()) {
                 String term = termAttr.toString().trim();
-                // GermanAnalyzer stemmt bereits — wir prüfen noch Länge + extra Stopwords
+                // Längenfilter + extra Stopwords
                 if (term.length() >= 3 && !EXTRA_STOPWORDS.contains(term)) {
                     tokens.add(term);
                 }
@@ -197,7 +204,6 @@ public class TrendingTextAnalyzer {
 
     /**
      * Nutzt ShingleFilter für Lucene-basierte Bigram-Tokenisierung.
-     * Alternative zu manueller Bigram-Erzeugung — nutzt Lucene's Offsets.
      */
     public List<String> extractShingles(String text) {
         if (text == null || text.isBlank()) {
@@ -212,17 +218,16 @@ public class TrendingTextAnalyzer {
         List<String> shingles = new ArrayList<>();
 
         try {
-            try (TokenStream stream = germanAnalyzer.tokenStream("content", cleaned)) {
-                // ShingleFilter: max_shingle_size=2 → Unigrams + Bigrams
+            try (TokenStream stream = analyzer.tokenStream("content", cleaned)) {
                 ShingleFilter shingleFilter = new ShingleFilter(stream, 2, 2);
-                shingleFilter.setOutputUnigrams(false); // nur Bigrams
+                shingleFilter.setOutputUnigrams(false);
 
                 shingleFilter.reset();
                 CharTermAttribute termAttr = shingleFilter.getAttribute(CharTermAttribute.class);
 
                 while (shingleFilter.incrementToken()) {
                     String term = termAttr.toString().trim();
-                    if (term.length() >= 5 && term.contains(" ")) { // nur echte Bigrams
+                    if (term.length() >= 5 && term.contains(" ")) {
                         shingles.add(term);
                     }
                 }
